@@ -1,0 +1,26 @@
+{
+  "twist_scenario": "confirmed",
+  "twist_name": "The Gambit",
+  "twist_start_week": 1,
+  "gambit_periods": [
+    { "name": "Flora", "weeks": [1, 2, 3, 4, 5] },
+    { "name": "Aikou", "weeks": [1, 2, 3, 4, 5] }
+  ],
+  "release_event": {
+    "name": "Operation Release the Gambit",
+    "announced_week": 5,
+    "announced_date": "2026-08-30",
+    "result": "both released",
+    "effective_from_week": 6,
+    "sources": [
+      "https://punchng.com/bbnaijas11-aikou-flora-exit-gambit-can-now-win-n160m/",
+      "https://www.vanguardngr.com/2026/08/bbnaija-11-aikou-flora-face-possible-loss-of-gambit-status/"
+    ]
+  },
+  "filter": {
+    "formula": "WinProb_i = 0.0 if gambit_flag_i_t == 1 else exp(mu_i) / sum_{j not gambit} exp(mu_j)",
+    "applies_in": "posterior predictive",
+    "note": "Frozen math (PLAN.md). gambit_flag_i_t = 1 iff week t is in that housemate's gambit_periods weeks. Gambit housemates keep their finale slot: p_rank_1 == 0 but p_top3/p_top5 and runner-up podium eligibility remain live."
+  },
+  "notes": "Week-1 public vote (Flora 29.18%, Aikou 9.10%) elected The Gambit: immunity from week-1 eviction + automatic finale slot + ineligible for the grand prize. Release event returned both to prize eligibility from week 6. Backfilled weeks 1-5 standings must apply the filter to Flora/Aikou; weeks 6+ apply to nobody. Sources: docs/season-recon.md."
+}

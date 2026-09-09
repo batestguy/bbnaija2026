@@ -1,0 +1,11 @@
+{
+  "season": 11,
+  "label": "Show Ya Sef",
+  "network": "Africa Magic (DStv 198 / GOtv 29)",
+  "premiere_date": "2026-07-26",
+  "finale_date": "2026-10-04",
+  "finale_date_confirmed": false,
+  "eviction_day": "sunday",
+  "week_anchor": "premiere_date",
+  "notes": "Week numbers derive from premiere_date (W1 starts 2026-07-26, evictions on the Sunday that closes each week). Runs never renumber weeks. Finale date = premiere + 72 days per Wikipedia infobox; flagged unconfirmed until an official announcement. Sources: docs/season-recon.md."
+}

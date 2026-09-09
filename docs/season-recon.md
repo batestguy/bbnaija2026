@@ -44,25 +44,35 @@ Canonical name = show/brand name (voting name); aliases catch press variants. St
 | 5 | Barry | Muudumbari Pop-Yornwin | M | active |
 | 6 | Bells | Isabella Imoh | F | active |
 | 7 | Bluethopia | Usaku Bantai | F | active (spellings seen: Bluethopia/Bluethophia — alias both) |
-| 8 | Cassi | Ezenwoke Nwosu | M | active |
+| 8 | Cassi | Ezenwoke Nwosu | M | **evicted wk 4 (Aug 23, 5.27% votes — BellaNaija/Premium Times)** |
 | 9 | Chimsom Chuka | Chimsom Chuka-Okoli | M | active (alias "Chimsom") |
-| 10 | Flora | Flora Egbedi | F | active (Gambit w1–5) |
-| 11 | Gerard | Gerard Adebaji | M | **evicted wk 6 (day ~41, Sep 6)** |
-| 12 | Goddessa | Lovette Okechukwu | F | active |
+| 10 | Flora | Flora Egbedi | F | active (Gambit w1–5, released) |
+| 11 | Gerard | Gerard Adebaji | M | **evicted wk 6 (Sep 6)** |
+| 12 | Goddessa | Lovette Okechukwu | F | **evicted wk 5 (Aug 30 double — bbnaijatoday tracker)** |
 | 13 | Keivo | Victor Ikpe | M | active |
 | 14 | Kamsy | Kamsy Uzoma | F | **evicted wk 3 (day 21, Aug 16 — Channels TV)** |
-| 15 | Mercedes | Ijeoma Emi | F | **evicted (day 14 ≈ wk 2)** |
-| 16 | Martins | Martins Iyeh | M | **evicted (day 14 ≈ wk 2)** |
-| 17 | Neche | Chinecherem Maduagwu | F | **walked (day 21)** → `status: disqualified`? No — walks are exits, not DQs; use `status: evicted`? **Decision needed:** spec only covers "disqualified (mid-week DQ)" and "evicted". Propose `status: walked` badge or map walks to `evicted` with a note; log in `manual_notes.csv`. |
+| 15 | Mercedes | Ijeoma Emi | F | **evicted wk 2 (day 14)** |
+| 16 | Martins | Martins Iyeh | M | **evicted wk 2 (day 14)** |
+| 17 | Neche | Chinecherem Maduagwu | F | **walked (day 21)** — `status: walked` proposed; log in `manual_notes.csv` |
 | 18 | Nomy | Whitney Chukwu | F | active |
 | 19 | Oyin | Oyindamola Oshikoya | F | active |
 | 20 | Ricky | Patrick Jumbo | M | active |
 | 21 | Sheba | Faith Gamde | F | active |
-| 22 | Sultex | Sultan Aregbe Obanikoro | M | active |
+| 22 | Sultex | Sultan Aregbe Obanikoro | M | **evicted wk 5 (Aug 30 double)** |
 | 23 | Temi Nkem | Temitope Chigbue | F | active |
 | 24 | Yusuf | Yusuf Muhammed-Awal | M | active |
 
-**Active today: 20.** (24 − Mercedes, Martins, Kamsy, Neche, Gerard = 19 active + Gerard counted → 24−5 exits = 19 active. Correct count: **19 active**.) Gerard is the 8th exit overall per BellaNaija — implying 3 exits beyond the 5 in the Wikipedia table (likely **double evictions in weeks 4–5 that the parsed table missed**). **TO VERIFY during P2 config-writing:** exact week-4 and week-5 evictee names (BellaNaija week-4/5 eviction recaps). Roster above is complete at launch; exit statuses need that cross-check.
+**Active today: 16.** Complete exit ledger (8 exits, fully reconciled with "Gerard = 8th exit" per BellaNaija):
+
+| Week | Date | Exits |
+|---|---|---|
+| W2 | Aug 9 (day 14) | Mercedes, Martins (evicted) |
+| W3 | Aug 16 (day 21) | Kamsy (evicted), Neche (walked) |
+| W4 | Aug 23 (day ~28) | Cassi (evicted, 5.27% votes) |
+| W5 | Aug 30 (day ~35) | Sultex, Goddessa (evicted, double) |
+| W6 | Sep 6 (day ~41) | Gerard (evicted) |
+
+Note: "4th housemate evicted" (Arise TV, Cassi) vs "5th to leave" (BellaNaija, Cassi) reconciles exactly by whether Neche's walk is counted as an exit. The earlier Wikipedia-table gap (Cassi/Sultex/Goddessa rows showing `Ineligible`) = they had exited, hence ineligible.
 
 **Aliases/notes for `config/housemates.json`:** Gerard/「Gerald」(Punch profile spells "Gerald", Wikipedia "Gerard" — canonical **Gerard**, alias Gerald) · Bluethopia/Bluethophia · Chimsom Chuka/Chimsom · Temi Nkem/TemiNkem · press may use full names (e.g. "Yousufzai", "Obanikoro") — alias map must include surnames.
 
@@ -98,6 +108,6 @@ Canonical name = show/brand name (voting name); aliases catch press variants. St
 ## 7. Confidence summary
 
 - Season dates, roster, Gambit mechanics + release: **VERIFIED** (multiple independent outlets).
-- Week-4/5 evictees: **GAP** (verify in P2).
+- Full exit ledger weeks 2–6: **VERIFIED and reconciled** (8 exits; wk4 = Cassi, wk5 = Sultex + Goddessa double).
 - Finale date: **high confidence** (72-day infobox) but TO CONFIRM against an official announcement.
 - Pulse scrapeability: **UNSAMPLED** (P3 smoke test).

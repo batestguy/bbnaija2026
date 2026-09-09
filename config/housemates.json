@@ -1,0 +1,37 @@
+{
+  "season": 11,
+  "photo_fallback": "initials-avatar (never a broken image)",
+  "status_vocabulary": ["active", "evicted", "walked", "disqualified"],
+  "note_on_walked": "Neche walked day 21 (wk 3). 'walked' status is pending user confirmation; alternative is mapping walks to evicted with a manual_notes.csv note.",
+  "housemates": [
+    { "name": "Tram",         "full_name": "Joshua Alekewumu",        "sex": "M", "aliases": ["Tram", "Joshua Alekewumu"],                     "photo": "assets/photos/tram.jpg",         "entry_week": 1, "status": "active",   "exit_week": null, "exit_type": null },
+    { "name": "Abi",          "full_name": "Abisola Ayoola",          "sex": "F", "aliases": ["Abi", "Abisola Ayoola"],                        "photo": "assets/photos/abi.jpg",          "entry_week": 1, "status": "active",   "exit_week": null, "exit_type": null },
+    { "name": "Aikou",        "full_name": "Amyr Yousufzai",          "sex": "M", "aliases": ["Aikou", "Amyr Yousufzai"],                      "photo": "assets/photos/aikou.jpg",        "entry_week": 1, "status": "active",   "exit_week": null, "exit_type": null },
+    { "name": "Araga",        "full_name": "Oluwaseyifunmi Sosanya",  "sex": "M", "aliases": ["Araga", "Oluwaseyifunmi Sosanya"],              "photo": "assets/photos/araga.jpg",        "entry_week": 1, "status": "active",   "exit_week": null, "exit_type": null },
+    { "name": "Barry",        "full_name": "Muudumbari Pop-Yornwin",  "sex": "M", "aliases": ["Barry", "Muudumbari Pop-Yornwin"],              "photo": "assets/photos/barry.jpg",        "entry_week": 1, "status": "active",   "exit_week": null, "exit_type": null },
+    { "name": "Bells",        "full_name": "Isabella Imoh",           "sex": "F", "aliases": ["Bells", "Isabella Imoh"],                       "photo": "assets/photos/bells.jpg",        "entry_week": 1, "status": "active",   "exit_week": null, "exit_type": null },
+    { "name": "Bluethopia",   "full_name": "Usaku Bantai",            "sex": "F", "aliases": ["Bluethopia", "Bluethophia", "Usaku Bantai"],    "photo": "assets/photos/bluethopia.jpg",   "entry_week": 1, "status": "active",   "exit_week": null, "exit_type": null },
+    { "name": "Cassi",        "full_name": "Ezenwoke Nwosu",          "sex": "M", "aliases": ["Cassi", "Ezenwoke Nwosu"],                      "photo": "assets/photos/cassi.jpg",        "entry_week": 1, "status": "evicted",  "exit_week": 4,    "exit_type": "evicted" },
+    { "name": "Chimsom Chuka","full_name": "Chimsom Chuka-Okoli",     "sex": "M", "aliases": ["Chimsom Chuka", "Chimsom", "Chimsom Chuka-Okoli"], "photo": "assets/photos/chimsom-chuka.jpg", "entry_week": 1, "status": "active", "exit_week": null, "exit_type": null },
+    { "name": "Flora",        "full_name": "Flora Egbedi",            "sex": "F", "aliases": ["Flora", "Flora Egbedi"],                        "photo": "assets/photos/flora.jpg",        "entry_week": 1, "status": "active",   "exit_week": null, "exit_type": null },
+    { "name": "Gerard",       "full_name": "Gerard Adebaji",          "sex": "M", "aliases": ["Gerard", "Gerald", "Gerard Adebaji"],           "photo": "assets/photos/gerard.jpg",       "entry_week": 1, "status": "evicted",  "exit_week": 6,    "exit_type": "evicted" },
+    { "name": "Goddessa",     "full_name": "Lovette Okechukwu",       "sex": "F", "aliases": ["Goddessa", "Lovette Okechukwu"],                "photo": "assets/photos/goddessa.jpg",     "entry_week": 1, "status": "evicted",  "exit_week": 5,    "exit_type": "evicted" },
+    { "name": "Keivo",        "full_name": "Victor Ikpe",             "sex": "M", "aliases": ["Keivo", "Victor Ikpe"],                         "photo": "assets/photos/keivo.jpg",        "entry_week": 1, "status": "active",   "exit_week": null, "exit_type": null },
+    { "name": "Kamsy",        "full_name": "Kamsy Uzoma",             "sex": "F", "aliases": ["Kamsy", "Kamsy Uzoma"],                         "photo": "assets/photos/kamsy.jpg",        "entry_week": 1, "status": "evicted",  "exit_week": 3,    "exit_type": "evicted" },
+    { "name": "Mercedes",     "full_name": "Ijeoma Emi",              "sex": "F", "aliases": ["Mercedes", "Ijeoma Emi"],                       "photo": "assets/photos/mercedes.jpg",     "entry_week": 1, "status": "evicted",  "exit_week": 2,    "exit_type": "evicted" },
+    { "name": "Martins",      "full_name": "Martins Iyeh",            "sex": "M", "aliases": ["Martins", "Martins Iyeh"],                      "photo": "assets/photos/martins.jpg",      "entry_week": 1, "status": "evicted",  "exit_week": 2,    "exit_type": "evicted" },
+    { "name": "Neche",        "full_name": "Chinecherem Maduagwu",    "sex": "F", "aliases": ["Neche", "Chinecherem Maduagwu"],                "photo": "assets/photos/neche.jpg",        "entry_week": 1, "status": "walked",   "exit_week": 3,    "exit_type": "walked" },
+    { "name": "Nomy",         "full_name": "Whitney Chukwu",          "sex": "F", "aliases": ["Nomy", "Whitney Chukwu"],                       "photo": "assets/photos/nomy.jpg",         "entry_week": 1, "status": "active",   "exit_week": null, "exit_type": null },
+    { "name": "Oyin",         "full_name": "Oyindamola Oshikoya",     "sex": "F", "aliases": ["Oyin", "Oyindamola Oshikoya"],                  "photo": "assets/photos/oyin.jpg",         "entry_week": 1, "status": "active",   "exit_week": null, "exit_type": null },
+    { "name": "Ricky",        "full_name": "Patrick Jumbo",           "sex": "M", "aliases": ["Ricky", "Patrick Jumbo"],                       "photo": "assets/photos/ricky.jpg",        "entry_week": 1, "status": "active",   "exit_week": null, "exit_type": null },
+    { "name": "Sheba",        "full_name": "Faith Gamde",             "sex": "F", "aliases": ["Sheba", "Faith Gamde"],                         "photo": "assets/photos/sheba.jpg",        "entry_week": 1, "status": "active",   "exit_week": null, "exit_type": null },
+    { "name": "Sultex",       "full_name": "Sultan Aregbe Obanikoro", "sex": "M", "aliases": ["Sultex", "Sultan Aregbe Obanikoro", "Sultan Obanikoro"], "photo": "assets/photos/sultex.jpg", "entry_week": 1, "status": "evicted", "exit_week": 5,  "exit_type": "evicted" },
+    { "name": "Temi Nkem",    "full_name": "Temitope Chigbue",        "sex": "F", "aliases": ["Temi Nkem", "TemiNkem", "Temitope Chigbue"],    "photo": "assets/photos/temi-nkem.jpg",    "entry_week": 1, "status": "active",   "exit_week": null, "exit_type": null },
+    { "name": "Yusuf",        "full_name": "Yusuf Muhammed-Awal",     "sex": "M", "aliases": ["Yusuf", "Yusuf Muhammed-Awal"],                 "photo": "assets/photos/yusuf.jpg",        "entry_week": 1, "status": "active",   "exit_week": null, "exit_type": null }
+  ],
+  "sources": [
+    "https://punchng.com/full-list-meet-the-bbnaija-season-11-housemates/",
+    "https://en.wikipedia.org/wiki/Big_Brother_Naija_season_11",
+    "docs/season-recon.md (exit ledger: wk2 Mercedes+Martins, wk3 Kamsy+Neche-walk, wk4 Cassi, wk5 Sultex+Goddessa, wk6 Gerard)"
+  ]
+}
