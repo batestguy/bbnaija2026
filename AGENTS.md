@@ -1,0 +1,32 @@
+# AGENTS.md — BBNaija 2026 Predictor
+
+## Project status: APPROVED (2026-09-09) — execution follows PHASES.md
+- `PLAN.md` + the `weekly-standings-spec.md` deltas are **user-approved**; execution order is `PHASES.md` (P0 fold-in/git init → P1 season recon → P2 scaffold → P3 scrape → P4 preprocess → P5 modeling → P6 runner → P7 dashboard → P8 deploy → P9 rehearsal → P10 season ops → P11 closeout).
+- Production code starts at **P2 (repo scaffold)** and only after the P0 fold-in + git init are complete.
+- Repo also contains: `PHASES.md` (lifecycle), `weekly-standings-spec.md` (approved deltas), `knowledge.md`.
+
+## Verified corrections to Readme.txt (do not regress)
+- **No X/Twitter API anywhere.** Free read tier was removed for new developers (Feb 2026; pay-per-use $0.005/read). Data is blogs/RSS-only (Google News RSS primary, BellaNaija/Pulse/DStv via BeautifulSoup4, one isolated parser per source).
+- **Gambit twist is provisional** (no public record; S10-2025 won by Imisi, no Gambit on record). Keep the eligibility filter math byte-for-byte, but read `GambitFlag`/`Twist` timing from `config/twist.json` — never hardcode.
+- **Public-repo Actions are free/unlimited** (the 2,000-min quota is for private repos). Twitter-era rate-limit logic is dead.
+
+## Operating constraints (do not violate)
+- **Local-first MCMC:** `bap3` (PyMC 5.8) or `causality-handbook` (PyMC 5.25) on C:, working copy + data on D:. Sampling is CPU-bound — no GPU needed. Colab is a documented alternative only; no PAT push-back machinery.
+- **Manual-only Saturday runs (~2 h window):** user is offline/machines off mid-week. Single entrypoint `python run_weekly.py [--lite]` (scrape → VADER → blog-CPI → MCMC → `predictions.json` → push). No cron, no local schedulers, single writer (never add a scheduled scrape alongside manual runs — dual writers corrupt `data/`).
+- **$0 ceiling:** no paid service anywhere. Only secret is an HF token for Space sync.
+
+## Intended architecture (implement this split, nothing else)
+- `run_weekly.py` → `src/scrape_blogs.py` → `src/preprocess.py` (gap-tolerant; flags `missing_weeks`) → local `notebooks/bbnaija_mcmc` (PyMC + ArviZ) → `data/predictions.json` → push-triggered deploy-only Actions → HF Space (Static, primary) + Dataset repo + GitHub Pages mirror.
+- `specification.md` file list: `run_weekly.py`, `config/twist.json`, `config/season.json` (premiere/finale dates drive calendar-true week numbering), `config/housemates.json` (canonical names, aliases, photo filenames), `src/scrape_blogs.py`, `src/preprocess.py`, `notebooks/bbnaija_mcmc`, `docs/index.html`, `docs/assets/script.js`, `docs/assets/photos/`, `.github/workflows/deploy.yml` (push-triggered, no schedule), `.env.example` (HF token only), `tests/` (fixture-based, no network), `data/raw/manual_notes.csv` (DQ/walkout + correction override channel).
+- **Dashboard shape:** trajectory line chart (top-5 medians + 89% CrI bands, photo+name end-labels, dropdown to add housemates) + podium strip (winner/runner-up/2nd runner-up with slot probabilities) + rank-probability chips (P(#1)·P(top-3)·P(top-5)) + statistical-tie markers + at-risk relative-hazard panel + status badges (evicted/DQ wk N, final place) + trend-projected podium readout (secondary) + below-chart pairwise panel (win-prob difference for any two picks + likely winner) + persistent Gambit warning banner.
+
+## Non-negotiable modeling rules
+- **Gambit twist:** viewers pick one male + one female → immunity + finale slot, but disqualified from grand prize. `WinProb_i = 0.0` if `GambitFlag_i == 1`, else `exp(μ_i) / Σ_{j ∉ Gambit} exp(μ_j)`. Zero out in posterior predictive — never just down-weight.
+- **CPI per housemate (blog-adapted):** `0.4*Comments + 0.3*Shares + 0.2*ArticleMentions + 0.1*HeadlineFeatures`, min-max normalised per week before weighting; renormalise over available terms and log it.
+- **Count sub-model:** `log(μ_it) = α + α_i + (β + β_i)t + γSentiment + δAtRisk + θTwist + η(Twist_it·β_i)`; share `α_i` as frailty in Cox eviction sub-model.
+- **Sampling:** 4 chains × 2000 draws (ZINB joint survival); 10k Dirichlet-Multinomial draws → median + 89% HDI. `--lite` fallback must label `precision` in `predictions.json`, never silently.
+- **Weekly standings product (added 2026-09-09):** every Saturday run publishes predicted final standings for the final Sunday — podium projection with slot probabilities, `p_rank_1`/`p_top3`/`p_top5`, statistical-tie markers (overlapping adjacent HDIs, alphabetical tie-break), secondary β_i trend-projected podium never merged into the headline snapshot. Gambit housemates: P(#1) ≡ 0 but runner-up/top-3/top-5 eligible. Computed from the existing posterior draws — no new sampling. Missed Saturdays are backfill-bridged from archived scrapes and flagged, never fabricated; mid-week DQs/walkouts are coded as evictions via `data/raw/manual_notes.csv`.
+- **BMA:** 3 candidates (momentum-heavy / baseline-heavy / post-Twist heteroscedastic `σ²_β` spike), Pseudo-BMA+ via ArviZ LOO ELPD with bootstrapping.
+- **Priors are weakly-informative (revised 2026-09-09; supersedes the objective-prior rule):** predictors standardized first (means/scales stored in the run record); Normal(0, 2.5) fixed effects, HalfNormal(1) variance components, LKJ(2) correlations. No show-history priors; current season only, no backtesting; every prior printed to the run log and recorded in the `priors` block of `predictions.json`. Prior predictive must draw plausible season shapes (no 0%/100% pathologies); weekly posterior predictive coverage ~89% is the alarm metric.
+- **Cross-blog voter independence is unverifiable** (same commenters recur across blogs; no $0 dedup key). Treat CPI as a correlated engagement index; state the limitation in README + dashboard methodology note; never claim independent voter sampling.
+- Stack: BeautifulSoup4 + RSS, VADER (polarity ∈ [-1,1]), PyMC + ArviZ. `AtRisk`/`Twist` binary. Reject any run with R-hat ≥ 1.01 (keep last good file, flag staleness).
