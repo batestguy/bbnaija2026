@@ -237,8 +237,13 @@ def scrape_wikipedia(session: requests.Session, season: dict[str, Any],
     # Nominated-per-week summary rows (bottom of the nominations table).
     for row in soup.find_all("tr"):
         cells = _cells(row)
-        if cells and cells[0] in ("Nominated", "Evicted", "Walked"):
-            facts["nominations"][cells[0].lower()] = cells[1:]
+        if not cells:
+            continue
+        label = cells[0].strip().lower()
+        key = {"nominated": "nominated", "evicted": "evicted", "walked": "walked",
+               "against public vote": "against_public_vote"}.get(label)
+        if key:
+            facts["nominations"][key] = cells[1:]
 
     item = new_item("wikipedia", f"S11 structured facts wk{week}", WIKI_S11,
                     None, json.dumps(facts)[:500], week)
