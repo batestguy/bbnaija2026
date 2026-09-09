@@ -3,10 +3,12 @@
 ## What this project is
 Zero-cost predictive analytics pipeline for Big Brother Naija 2026: scrapes blog/RSS engagement, computes a per-housemate Engagement Index (CPI), runs a local Bayesian MCMC (ZINB joint survival model + 3-model BMA), and outputs **win probabilities** (not raw votes) to a static dashboard (HF Spaces Static primary, GitHub Pages mirror).
 
-## Current status — APPROVED, executing PHASES.md
-- `PLAN.md` + `weekly-standings-spec.md` deltas are **user-approved (2026-09-09)**. Execution order: `PHASES.md` (P0 fold-in/git init → P1 recon → P2 scaffold → P3 scrape → P4 preprocess → P5 modeling → P6 runner → P7 dashboard → P8 deploy → P9 rehearsal → P10 season ops → P11 closeout).
+## Current status — P2 done, mid-season build week in progress
+- **GitHub repo: https://github.com/batestguy/bbnaija2026** (public, `main` tracked). Season 11 is LIVE (premiered 26 Jul 2026, week 7 of ~10 as of 2026-09-09; finale ≈ 4 Oct) → P2–P8 run compressed into one week; first run on Sat Sep 12 is a **backfill run** for weeks 1–6. See `docs/season-recon.md` + the P1 banner in `PHASES.md`.
+- **Done:** P0 (approval + fold-in + git init), P1 (season recon — Gambit CONFIRMED: Flora+Aikou wks 1–5, released wk 6 → weekly-varying `gambit_periods` in `config/twist.json`; exit ledger reconciled: wk2 Mercedes+Martins, wk3 Kamsy+Neche-walk, wk4 Cassi, wk5 Sultex+Goddessa, wk6 Gerard → 16 active), P2 (configs, env pins, conventions, scaffold, `.env.example`).
+- **Next:** P3 `src/scrape_blogs.py` (+ Wikipedia structured-tables parser candidate), P4 `src/preprocess.py` (backfill-first), P5 modeling, P6 runner, P7 dashboard, P8 deploy — before Sat Sep 12.
 - Product definition: **weekly predicted final standings** — each Saturday run publishes the podium projection (winner / runner-up / 2nd runner-up with slot probabilities) plus per-housemate P(#1)/P(top-3)/P(top-5), refreshed continuously as weekly data accrues.
-- Files: `AGENTS.md`, `ENVIRONMENTS.md`, `PLAN.md` (approved), `PHASES.md` (lifecycle), `weekly-standings-spec.md` (approved deltas), this file. `specification.md` (complete code) is the post-approval deliverable; production code starts at P2.
+- Files: `AGENTS.md`, `ENVIRONMENTS.md`, `PLAN.md` (approved), `PHASES.md` (lifecycle), `weekly-standings-spec.md` (approved deltas), `docs/season-recon.md`, this file.
 
 ## Key corrections to Readme.txt (do not regress)
 - **No X/Twitter API anywhere.** Free read tier was removed (Feb 2026). Tweepy, `TWITTER_BEARER_TOKEN`, housemate handles, and Twitter-era rate-limit logic are **dead**. Data is blogs/RSS only: Google News RSS (primary) + BellaNaija/Pulse/DStv via BeautifulSoup4, **one isolated parser per source**.
