@@ -16,6 +16,12 @@ Captured 2026-09-09 via `conda list`. Working copy + `data/` live on **D:**; env
 | pytensor | 2.15.0 |
 | nutpie | 0.9.1 |
 | scipy | 1.11.3 |
+| requests | 2.32.5 |
+| beautifulsoup4 | 4.14.3 |
+| lxml | 6.1.1 |
+| feedparser | 6.0.14 (pip) |
+| vaderSentiment | 3.3.2 (pip) |
+| pytest | 9.1.1 (pip) |
 
 ## Fallback: `causality-handbook`
 
