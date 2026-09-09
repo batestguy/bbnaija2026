@@ -4,6 +4,12 @@
 > **Status:** proposed execution plan. Writing production code still requires the Phase 0 approval gate.
 > **Sources of truth:** `PLAN.md` (architecture, math, deploy) · `weekly-standings-spec.md` (weekly standings, podium, priors deltas — referred to as "the spec") · `AGENTS.md` (non-negotiables) · `ENVIRONMENTS.md` (local envs).
 
+> **⚠ SEASON STATUS UPDATE (P1 recon, 2026-09-09 — see `docs/season-recon.md`):** Season 11 is **LIVE** — premiered 26 Jul 2026, currently week 7 of ~10, finale ≈ 4 Oct. Consequences:
+> 1. **Backfill-first:** weeks 1–6 must be reconstructed from archives (RSS history, Wikipedia structured tables, blog recaps) before any live prediction publishes. P4.4's bridge is now the *first-run* path, not a fallback.
+> 2. **Compressed schedule:** P2–P8 must complete in one week (before Sat Sep 12). P9's rehearsal merges into the first live run: rehearse with weeks 1–6 data, then publish week 7 from the same session.
+> 3. **Twist.json schema upgrade:** the Gambit is CONFIRMED (Flora + Aikou, weeks 1–5, released via "Operation Release the Gambit" on Aug 30). `gambit_flag` is weekly-varying → per-housemate week ranges in config (P2.3 revision).
+> 4. **P10 runs at standard cadence** immediately after the compressed build week; P11 closeout lands ~Oct 4.
+
 ---
 
 ## 0. Lifecycle map
