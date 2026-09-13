@@ -155,7 +155,9 @@ on **prior-predictive placeholder data** and resume validation next session.
 3. **P8 deploy:** `.github/workflows/deploy.yml` (push-triggered Pages + HF Space sync,
    no schedule), `.env.example` HF token, Space scaffolding. Dashboard + JSON are ready
    to serve from `docs/`.
-4. Housemate **photos** into `docs/assets/photos/` (initials fallback until then).
+4. Housemate **photos** into `docs/assets/photos/` — full runbook in
+   `docs/photos-runbook.md` (exact 24-file name contract, processing script, QA;
+   code is already photo-complete, initials fallback until files land).
 5. P6 `run_weekly.py` (placeholder mode must never feed it — real inference only).
 
 ## Decision log (do not re-open without new evidence)
