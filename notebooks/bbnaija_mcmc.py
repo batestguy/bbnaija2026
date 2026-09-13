@@ -753,6 +753,19 @@ def assemble_products(idatas: dict[str, az.InferenceData], weights: dict[str, fl
                       table: SeasonTable, std: dict[str, Any], lite: bool,
                       seed: int = MASTER_SEED) -> dict[str, Any]:
     """All weekly-standings products from the existing posterior draws."""
+    return assemble_from_draws(idatas, weights, table, std, lite, seed=seed)
+
+
+def assemble_from_draws(idatas: dict[str, az.InferenceData], weights: dict[str, float],
+                        table: SeasonTable, std: dict[str, Any], lite: bool,
+                        seed: int = MASTER_SEED) -> dict[str, Any]:
+    """Draw-consuming core of the weekly-standings products.
+
+    Consumes posterior-like InferenceData objects (real MCMC runs from
+    `run_inference`, or prior-predictive InferenceData from
+    `run_prior_placeholder`) so every downstream product (DM shares, ranks,
+    podium, history, trend, at-risk) is exercised identically for both.
+    """
     # gate-failed candidates carry weight 0 — exclude them from every pool
     idatas = {k: v for k, v in idatas.items() if weights.get(k, 0.0) > 0.0}
     if not idatas:
@@ -802,6 +815,12 @@ def assemble_products(idatas: dict[str, az.InferenceData], weights: dict[str, fl
 
     per_hm: dict[str, dict[str, Any]] = {}
     ties = statistical_ties(pooled_shares, names_active)
+    # pairwise P(i finishes above j) from the pooled DM shares — spec: below-chart
+    # pairwise panel (win-prob difference for any two picks + likely winner)
+    pairwise: dict[str, dict[str, float]] = {}
+    for a_i, a in enumerate(names_active):
+        pairwise[a] = {b: float((pooled_shares[:, a_i] > pooled_shares[:, b_i]).mean())
+                       for b_i, b in enumerate(names_active) if b != a}
     for i, name in enumerate(names_active):
         col = pooled_shares[:, i]
         hdi = az.hdi(col, hdi_prob=HDI_PROB)
@@ -858,6 +877,7 @@ def assemble_products(idatas: dict[str, az.InferenceData], weights: dict[str, fl
 
     return {
         "podium": podium_from_ranks(ranks, names_active),
+        "pairwise": pairwise,
         "precision": "lite" if lite else "full",   # never silent (P5.9)
         "trend_projection": trend,                 # secondary — never merged (D14)
         "at_risk": at_risk_panel(fin_rng_draws[anchor], std, table, active),
@@ -911,8 +931,50 @@ def run_inference(payload: dict[str, Any], housemates_cfg: list[dict[str, Any]],
     products["standardization"] = {k: v for k, v in std.items()
                                    if k in ("t_mean", "t_scale", "sent_mean", "sent_scale")}
     products["run_seconds"] = round(time.time() - started, 1)
+    products["generated_at"] = datetime.now(timezone.utc).isoformat()
     LOG.info("run_inference done in %.1fs (gate PASS, rhat_max=%.4f)",
              products["run_seconds"], rhat_head)
+    return products
+
+
+def run_prior_placeholder(payload: dict[str, Any], housemates_cfg: list[dict[str, Any]],
+                          seed: int = MASTER_SEED, n_samples: int = 1000,
+                          t_now: int | None = None) -> dict[str, Any]:
+    """No-sampling placeholder products for UI/deploy work (P7/P8 unblocking).
+
+    Draws from the PRIOR predictive of the baseline candidate (plausible season
+    shapes by design, zero data information) and pushes those draws through the
+    exact same downstream machinery as a real run. The product is labelled
+    precision="prior-predictive" and carries placeholder=True so no consumer
+    can mistake it for inference. NOT for publication as predictions.
+    """
+    started = time.time()
+    table = build_table(payload, housemates_cfg, t_now=t_now)
+    std = standardize(table)
+    model = build_model(table, std, candidate="baseline")
+    with model:
+        prior = pm.sample_prior_predictive(samples=n_samples, random_seed=seed,
+                                           return_inferencedata=True)
+    idata = az.from_dict(posterior={k: np.asarray(v) for k, v in prior.prior.items()},
+                         coords={"week": table.weeks_built, "housemate": table.housemates,
+                                 "effect": ["alpha", "beta"]},
+                         dims={"offsets": ["housemate", "effect"],
+                               "t_std": ["week"], "sent_std": ["week", "housemate"],
+                               "at_risk": ["week", "housemate"], "twist": ["week"]})
+    products = assemble_from_draws({"prior": idata}, {"prior": 1.0}, table, std,
+                                   lite=False, seed=seed)
+    products["precision"] = "prior-predictive"      # never silent (P5.9 analogue)
+    products["placeholder"] = True
+    products["rhat_max"] = None
+    products["rhat_by_candidate"] = {}
+    products["model_weights"] = {"prior": 1.0}
+    products["priors"] = dict(PRIORS)
+    products["standardization"] = {k: v for k, v in std.items()
+                                   if k in ("t_mean", "t_scale", "sent_mean", "sent_scale")}
+    products["run_seconds"] = round(time.time() - started, 1)
+    products["generated_at"] = datetime.now(timezone.utc).isoformat()
+    LOG.info("prior-placeholder products built in %.1fs (NO inference — UI demo only)",
+             products["run_seconds"])
     return products
 
 
@@ -1026,6 +1088,12 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--full", action="store_true", help="full spec sampling (4 x 2000)")
     ap.add_argument("--lite", action="store_true", help="reduced sampling (labelled)")
     ap.add_argument("--prior-check", action="store_true", help="prior predictive sanity")
+    ap.add_argument("--prior-placeholder", action="store_true",
+                    help="no-sampling products from the prior predictive (UI/deploy demo; "
+                         "labelled placeholder, never publish as predictions)")
+    ap.add_argument("--out", default=None,
+                    help="write products JSON here (e.g. data/predictions.json) in "
+                         "prior-placeholder mode")
     ap.add_argument("--record", default=None, help="run-record filename under notebooks/")
     args = ap.parse_args(argv)
 
@@ -1043,6 +1111,18 @@ def main(argv: list[str] | None = None) -> int:
         with open(CONFIG_DIR / "housemates.json", encoding="utf-8") as fh:
             hms = json.load(fh)["housemates"]
         lite = args.lite
+
+    if args.prior_placeholder:
+        products = run_prior_placeholder(payload, hms)
+        _print_summary(products)
+        if args.out:
+            out_path = Path(args.out)
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            out_path.write_text(json.dumps(products, indent=1, ensure_ascii=False),
+                                encoding="utf-8")
+            LOG.info("placeholder products written: %s (precision=%s)",
+                     out_path, products["precision"])
+        return 0
 
     products = run_inference(payload, hms, lite=lite, full=args.full,
                              prior_check=args.prior_check)

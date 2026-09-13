@@ -1,0 +1,1917 @@
+{
+ "podium": {
+  "winner": {
+   "name": "Bluethopia",
+   "prob": 0.2104
+  },
+  "runner_up": {
+   "name": "Temi Nkem",
+   "prob": 0.16
+  },
+  "second_runner_up": {
+   "name": "Abi",
+   "prob": 0.0956
+  }
+ },
+ "pairwise": {
+  "Tram": {
+   "Abi": 0.4153,
+   "Aikou": 0.3878,
+   "Araga": 0.3988,
+   "Barry": 0.3864,
+   "Bells": 0.3812,
+   "Bluethopia": 0.386,
+   "Chimsom Chuka": 0.391,
+   "Flora": 0.3918,
+   "Keivo": 0.4028,
+   "Nomy": 0.4036,
+   "Oyin": 0.3777,
+   "Ricky": 0.3309,
+   "Sheba": 0.4009,
+   "Temi Nkem": 0.2289,
+   "Yusuf": 0.654
+  },
+  "Abi": {
+   "Tram": 0.3883,
+   "Aikou": 0.39,
+   "Araga": 0.3865,
+   "Barry": 0.3502,
+   "Bells": 0.3868,
+   "Bluethopia": 0.3243,
+   "Chimsom Chuka": 0.3833,
+   "Flora": 0.3923,
+   "Keivo": 0.3759,
+   "Nomy": 0.3927,
+   "Oyin": 0.3934,
+   "Ricky": 0.3786,
+   "Sheba": 0.3513,
+   "Temi Nkem": 0.3092,
+   "Yusuf": 0.5961
+  },
+  "Aikou": {
+   "Tram": 0.3864,
+   "Abi": 0.4019,
+   "Araga": 0.3848,
+   "Barry": 0.3783,
+   "Bells": 0.3719,
+   "Bluethopia": 0.3745,
+   "Chimsom Chuka": 0.3756,
+   "Flora": 0.3876,
+   "Keivo": 0.3901,
+   "Nomy": 0.3936,
+   "Oyin": 0.3707,
+   "Ricky": 0.3453,
+   "Sheba": 0.3799,
+   "Temi Nkem": 0.2388,
+   "Yusuf": 0.6424
+  },
+  "Araga": {
+   "Tram": 0.3965,
+   "Abi": 0.387,
+   "Aikou": 0.3887,
+   "Barry": 0.3927,
+   "Bells": 0.3967,
+   "Bluethopia": 0.3143,
+   "Chimsom Chuka": 0.4016,
+   "Flora": 0.3984,
+   "Keivo": 0.357,
+   "Nomy": 0.4071,
+   "Oyin": 0.4021,
+   "Ricky": 0.3919,
+   "Sheba": 0.3373,
+   "Temi Nkem": 0.2944,
+   "Yusuf": 0.6355
+  },
+  "Barry": {
+   "Tram": 0.4011,
+   "Abi": 0.3792,
+   "Aikou": 0.4021,
+   "Araga": 0.4034,
+   "Bells": 0.3902,
+   "Bluethopia": 0.3676,
+   "Chimsom Chuka": 0.3992,
+   "Flora": 0.4011,
+   "Keivo": 0.4021,
+   "Nomy": 0.4141,
+   "Oyin": 0.3999,
+   "Ricky": 0.3582,
+   "Sheba": 0.3854,
+   "Temi Nkem": 0.2842,
+   "Yusuf": 0.6108
+  },
+  "Bells": {
+   "Tram": 0.3853,
+   "Abi": 0.4118,
+   "Aikou": 0.3918,
+   "Araga": 0.404,
+   "Barry": 0.3873,
+   "Bluethopia": 0.3939,
+   "Chimsom Chuka": 0.3898,
+   "Flora": 0.3971,
+   "Keivo": 0.4034,
+   "Nomy": 0.4045,
+   "Oyin": 0.3807,
+   "Ricky": 0.3111,
+   "Sheba": 0.4089,
+   "Temi Nkem": 0.2038,
+   "Yusuf": 0.641
+  },
+  "Bluethopia": {
+   "Tram": 0.447,
+   "Abi": 0.4348,
+   "Aikou": 0.4371,
+   "Araga": 0.4364,
+   "Barry": 0.4347,
+   "Bells": 0.4512,
+   "Chimsom Chuka": 0.4427,
+   "Flora": 0.4526,
+   "Keivo": 0.4381,
+   "Nomy": 0.4576,
+   "Oyin": 0.4574,
+   "Ricky": 0.4555,
+   "Sheba": 0.4186,
+   "Temi Nkem": 0.3921,
+   "Yusuf": 0.6053
+  },
+  "Chimsom Chuka": {
+   "Tram": 0.3809,
+   "Abi": 0.3931,
+   "Aikou": 0.3831,
+   "Araga": 0.377,
+   "Barry": 0.3756,
+   "Bells": 0.369,
+   "Bluethopia": 0.3669,
+   "Flora": 0.3872,
+   "Keivo": 0.3913,
+   "Nomy": 0.3902,
+   "Oyin": 0.3675,
+   "Ricky": 0.3401,
+   "Sheba": 0.3895,
+   "Temi Nkem": 0.2279,
+   "Yusuf": 0.6423
+  },
+  "Flora": {
+   "Tram": 0.3793,
+   "Abi": 0.4007,
+   "Aikou": 0.3799,
+   "Araga": 0.3779,
+   "Barry": 0.3838,
+   "Bells": 0.3678,
+   "Bluethopia": 0.3577,
+   "Chimsom Chuka": 0.3803,
+   "Keivo": 0.3845,
+   "Nomy": 0.3872,
+   "Oyin": 0.3732,
+   "Ricky": 0.3398,
+   "Sheba": 0.38,
+   "Temi Nkem": 0.2344,
+   "Yusuf": 0.6491
+  },
+  "Keivo": {
+   "Tram": 0.4123,
+   "Abi": 0.3913,
+   "Aikou": 0.4075,
+   "Araga": 0.3936,
+   "Barry": 0.3951,
+   "Bells": 0.4163,
+   "Bluethopia": 0.2879,
+   "Chimsom Chuka": 0.407,
+   "Flora": 0.4146,
+   "Nomy": 0.4199,
+   "Oyin": 0.4166,
+   "Ricky": 0.4163,
+   "Sheba": 0.3299,
+   "Temi Nkem": 0.33,
+   "Yusuf": 0.6357
+  },
+  "Nomy": {
+   "Tram": 0.3554,
+   "Abi": 0.3948,
+   "Aikou": 0.3537,
+   "Araga": 0.3676,
+   "Barry": 0.3648,
+   "Bells": 0.3509,
+   "Bluethopia": 0.3559,
+   "Chimsom Chuka": 0.3626,
+   "Flora": 0.3723,
+   "Keivo": 0.3731,
+   "Oyin": 0.35,
+   "Ricky": 0.3145,
+   "Sheba": 0.376,
+   "Temi Nkem": 0.2061,
+   "Yusuf": 0.6244
+  },
+  "Oyin": {
+   "Tram": 0.3878,
+   "Abi": 0.4078,
+   "Aikou": 0.3957,
+   "Araga": 0.3919,
+   "Barry": 0.3799,
+   "Bells": 0.3746,
+   "Bluethopia": 0.3802,
+   "Chimsom Chuka": 0.4019,
+   "Flora": 0.3949,
+   "Keivo": 0.4058,
+   "Nomy": 0.4059,
+   "Ricky": 0.3219,
+   "Sheba": 0.3998,
+   "Temi Nkem": 0.2129,
+   "Yusuf": 0.6501
+  },
+  "Ricky": {
+   "Tram": 0.4524,
+   "Abi": 0.4565,
+   "Aikou": 0.4429,
+   "Araga": 0.4495,
+   "Barry": 0.441,
+   "Bells": 0.4456,
+   "Bluethopia": 0.4456,
+   "Chimsom Chuka": 0.448,
+   "Flora": 0.4557,
+   "Keivo": 0.4577,
+   "Nomy": 0.4613,
+   "Oyin": 0.4513,
+   "Sheba": 0.4645,
+   "Temi Nkem": 0.3029,
+   "Yusuf": 0.6443
+  },
+  "Sheba": {
+   "Tram": 0.4278,
+   "Abi": 0.4191,
+   "Aikou": 0.4283,
+   "Araga": 0.4206,
+   "Barry": 0.4208,
+   "Bells": 0.4298,
+   "Bluethopia": 0.2862,
+   "Chimsom Chuka": 0.4215,
+   "Flora": 0.4318,
+   "Keivo": 0.4114,
+   "Nomy": 0.4374,
+   "Oyin": 0.4348,
+   "Ricky": 0.4349,
+   "Temi Nkem": 0.3617,
+   "Yusuf": 0.6323
+  },
+  "Temi Nkem": {
+   "Tram": 0.6091,
+   "Abi": 0.5671,
+   "Aikou": 0.598,
+   "Araga": 0.5805,
+   "Barry": 0.5681,
+   "Bells": 0.6116,
+   "Bluethopia": 0.5242,
+   "Chimsom Chuka": 0.6047,
+   "Flora": 0.5988,
+   "Keivo": 0.5695,
+   "Nomy": 0.6179,
+   "Oyin": 0.6166,
+   "Ricky": 0.5165,
+   "Sheba": 0.5514,
+   "Yusuf": 0.7745
+  },
+  "Yusuf": {
+   "Tram": 0.0485,
+   "Abi": 0.0498,
+   "Aikou": 0.0454,
+   "Araga": 0.044,
+   "Barry": 0.0519,
+   "Bells": 0.0503,
+   "Bluethopia": 0.0413,
+   "Chimsom Chuka": 0.0447,
+   "Flora": 0.0434,
+   "Keivo": 0.0364,
+   "Nomy": 0.0482,
+   "Oyin": 0.0478,
+   "Ricky": 0.0625,
+   "Sheba": 0.0381,
+   "Temi Nkem": 0.0287
+  }
+ },
+ "precision": "prior-predictive",
+ "trend_projection": {
+  "method": "beta_i momentum extrapolation to finale",
+  "uncertainty": "posterior NB residual CV x sqrt(horizon); sigma_week=1.4868",
+  "horizon_week": 10,
+  "podium": [
+   "Flora",
+   "Chimsom Chuka",
+   "Sheba"
+  ]
+ },
+ "at_risk": [
+  {
+   "name": "Yusuf",
+   "relative_hazard": 1.2246264759260823,
+   "nominated": true
+  },
+  {
+   "name": "Flora",
+   "relative_hazard": 1.1511477810263306,
+   "nominated": true
+  },
+  {
+   "name": "Ricky",
+   "relative_hazard": 1.137981520800024,
+   "nominated": true
+  },
+  {
+   "name": "Chimsom Chuka",
+   "relative_hazard": 1.115763168864837,
+   "nominated": true
+  },
+  {
+   "name": "Temi Nkem",
+   "relative_hazard": 1.1084572961339303,
+   "nominated": true
+  },
+  {
+   "name": "Aikou",
+   "relative_hazard": 1.0399919010396508,
+   "nominated": true
+  },
+  {
+   "name": "Araga",
+   "relative_hazard": 1.032606392184828,
+   "nominated": true
+  },
+  {
+   "name": "Nomy",
+   "relative_hazard": 1.0295369486457422,
+   "nominated": true
+  },
+  {
+   "name": "Bells",
+   "relative_hazard": 0.9801415589443948,
+   "nominated": true
+  },
+  {
+   "name": "Oyin",
+   "relative_hazard": 0.9766692781671773,
+   "nominated": true
+  },
+  {
+   "name": "Sheba",
+   "relative_hazard": 0.9535727305454239,
+   "nominated": true
+  },
+  {
+   "name": "Tram",
+   "relative_hazard": 0.9155059127353515,
+   "nominated": true
+  },
+  {
+   "name": "Keivo",
+   "relative_hazard": 0.9143421288922272,
+   "nominated": true
+  },
+  {
+   "name": "Bluethopia",
+   "relative_hazard": 0.8892205887444558,
+   "nominated": true
+  }
+ ],
+ "housemates": [
+  {
+   "name": "Tram",
+   "photo": "assets/photos/tram.jpg",
+   "status": "active",
+   "evicted_week": null,
+   "final_place": null,
+   "gambit_flag": 0,
+   "win_prob_median": 0.0012585,
+   "hdi_89": [
+    0.0,
+    0.082054
+   ],
+   "p_rank_1": 0.0273,
+   "p_top3": 0.1302,
+   "p_top5": 0.2623,
+   "statistical_tie_with": [
+    "Oyin",
+    "Sheba"
+   ],
+   "history": [
+    {
+     "week": 1,
+     "median": 0.003272873429975046,
+     "hdi_89": [
+      3.371243435386103e-29,
+      0.043874245288533203
+     ]
+    },
+    {
+     "week": 2,
+     "median": 0.0032972041879518257,
+     "hdi_89": [
+      1.1001014543851412e-27,
+      0.07523545469040398
+     ]
+    },
+    {
+     "week": 3,
+     "median": 0.002528704414497223,
+     "hdi_89": [
+      4.0478194568505406e-24,
+      0.0649496874405581
+     ]
+    },
+    {
+     "week": 4,
+     "median": 0.0024353356772325706,
+     "hdi_89": [
+      1.555904103003448e-22,
+      0.0724806152114423
+     ]
+    },
+    {
+     "week": 5,
+     "median": 0.005220888722304817,
+     "hdi_89": [
+      3.9184852464363996e-19,
+      0.08894318643315595
+     ]
+    },
+    {
+     "week": 6,
+     "median": 0.0046743308160745,
+     "hdi_89": [
+      3.094027446342772e-19,
+      0.06392994423851578
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Abi",
+   "photo": "assets/photos/abi.jpg",
+   "status": "active",
+   "evicted_week": null,
+   "final_place": null,
+   "gambit_flag": 0,
+   "win_prob_median": 0.0002805,
+   "hdi_89": [
+    0.0,
+    0.180271
+   ],
+   "p_rank_1": 0.0667,
+   "p_top3": 0.2648,
+   "p_top5": 0.4457,
+   "statistical_tie_with": [
+    "Nomy",
+    "Yusuf"
+   ],
+   "history": [
+    {
+     "week": 1,
+     "median": 0.006360267044485206,
+     "hdi_89": [
+      4.401658423130083e-17,
+      0.4657574302735337
+     ]
+    },
+    {
+     "week": 2,
+     "median": 0.0032250944002440245,
+     "hdi_89": [
+      1.4872356077333365e-14,
+      0.07065285189937945
+     ]
+    },
+    {
+     "week": 3,
+     "median": 0.0038410313747842583,
+     "hdi_89": [
+      2.0114941310591343e-18,
+      0.1288184373734682
+     ]
+    },
+    {
+     "week": 4,
+     "median": 0.0012795963622634645,
+     "hdi_89": [
+      7.811055920577129e-19,
+      0.04839736091232286
+     ]
+    },
+    {
+     "week": 5,
+     "median": 0.005247152735853365,
+     "hdi_89": [
+      9.75846588867048e-16,
+      0.9055791292511415
+     ]
+    },
+    {
+     "week": 6,
+     "median": 0.0031785055361827144,
+     "hdi_89": [
+      7.310226927679525e-16,
+      0.18053875172217332
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Aikou",
+   "photo": "assets/photos/aikou.jpg",
+   "status": "active",
+   "evicted_week": null,
+   "final_place": null,
+   "gambit_flag": 0,
+   "win_prob_median": 0.0009565,
+   "hdi_89": [
+    0.0,
+    0.076362
+   ],
+   "p_rank_1": 0.0258,
+   "p_top3": 0.143,
+   "p_top5": 0.3526,
+   "statistical_tie_with": [
+    "Flora",
+    "Keivo"
+   ],
+   "history": [
+    {
+     "week": 1,
+     "median": 0.0,
+     "hdi_89": [
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "week": 2,
+     "median": 0.0,
+     "hdi_89": [
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "week": 3,
+     "median": 0.0,
+     "hdi_89": [
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "week": 4,
+     "median": 0.0,
+     "hdi_89": [
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "week": 5,
+     "median": 0.0,
+     "hdi_89": [
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "week": 6,
+     "median": 0.004281074585841635,
+     "hdi_89": [
+      3.62627215838045e-19,
+      0.06591579184494642
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Araga",
+   "photo": "assets/photos/araga.jpg",
+   "status": "active",
+   "evicted_week": null,
+   "final_place": null,
+   "gambit_flag": 0,
+   "win_prob_median": 0.000824,
+   "hdi_89": [
+    0.0,
+    0.094299
+   ],
+   "p_rank_1": 0.034,
+   "p_top3": 0.1428,
+   "p_top5": 0.3576,
+   "statistical_tie_with": [
+    "Barry",
+    "Chimsom Chuka"
+   ],
+   "history": [
+    {
+     "week": 1,
+     "median": 0.004754922832344364,
+     "hdi_89": [
+      2.0409965244697646e-23,
+      0.44544120616315636
+     ]
+    },
+    {
+     "week": 2,
+     "median": 0.004117143151569049,
+     "hdi_89": [
+      1.6178098920916455e-21,
+      0.3981942462932012
+     ]
+    },
+    {
+     "week": 3,
+     "median": 0.0013416447709316442,
+     "hdi_89": [
+      1.0036987055559942e-17,
+      0.04185681630840669
+     ]
+    },
+    {
+     "week": 4,
+     "median": 0.0023184665962396444,
+     "hdi_89": [
+      4.038779283350673e-16,
+      0.09311243777396534
+     ]
+    },
+    {
+     "week": 5,
+     "median": 0.006548181870849066,
+     "hdi_89": [
+      6.056710237258064e-16,
+      0.09524746685870955
+     ]
+    },
+    {
+     "week": 6,
+     "median": 0.003978749220924442,
+     "hdi_89": [
+      1.6622609585094458e-16,
+      0.08465881832194594
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Barry",
+   "photo": "assets/photos/barry.jpg",
+   "status": "active",
+   "evicted_week": null,
+   "final_place": null,
+   "gambit_flag": 0,
+   "win_prob_median": 0.000598,
+   "hdi_89": [
+    0.0,
+    0.202995
+   ],
+   "p_rank_1": 0.0809,
+   "p_top3": 0.2149,
+   "p_top5": 0.3449,
+   "statistical_tie_with": [
+    "Araga",
+    "Nomy"
+   ],
+   "history": [
+    {
+     "week": 1,
+     "median": 0.0029648039966857654,
+     "hdi_89": [
+      2.5674306841571855e-19,
+      0.04560759681947842
+     ]
+    },
+    {
+     "week": 2,
+     "median": 0.00300143507500653,
+     "hdi_89": [
+      1.2283952865888139e-19,
+      0.0768634899438907
+     ]
+    },
+    {
+     "week": 3,
+     "median": 0.00122552531033584,
+     "hdi_89": [
+      1.818582016359616e-19,
+      0.04310348405801253
+     ]
+    },
+    {
+     "week": 4,
+     "median": 0.0017625448614739484,
+     "hdi_89": [
+      2.5532978683015206e-19,
+      0.05967131580932384
+     ]
+    },
+    {
+     "week": 5,
+     "median": 0.005768516736467659,
+     "hdi_89": [
+      8.624662047107751e-21,
+      0.07854929588111009
+     ]
+    },
+    {
+     "week": 6,
+     "median": 0.0034594626557048593,
+     "hdi_89": [
+      2.352318524532705e-22,
+      0.17152938302483195
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Bells",
+   "photo": "assets/photos/bells.jpg",
+   "status": "active",
+   "evicted_week": null,
+   "final_place": null,
+   "gambit_flag": 0,
+   "win_prob_median": 0.0009885,
+   "hdi_89": [
+    0.0,
+    0.094887
+   ],
+   "p_rank_1": 0.0346,
+   "p_top3": 0.1465,
+   "p_top5": 0.2811,
+   "statistical_tie_with": [
+    "Flora",
+    "Oyin"
+   ],
+   "history": [
+    {
+     "week": 1,
+     "median": 0.0036453045114101844,
+     "hdi_89": [
+      7.75548294911427e-16,
+      0.04931145791052455
+     ]
+    },
+    {
+     "week": 2,
+     "median": 0.002970353883778795,
+     "hdi_89": [
+      3.8576226524670936e-16,
+      0.18723604600720237
+     ]
+    },
+    {
+     "week": 3,
+     "median": 0.0029709767157452805,
+     "hdi_89": [
+      9.959591628220479e-18,
+      0.06126053876594379
+     ]
+    },
+    {
+     "week": 4,
+     "median": 0.003756024968882766,
+     "hdi_89": [
+      2.3945649867517522e-20,
+      0.21108612609867214
+     ]
+    },
+    {
+     "week": 5,
+     "median": 0.007321110734781178,
+     "hdi_89": [
+      1.8270821294237403e-18,
+      0.10471896384742624
+     ]
+    },
+    {
+     "week": 6,
+     "median": 0.004347311057603395,
+     "hdi_89": [
+      1.1965613304692184e-19,
+      0.08279075312205746
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Bluethopia",
+   "photo": "assets/photos/bluethopia.jpg",
+   "status": "active",
+   "evicted_week": null,
+   "final_place": null,
+   "gambit_flag": 0,
+   "win_prob_median": 0.002105,
+   "hdi_89": [
+    0.0,
+    0.72457
+   ],
+   "p_rank_1": 0.2104,
+   "p_top3": 0.3308,
+   "p_top5": 0.3965,
+   "statistical_tie_with": [
+    "Ricky",
+    "Sheba"
+   ],
+   "history": [
+    {
+     "week": 1,
+     "median": 0.003917417051495822,
+     "hdi_89": [
+      2.1655945116011754e-23,
+      0.056644154001020075
+     ]
+    },
+    {
+     "week": 2,
+     "median": 0.003360947443661759,
+     "hdi_89": [
+      7.28389822777228e-23,
+      0.04883887898707324
+     ]
+    },
+    {
+     "week": 3,
+     "median": 0.0012348275964383442,
+     "hdi_89": [
+      1.454725580398947e-22,
+      0.06855160800836432
+     ]
+    },
+    {
+     "week": 4,
+     "median": 0.0015991273276233394,
+     "hdi_89": [
+      1.0549339708732403e-18,
+      0.047619134009264825
+     ]
+    },
+    {
+     "week": 5,
+     "median": 0.0062717760295231935,
+     "hdi_89": [
+      1.3753380961821656e-18,
+      0.08264503684184521
+     ]
+    },
+    {
+     "week": 6,
+     "median": 0.006093216464654991,
+     "hdi_89": [
+      1.097568779669424e-16,
+      0.7245940242698911
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Cassi",
+   "photo": "assets/photos/cassi.jpg",
+   "status": "evicted",
+   "evicted_week": 4,
+   "final_place": null,
+   "gambit_flag": 0,
+   "win_prob_median": 0.0,
+   "hdi_89": [
+    0.0,
+    0.0
+   ],
+   "p_rank_1": 0.0,
+   "p_top3": 0.0,
+   "p_top5": 0.0,
+   "statistical_tie_with": [],
+   "history": [
+    {
+     "week": 1,
+     "median": 0.003960113461942827,
+     "hdi_89": [
+      1.3108373169033725e-21,
+      0.10503881892877306
+     ]
+    },
+    {
+     "week": 2,
+     "median": 0.004322936193174165,
+     "hdi_89": [
+      2.0733441466332073e-16,
+      0.10814391250433375
+     ]
+    },
+    {
+     "week": 3,
+     "median": 0.0027358502632438236,
+     "hdi_89": [
+      7.798035693701465e-21,
+      0.39071221973028114
+     ]
+    },
+    {
+     "week": 4,
+     "median": 0.00294035770999439,
+     "hdi_89": [
+      1.0726683670428984e-18,
+      0.10656116073191584
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Chimsom Chuka",
+   "photo": "assets/photos/chimsom-chuka.jpg",
+   "status": "active",
+   "evicted_week": null,
+   "final_place": null,
+   "gambit_flag": 0,
+   "win_prob_median": 0.000839,
+   "hdi_89": [
+    0.0,
+    0.077705
+   ],
+   "p_rank_1": 0.0278,
+   "p_top3": 0.1177,
+   "p_top5": 0.2433,
+   "statistical_tie_with": [
+    "Araga",
+    "Keivo"
+   ],
+   "history": [
+    {
+     "week": 1,
+     "median": 0.00309610035413548,
+     "hdi_89": [
+      7.597655491220027e-19,
+      0.0446560448598694
+     ]
+    },
+    {
+     "week": 2,
+     "median": 0.0033578807809739658,
+     "hdi_89": [
+      6.900364474375796e-19,
+      0.13176534159545564
+     ]
+    },
+    {
+     "week": 3,
+     "median": 0.0015461639660600877,
+     "hdi_89": [
+      9.141493859172436e-18,
+      0.09401334302394536
+     ]
+    },
+    {
+     "week": 4,
+     "median": 0.00282309622862955,
+     "hdi_89": [
+      9.935203290414115e-26,
+      0.10495023230872899
+     ]
+    },
+    {
+     "week": 5,
+     "median": 0.004047660374322935,
+     "hdi_89": [
+      7.166835451956917e-24,
+      0.15070874291471698
+     ]
+    },
+    {
+     "week": 6,
+     "median": 0.004661292831745842,
+     "hdi_89": [
+      5.429878618703874e-20,
+      0.06827898564544196
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Flora",
+   "photo": "assets/photos/flora.jpg",
+   "status": "active",
+   "evicted_week": null,
+   "final_place": null,
+   "gambit_flag": 0,
+   "win_prob_median": 0.0009664999999999999,
+   "hdi_89": [
+    0.0,
+    0.068032
+   ],
+   "p_rank_1": 0.0203,
+   "p_top3": 0.103,
+   "p_top5": 0.2314,
+   "statistical_tie_with": [
+    "Aikou",
+    "Bells"
+   ],
+   "history": [
+    {
+     "week": 1,
+     "median": 0.0,
+     "hdi_89": [
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "week": 2,
+     "median": 0.0,
+     "hdi_89": [
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "week": 3,
+     "median": 0.0,
+     "hdi_89": [
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "week": 4,
+     "median": 0.0,
+     "hdi_89": [
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "week": 5,
+     "median": 0.0,
+     "hdi_89": [
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "week": 6,
+     "median": 0.004800955805210759,
+     "hdi_89": [
+      8.267240881343677e-15,
+      0.058030026794607864
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Gerard",
+   "photo": "assets/photos/gerard.jpg",
+   "status": "evicted",
+   "evicted_week": 6,
+   "final_place": null,
+   "gambit_flag": 0,
+   "win_prob_median": 0.0,
+   "hdi_89": [
+    0.0,
+    0.0
+   ],
+   "p_rank_1": 0.0,
+   "p_top3": 0.0,
+   "p_top5": 0.0,
+   "statistical_tie_with": [],
+   "history": [
+    {
+     "week": 1,
+     "median": 0.0028077689500601603,
+     "hdi_89": [
+      2.3321656648291586e-18,
+      0.045373174486522956
+     ]
+    },
+    {
+     "week": 2,
+     "median": 0.003124864939552375,
+     "hdi_89": [
+      5.350754529289587e-17,
+      0.042835771854329206
+     ]
+    },
+    {
+     "week": 3,
+     "median": 0.0015209409603432907,
+     "hdi_89": [
+      2.910212694863868e-15,
+      0.03447885449750681
+     ]
+    },
+    {
+     "week": 4,
+     "median": 0.0019296700963858803,
+     "hdi_89": [
+      4.835799888080331e-15,
+      0.05568541507211822
+     ]
+    },
+    {
+     "week": 5,
+     "median": 0.006924507929402905,
+     "hdi_89": [
+      5.072777938522047e-16,
+      0.07985407502432798
+     ]
+    },
+    {
+     "week": 6,
+     "median": 0.005099287134500278,
+     "hdi_89": [
+      3.000591844926905e-19,
+      0.055370801649373684
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Goddessa",
+   "photo": "assets/photos/goddessa.jpg",
+   "status": "evicted",
+   "evicted_week": 5,
+   "final_place": null,
+   "gambit_flag": 0,
+   "win_prob_median": 0.0,
+   "hdi_89": [
+    0.0,
+    0.0
+   ],
+   "p_rank_1": 0.0,
+   "p_top3": 0.0,
+   "p_top5": 0.0,
+   "statistical_tie_with": [],
+   "history": [
+    {
+     "week": 1,
+     "median": 0.002699021660716969,
+     "hdi_89": [
+      9.112326310407844e-18,
+      0.042292554177870256
+     ]
+    },
+    {
+     "week": 2,
+     "median": 0.002712833830944044,
+     "hdi_89": [
+      1.940240412753435e-24,
+      0.2116179556325776
+     ]
+    },
+    {
+     "week": 3,
+     "median": 0.002144570873037035,
+     "hdi_89": [
+      7.32338091195795e-22,
+      0.04878531692846331
+     ]
+    },
+    {
+     "week": 4,
+     "median": 0.002256560629387389,
+     "hdi_89": [
+      1.9284223408784727e-24,
+      0.08786527827473413
+     ]
+    },
+    {
+     "week": 5,
+     "median": 0.0059464533657494325,
+     "hdi_89": [
+      1.4615672295151375e-24,
+      0.0833148345473166
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Keivo",
+   "photo": "assets/photos/keivo.jpg",
+   "status": "active",
+   "evicted_week": null,
+   "final_place": null,
+   "gambit_flag": 0,
+   "win_prob_median": 0.000938,
+   "hdi_89": [
+    0.0,
+    0.105997
+   ],
+   "p_rank_1": 0.0414,
+   "p_top3": 0.1879,
+   "p_top5": 0.3143,
+   "statistical_tie_with": [
+    "Aikou",
+    "Chimsom Chuka"
+   ],
+   "history": [
+    {
+     "week": 1,
+     "median": 0.004878975148458003,
+     "hdi_89": [
+      1.1386847642287366e-23,
+      0.10450698211972541
+     ]
+    },
+    {
+     "week": 2,
+     "median": 0.0031457060831467545,
+     "hdi_89": [
+      7.628482839754396e-21,
+      0.04750941919991474
+     ]
+    },
+    {
+     "week": 3,
+     "median": 0.0036986292652673573,
+     "hdi_89": [
+      1.898728764864368e-21,
+      0.8493073885174626
+     ]
+    },
+    {
+     "week": 4,
+     "median": 0.0019193145343974188,
+     "hdi_89": [
+      1.4897612559172434e-25,
+      0.0469973176763843
+     ]
+    },
+    {
+     "week": 5,
+     "median": 0.004154667437413259,
+     "hdi_89": [
+      5.896571412845463e-23,
+      0.06949947262824009
+     ]
+    },
+    {
+     "week": 6,
+     "median": 0.004321588724425297,
+     "hdi_89": [
+      9.325431123536293e-20,
+      0.09506590186695724
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Kamsy",
+   "photo": "assets/photos/kamsy.jpg",
+   "status": "evicted",
+   "evicted_week": 3,
+   "final_place": null,
+   "gambit_flag": 0,
+   "win_prob_median": 0.0,
+   "hdi_89": [
+    0.0,
+    0.0
+   ],
+   "p_rank_1": 0.0,
+   "p_top3": 0.0,
+   "p_top5": 0.0,
+   "statistical_tie_with": [],
+   "history": [
+    {
+     "week": 1,
+     "median": 0.004772578207496667,
+     "hdi_89": [
+      6.356525664528195e-19,
+      0.10814668766524127
+     ]
+    },
+    {
+     "week": 2,
+     "median": 0.0034883775480863966,
+     "hdi_89": [
+      3.328522714463187e-21,
+      0.05284473321259419
+     ]
+    },
+    {
+     "week": 3,
+     "median": 0.0034408612386690332,
+     "hdi_89": [
+      1.1659801613164729e-23,
+      0.100501257470533
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Mercedes",
+   "photo": "assets/photos/mercedes.jpg",
+   "status": "evicted",
+   "evicted_week": 2,
+   "final_place": null,
+   "gambit_flag": 0,
+   "win_prob_median": 0.0,
+   "hdi_89": [
+    0.0,
+    0.0
+   ],
+   "p_rank_1": 0.0,
+   "p_top3": 0.0,
+   "p_top5": 0.0,
+   "statistical_tie_with": [],
+   "history": [
+    {
+     "week": 1,
+     "median": 0.006384948152264042,
+     "hdi_89": [
+      3.198955587536818e-20,
+      0.12043081690558248
+     ]
+    },
+    {
+     "week": 2,
+     "median": 0.0027733501712949573,
+     "hdi_89": [
+      9.957716303325839e-16,
+      0.050994229659953295
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Martins",
+   "photo": "assets/photos/martins.jpg",
+   "status": "evicted",
+   "evicted_week": 2,
+   "final_place": null,
+   "gambit_flag": 0,
+   "win_prob_median": 0.0,
+   "hdi_89": [
+    0.0,
+    0.0
+   ],
+   "p_rank_1": 0.0,
+   "p_top3": 0.0,
+   "p_top5": 0.0,
+   "statistical_tie_with": [],
+   "history": [
+    {
+     "week": 1,
+     "median": 0.002667382329910303,
+     "hdi_89": [
+      4.2615849348440237e-26,
+      0.04316164812773254
+     ]
+    },
+    {
+     "week": 2,
+     "median": 0.0030413183549913682,
+     "hdi_89": [
+      2.2848915343263433e-23,
+      0.03704006727361434
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Neche",
+   "photo": "assets/photos/neche.jpg",
+   "status": "evicted",
+   "evicted_week": 3,
+   "final_place": null,
+   "gambit_flag": 0,
+   "win_prob_median": 0.0,
+   "hdi_89": [
+    0.0,
+    0.0
+   ],
+   "p_rank_1": 0.0,
+   "p_top3": 0.0,
+   "p_top5": 0.0,
+   "statistical_tie_with": [],
+   "history": [
+    {
+     "week": 1,
+     "median": 0.0030776468481785143,
+     "hdi_89": [
+      3.555552365438771e-19,
+      0.050117537072169614
+     ]
+    },
+    {
+     "week": 2,
+     "median": 0.003980749936958406,
+     "hdi_89": [
+      2.602302725912101e-18,
+      0.08852338427769191
+     ]
+    },
+    {
+     "week": 3,
+     "median": 0.0013724779275502686,
+     "hdi_89": [
+      6.985444921778207e-18,
+      0.09129012146046006
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Nomy",
+   "photo": "assets/photos/nomy.jpg",
+   "status": "active",
+   "evicted_week": null,
+   "final_place": null,
+   "gambit_flag": 0,
+   "win_prob_median": 0.0005095,
+   "hdi_89": [
+    0.0,
+    0.071848
+   ],
+   "p_rank_1": 0.0194,
+   "p_top3": 0.1082,
+   "p_top5": 0.2249,
+   "statistical_tie_with": [
+    "Abi",
+    "Barry"
+   ],
+   "history": [
+    {
+     "week": 1,
+     "median": 0.0038768654490068566,
+     "hdi_89": [
+      2.557304311528948e-19,
+      0.4133811658449636
+     ]
+    },
+    {
+     "week": 2,
+     "median": 0.002960087481612931,
+     "hdi_89": [
+      2.10305639065579e-15,
+      0.04388020862583996
+     ]
+    },
+    {
+     "week": 3,
+     "median": 0.0020865816731382735,
+     "hdi_89": [
+      1.975891527055167e-17,
+      0.04926033474970089
+     ]
+    },
+    {
+     "week": 4,
+     "median": 0.004575247287117005,
+     "hdi_89": [
+      3.517412729481589e-20,
+      0.4245317771165235
+     ]
+    },
+    {
+     "week": 5,
+     "median": 0.0050171462261858375,
+     "hdi_89": [
+      1.713614168914433e-20,
+      0.23196808757301188
+     ]
+    },
+    {
+     "week": 6,
+     "median": 0.004063703694256211,
+     "hdi_89": [
+      3.242929441408489e-22,
+      0.05979331430722984
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Oyin",
+   "photo": "assets/photos/oyin.jpg",
+   "status": "active",
+   "evicted_week": null,
+   "final_place": null,
+   "gambit_flag": 0,
+   "win_prob_median": 0.001084,
+   "hdi_89": [
+    0.0,
+    0.089436
+   ],
+   "p_rank_1": 0.0294,
+   "p_top3": 0.1388,
+   "p_top5": 0.2657,
+   "statistical_tie_with": [
+    "Bells",
+    "Tram"
+   ],
+   "history": [
+    {
+     "week": 1,
+     "median": 0.0054708424237334225,
+     "hdi_89": [
+      1.9881237164044876e-21,
+      0.14467740836679926
+     ]
+    },
+    {
+     "week": 2,
+     "median": 0.004195842773183584,
+     "hdi_89": [
+      1.9909794656619815e-18,
+      0.2602743927801331
+     ]
+    },
+    {
+     "week": 3,
+     "median": 0.004374151013961059,
+     "hdi_89": [
+      1.3645789598441627e-19,
+      0.4275711790366435
+     ]
+    },
+    {
+     "week": 4,
+     "median": 0.003214236542134387,
+     "hdi_89": [
+      1.2294123865478376e-19,
+      0.10435528258879598
+     ]
+    },
+    {
+     "week": 5,
+     "median": 0.005519698236794149,
+     "hdi_89": [
+      1.2380511788328916e-20,
+      0.08223382246300925
+     ]
+    },
+    {
+     "week": 6,
+     "median": 0.004532572879807976,
+     "hdi_89": [
+      3.234401884188705e-21,
+      0.07704382595364731
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Ricky",
+   "photo": "assets/photos/ricky.jpg",
+   "status": "active",
+   "evicted_week": null,
+   "final_place": null,
+   "gambit_flag": 0,
+   "win_prob_median": 0.003857,
+   "hdi_89": [
+    0.0,
+    0.605305
+   ],
+   "p_rank_1": 0.1774,
+   "p_top3": 0.3152,
+   "p_top5": 0.3881,
+   "statistical_tie_with": [
+    "Bluethopia",
+    "Temi Nkem"
+   ],
+   "history": [
+    {
+     "week": 1,
+     "median": 0.0033443455506460924,
+     "hdi_89": [
+      8.167621863355463e-22,
+      0.06431122682231338
+     ]
+    },
+    {
+     "week": 2,
+     "median": 0.004178740495170136,
+     "hdi_89": [
+      2.1265292289402285e-22,
+      0.3596944367824587
+     ]
+    },
+    {
+     "week": 3,
+     "median": 0.0016589880276961688,
+     "hdi_89": [
+      2.2125278506507417e-21,
+      0.07748491772769889
+     ]
+    },
+    {
+     "week": 4,
+     "median": 0.0020255614105397827,
+     "hdi_89": [
+      2.2470613086835147e-18,
+      0.08698961558382001
+     ]
+    },
+    {
+     "week": 5,
+     "median": 0.006393097711871963,
+     "hdi_89": [
+      5.16734820230224e-19,
+      0.11148866167571207
+     ]
+    },
+    {
+     "week": 6,
+     "median": 0.006596284713494575,
+     "hdi_89": [
+      3.6523523446266203e-19,
+      0.5685766948977755
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Sheba",
+   "photo": "assets/photos/sheba.jpg",
+   "status": "active",
+   "evicted_week": null,
+   "final_place": null,
+   "gambit_flag": 0,
+   "win_prob_median": 0.0019195,
+   "hdi_89": [
+    0.0,
+    0.170204
+   ],
+   "p_rank_1": 0.0581,
+   "p_top3": 0.2627,
+   "p_top5": 0.3534,
+   "statistical_tie_with": [
+    "Bluethopia",
+    "Tram"
+   ],
+   "history": [
+    {
+     "week": 1,
+     "median": 0.002763316499555283,
+     "hdi_89": [
+      2.252860868552342e-20,
+      0.04530860147569501
+     ]
+    },
+    {
+     "week": 2,
+     "median": 0.003125970176739954,
+     "hdi_89": [
+      4.172736342798748e-20,
+      0.07944050159176327
+     ]
+    },
+    {
+     "week": 3,
+     "median": 0.002257968435301131,
+     "hdi_89": [
+      2.2270411139570023e-18,
+      0.044278057572878254
+     ]
+    },
+    {
+     "week": 4,
+     "median": 0.004313702980357988,
+     "hdi_89": [
+      1.0642124063153635e-22,
+      0.43425051399995507
+     ]
+    },
+    {
+     "week": 5,
+     "median": 0.004381691787767759,
+     "hdi_89": [
+      4.871506172488698e-16,
+      0.2948125237367403
+     ]
+    },
+    {
+     "week": 6,
+     "median": 0.005722045948767203,
+     "hdi_89": [
+      6.899331859883154e-20,
+      0.17021205721601354
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Sultex",
+   "photo": "assets/photos/sultex.jpg",
+   "status": "evicted",
+   "evicted_week": 5,
+   "final_place": null,
+   "gambit_flag": 0,
+   "win_prob_median": 0.0,
+   "hdi_89": [
+    0.0,
+    0.0
+   ],
+   "p_rank_1": 0.0,
+   "p_top3": 0.0,
+   "p_top5": 0.0,
+   "statistical_tie_with": [],
+   "history": [
+    {
+     "week": 1,
+     "median": 0.0039727529141116505,
+     "hdi_89": [
+      1.0967190711833268e-21,
+      0.06976123210524829
+     ]
+    },
+    {
+     "week": 2,
+     "median": 0.003072829937003239,
+     "hdi_89": [
+      3.849952867948766e-18,
+      0.04908820984921247
+     ]
+    },
+    {
+     "week": 3,
+     "median": 0.001469846799974337,
+     "hdi_89": [
+      1.2702767192689494e-18,
+      0.044747318781554975
+     ]
+    },
+    {
+     "week": 4,
+     "median": 0.002828396864092793,
+     "hdi_89": [
+      9.050216122949092e-20,
+      0.5253457102489163
+     ]
+    },
+    {
+     "week": 5,
+     "median": 0.006767032683132234,
+     "hdi_89": [
+      1.802943908503621e-17,
+      0.12548188131648405
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Temi Nkem",
+   "photo": "assets/photos/temi-nkem.jpg",
+   "status": "active",
+   "evicted_week": null,
+   "final_place": null,
+   "gambit_flag": 0,
+   "win_prob_median": 0.0267595,
+   "hdi_89": [
+    0.0,
+    0.405532
+   ],
+   "p_rank_1": 0.1465,
+   "p_top3": 0.3935,
+   "p_top5": 0.5287,
+   "statistical_tie_with": [
+    "Ricky"
+   ],
+   "history": [
+    {
+     "week": 1,
+     "median": 0.003941628596911765,
+     "hdi_89": [
+      1.6104653749630355e-21,
+      0.05515137867967145
+     ]
+    },
+    {
+     "week": 2,
+     "median": 0.003659528031391122,
+     "hdi_89": [
+      9.195523517557638e-19,
+      0.05551720725914244
+     ]
+    },
+    {
+     "week": 3,
+     "median": 0.0013482463546973789,
+     "hdi_89": [
+      1.2970971494428833e-18,
+      0.05206036710723318
+     ]
+    },
+    {
+     "week": 4,
+     "median": 0.002485419085614051,
+     "hdi_89": [
+      1.314383640630123e-23,
+      0.06046746032408947
+     ]
+    },
+    {
+     "week": 5,
+     "median": 0.005942645540799629,
+     "hdi_89": [
+      7.355756643286912e-24,
+      0.07615717654273502
+     ]
+    },
+    {
+     "week": 6,
+     "median": 0.004945481894315532,
+     "hdi_89": [
+      2.2120556078023488e-23,
+      0.07770115344983086
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Yusuf",
+   "photo": "assets/photos/yusuf.jpg",
+   "status": "active",
+   "evicted_week": null,
+   "final_place": null,
+   "gambit_flag": 0,
+   "win_prob_median": 0.0,
+   "hdi_89": [
+    0.0,
+    1.1102230246251565e-16
+   ],
+   "p_rank_1": 0.0,
+   "p_top3": 0.0,
+   "p_top5": 0.0095,
+   "statistical_tie_with": [
+    "Abi"
+   ],
+   "history": [
+    {
+     "week": 1,
+     "median": 0.003753918737184784,
+     "hdi_89": [
+      1.378008816482127e-22,
+      0.05222740203034709
+     ]
+    },
+    {
+     "week": 2,
+     "median": 0.004278540698249235,
+     "hdi_89": [
+      9.858869922253263e-23,
+      0.13309578319911322
+     ]
+    },
+    {
+     "week": 3,
+     "median": 0.0037266738861965396,
+     "hdi_89": [
+      8.995146126733402e-24,
+      0.19655026211516696
+     ]
+    },
+    {
+     "week": 4,
+     "median": 0.0037891857334673164,
+     "hdi_89": [
+      2.494106808498852e-18,
+      0.3431424122990465
+     ]
+    },
+    {
+     "week": 5,
+     "median": 0.0073097935800260205,
+     "hdi_89": [
+      6.228670981191703e-17,
+      0.13633462420385248
+     ]
+    },
+    {
+     "week": 6,
+     "median": 0.0068873957770479825,
+     "hdi_89": [
+      1.1417780465141402e-15,
+      0.24891323712643762
+     ]
+    }
+   ]
+  }
+ ],
+ "model_weights": {
+  "prior": 1.0
+ },
+ "diagnostics": {
+  "dm_draws": 10000,
+  "dm_concentration": 50.0,
+  "nominal_votes": 1000000,
+  "seed": 20260912,
+  "trend_seed": 20261312,
+  "hdi_prob": 0.89,
+  "active_count": 16
+ },
+ "placeholder": true,
+ "rhat_max": null,
+ "rhat_by_candidate": {},
+ "priors": {
+  "fixed_effects": "Normal(0, 2.5)",
+  "variance": "HalfNormal(1)",
+  "correlation": "LKJ(2)",
+  "standardized": true,
+  "nb_dispersion": "HalfNormal(1)",
+  "zero_inflation_psi": "Beta(2, 2)",
+  "count_scale": "y = round(CPI * 100); Dirichlet concentration 50.0"
+ },
+ "standardization": {
+  "t_mean": 3.5,
+  "t_scale": 1.707825127659933,
+  "sent_mean": 0.0618039126984127,
+  "sent_scale": 0.18034853491015226
+ },
+ "run_seconds": 16.0,
+ "generated_at": "2026-09-13T09:35:43.719654+00:00"
+}

@@ -16,3 +16,4 @@ data/predictions.json
 # OS junk
 Thumbs.db
 .DS_Store
+.playwright-cli/

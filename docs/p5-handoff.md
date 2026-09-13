@@ -113,3 +113,58 @@ BBN_MCMC_CORES=4 nohup $PY notebooks/bbnaija_mcmc.py --synthetic --full \
   --record p5_full_validation.json > /tmp/p5_full_run4.log 2>&1 &      # validation
 grep -E "sampled:|R-hat gate|BMA|Error" /tmp/p5_full_run4.log | tail   # progress
 ```
+
+---
+
+# Session 2 addendum — placeholder-for-UI decision (2026-09-13, later)
+
+**User decision:** stop iterating on the MCMC geometry bug; build the UI/deploy path
+on **prior-predictive placeholder data** and resume validation next session.
+
+## Shipped this session (all committed)
+- **`run_prior_placeholder()`** in `bbnaija_mcmc.py`: prior predictive of the baseline
+  candidate → the *same* downstream machinery as real runs (assembly was split into
+  `assemble_from_draws()` for this). Builds the full schema in **~18 s, no sampling**.
+  Labels: `precision: "prior-predictive"`, `placeholder: true`, `rhat_max: null`.
+- **CLI:** `python notebooks/bbnaija_mcmc.py --prior-placeholder --out data/predictions.json`
+  (writes the JSON + logs a UI-demo-only warning).
+- **New product fields:** `pairwise` (P(i above j) from the 10k pooled DM draws for all
+  active pairs — feeds the below-chart head-to-head panel) and `generated_at` on both
+  run paths (staleness badge).
+- **P7 dashboard complete:** `docs/index.html` + `docs/assets/script.js` — dark
+  "broadcast tally" theme, zero JS dependencies. All spec panels: trajectory canvas
+  (medians + 89% CrI bands + initials-avatar end labels, clamped, add-housemate
+  dropdown + removable legend chips), podium strip with slot probs + tie notes,
+  P(#1)/top3/top5 chips, Gambit warning banner (auto-shows when flags present at
+  t_now), trend-projected podium (tagged secondary), at-risk hazard bars, head-to-head
+  panel from `pairwise`, 24-card roster with status badges, DEMO/precision/R-hat/
+  staleness badges, methodology + correlation-limitation footer.
+- **QA'd in Chrome** (playwright-cli against a local `python -m http.server`): podium 3,
+  chips 16, legend 5 series, 14 at-risk rows, 24 roster cards, pairwise 46%, banner
+  correctly hidden (wk 6 = post-release, no flags — expected). Only console errors are
+  the 24 expected `photos/*.jpg` 404s (initials fallback renders as designed).
+- `docs/predictions.json` = the placeholder output Pages will serve.
+
+## Left open (next session, in order)
+1. **e2e pytest out of time budget:** `test_end_to_end_season_run` exceeds a 10-min
+   timeout under FAST_COMPILE — that's intrinsic (3 candidates × ~50 iters × ~4 s on
+   the BLAS-less, thermally-throttled box), not a hang. Fix: shrink to ~15/15 iters or
+   mark `@pytest.mark.slow` and exercise it only in the validation script.
+   Suite status: **37/38 green** (36 machinery in 29 s + prior check in 28 s).
+2. **NaN-R-hat diagnosis** — untouched; probe plan in "Immediate next actions" above.
+3. **P8 deploy:** `.github/workflows/deploy.yml` (push-triggered Pages + HF Space sync,
+   no schedule), `.env.example` HF token, Space scaffolding. Dashboard + JSON are ready
+   to serve from `docs/`.
+4. Housemate **photos** into `docs/assets/photos/` (initials fallback until then).
+5. P6 `run_weekly.py` (placeholder mode must never feed it — real inference only).
+
+## Decision log (do not re-open without new evidence)
+- **R / brms / Stan / Quarto: rejected.** The divergence + NaN-R-hat problem is model
+  geometry and follows us into any language. brms cannot express the joint ZINB + Cox
+  risk-set likelihood (would need custom Stan anyway). Quarto is reporting-only — no
+  sampling relevance; dashboard stays static JS for HF Static + Pages. Stack pin
+  (PyMC 5.8 + ArviZ, `bap3`) stands.
+- **Placeholder data for UI work: approved** with mandatory DEMO labelling (done).
+  Never publish placeholder output as predictions; `run_weekly.py` uses real inference
+  or aborts.
+
