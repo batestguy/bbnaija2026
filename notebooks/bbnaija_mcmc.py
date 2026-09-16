@@ -19,9 +19,11 @@ rows that week). Frailty alpha_i is SHARED with the count sub-model (the joint
 
 Priors (weakly-informative, spec D5/D15): predictors standardized first
 (means/scales stored in the run record); fixed effects Normal(0, 2.5); variance
-components HalfNormal(1); correlations LKJ(2). Additions (logged + recorded):
-NB dispersion HalfNormal(1), zero-inflation psi Beta(2, 2). No show-history
-priors; current season only.
+components HalfNormal(1) (alpha-column) and HalfNormal(candidate-specific) on
+the beta-column — momentum 2.0 / baseline 0.5 / heteroscedastic 1.0, i.e. the
+BMA candidates differ in their offsets prior as specced; correlations LKJ(2).
+Additions (logged + recorded): NB dispersion HalfNormal(1), zero-inflation psi
+Beta(2, 2). No show-history priors; current season only.
 
 Gambit filter (frozen, byte-for-byte, applied in posterior predictive):
     WinProb_i = 0.0 if GambitFlag_i == 1 else exp(mu_i) / sum_{j not in Gambit} exp(mu_j)
@@ -87,12 +89,14 @@ MASTER_SEED = 20260912
 
 PRIORS = {
     "fixed_effects": "Normal(0, 2.5)",
-    "variance": "HalfNormal(1)",
+    "variance": "HalfNormal(1) on alpha-column sd; HalfNormal(candidate-specific) on beta-column sd (non-centered offsets)",
     "correlation": "LKJ(2)",
     "standardized": True,
     # documented additions to the three named families (auditability rule):
     "nb_dispersion": "HalfNormal(1)",
     "zero_inflation_psi": "Beta(2, 2)",
+    "candidate_beta_column_sd": {"momentum": "HalfNormal(2.0)", "baseline": "HalfNormal(0.5)",
+                                 "heteroscedastic": "HalfNormal(1.0)"},
     "count_scale": f"y = round(CPI * {COUNT_SCALE:.0f}); Dirichlet concentration {DM_CONCENTRATION}",
 }
 
@@ -265,16 +269,30 @@ def build_model(table: SeasonTable, std: dict[str, Any], candidate: str = "basel
         delta = pm.Normal("delta", 0.0, 2.5)
         theta = pm.Normal("theta", 0.0, 2.5)
         eta = pm.Normal("eta", 0.0, 2.5)
-        packed = pm.LKJCholeskyCov("chol", n=2, eta=2.0,
-                                   sd_dist=pm.HalfNormal.dist(1.0))
-        # pymc 5.8 (bap3) returns the packed var; some 5.x builds return a
-        # (chol, corr, sd) tuple — handle both so either env runs the same code.
-        if isinstance(packed, tuple):
-            L = packed[0]                       # (2, 2) Cholesky factor
-        else:
-            L = pm.expand_packed_triangular(2, packed)
-        raw = pm.MvNormal("offsets_raw", mu=np.zeros((N, 2)), chol=L,
-                          dims=("housemate", "effect"))
+        # Correlated offsets, non-centered (2026-09-16 geometry fix): the
+        # LKJCholeskyCov parameterization buries the beta-column scale inside
+        # the Cholesky second row (rho*s_b, s_b*sqrt(1-rho^2)); near-zero
+        # candidate scales funnel there and the correlation becomes
+        # unidentified (probe: baseline 410 divergences, R-hat 1.62 -> 1.07
+        # even at target_accept=0.99). At n=2, LKJ(2) on the correlation is
+        # exactly rho = 2*Beta(2,2) - 1, so we sample (z_a, z_b, s_a, s_b,
+        # rho) directly: same LKJ(2) x HalfNormal prior, no Cholesky-coupled
+        # hyper-ridge, and the BMA candidate knob stays an interpretable scale.
+        if candidate == "momentum":          # housemates diverge over time
+            sd_beta_col = 2.0
+        elif candidate == "baseline":        # housemates stay near the shared beta
+            sd_beta_col = 0.5
+        else:                                # heteroscedastic: post-Twist sigma^2_beta spike
+            sd_beta_col = 1.0
+        s_a = pm.HalfNormal("s_alpha", 1.0)
+        s_b = pm.HalfNormal("s_beta", sd_beta_col)
+        rho = 2.0 * pm.Beta("rho01", alpha=2.0, beta=2.0) - 1.0   # LKJ(2) at n=2
+        za = pm.Normal("z_alpha", 0.0, 1.0, dims="housemate")
+        zb = pm.Normal("z_beta", 0.0, 1.0, dims="housemate")
+        # rho enters through the beta-column whitening: rho*za +
+        # sqrt(1-rho^2)*zb keeps the implied pair-covariance at rho*s_a*s_b.
+        raw = pm.math.stack(
+            [s_a * za, s_b * (rho * za + pm.math.sqrt(1.0 - rho**2) * zb)], axis=1)
         # Sum-to-zero centering: `alpha + alpha_i` / `beta + beta_i` have an
         # unidentified common-shift ridge (add c to every offset, subtract from
         # the population mean). The raw MvNormal leaves that direction in the
@@ -284,18 +302,11 @@ def build_model(table: SeasonTable, std: dict[str, Any], candidate: str = "basel
         # every downstream consumer reads.
         offsets = pm.Deterministic("offsets", raw - raw.mean(axis=0),
                                    dims=("housemate", "effect"))
-        alpha_i, beta_i = offsets[:, 0], offsets[:, 1]
 
-        # BMA candidate knobs (prior-level; formula untouched except where noted)
-        if candidate == "momentum":          # housemates diverge over time
-            s_beta = pm.HalfNormal("s_beta", 2.0)
-        elif candidate == "baseline":        # housemates stay near the shared beta
-            s_beta = pm.HalfNormal("s_beta", 0.5)
-        else:                                # heteroscedastic: post-Twist sigma^2_beta spike
-            s_beta = pm.HalfNormal("s_beta", 1.0)
-        LOG.info("priors[%s]: fixed effects Normal(0, 2.5); chol sd HalfNormal(1); "
-                 "LKJ(2); s_beta HalfNormal(%s)", candidate,
-                 {"momentum": "2.0", "baseline": "0.5", "heteroscedastic": "1.0"}[candidate])
+        alpha_i, beta_i = offsets[:, 0], offsets[:, 1]
+        LOG.info("priors[%s]: fixed effects Normal(0, 2.5); offsets non-centered, "
+                 "s_alpha HalfNormal(1); s_beta HalfNormal(%s); rho = 2*Beta(2,2)-1 [LKJ(2) at n=2]",
+                 candidate, sd_beta_col)
 
         # heteroscedastic candidate: beta_i scale spikes post-Twist (time-term only;
         # the frozen eta term keeps the plain beta_i per the count formula).
