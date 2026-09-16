@@ -47,6 +47,8 @@ jobs:
       - name: Pages site = docs/ (dashboard + photos + validated JSON)
         run: test -f docs/index.html && test -f docs/predictions.json
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true   # self-enable Pages on first deploy (needs pages:write — granted above)
       - uses: actions/upload-pages-artifact@v3
         with:
           path: docs
