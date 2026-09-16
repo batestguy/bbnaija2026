@@ -14,6 +14,20 @@
 
 ## Track A — MCMC gate (background/machine-bound)
 
+**PROGRESS 2026-09-16 (evening):** A1+A2+A3 DONE. Root causes found by the
+instrumented probes: (1) the "NaN R-hat" that crashed the first validation was
+**arviz computing 0/0 on the LKJ correlation diagonal** — a structural constant,
+not a pathology (gate now excludes structural NaNs; genuine stuck chains still
+reject via huge R-hat); (2) the real geometry bug was the **LKJCholesky
+hyper-ridge**: tight candidate scales funnel the Cholesky second row to a
+degenerate ray where the correlation is unidentified (baseline 410 div,
+R-hat 1.62). Fix: non-centered offsets — sample (z_a, z_b, s_a, s_b, rho)
+directly, rho = 2*Beta(2,2)-1 ≡ LKJ(2) at n=2; the BMA candidate knob moved
+into s_beta's scale (also fixing the orphaned s_beta bug — candidates had been
+accidentally identical priors). Probe result: **baseline 0 divergences,
+R-hat 1.0081 PASS** at 500×4 ta=0.95. A4 (full 4×2000 × 3 candidates,
+checkpointed) launched 05:17.
+
 | # | Step | Done when |
 |---|---|---|
 | A1 | Instrument: CLI `--draws/--chains/--candidates`, worst-R-hat-coords diagnostics on gate failure, `BBN_TARGET_ACCEPT` env, per-candidate idata checkpointing + `--resume` | probe runs unattended; a killed run can be resumed |
