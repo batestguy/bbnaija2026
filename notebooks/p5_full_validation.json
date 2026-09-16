@@ -1,0 +1,68 @@
+{
+ "generated_at": "2026-09-16T05:38:14.081190+00:00",
+ "phase": "P5",
+ "mode": "synthetic",
+ "priors": {
+  "fixed_effects": "Normal(0, 2.5)",
+  "variance": "HalfNormal(1) on alpha-column sd; HalfNormal(candidate-specific) on beta-column sd (non-centered offsets)",
+  "correlation": "LKJ(2)",
+  "standardized": true,
+  "nb_dispersion": "HalfNormal(1)",
+  "zero_inflation_psi": "Beta(2, 2)",
+  "candidate_beta_column_sd": {
+   "momentum": "HalfNormal(2.0)",
+   "baseline": "HalfNormal(0.5)",
+   "heteroscedastic": "HalfNormal(1.0)"
+  },
+  "count_scale": "y = round(CPI * 100); Dirichlet concentration 50.0"
+ },
+ "seed": 20260912,
+ "rhat_max": 1.00159,
+ "rhat_by_candidate": {
+  "momentum": 1.00192,
+  "baseline": 1.00159,
+  "heteroscedastic": 1.00279
+ },
+ "divergences_by_candidate": {
+  "momentum": 0,
+  "baseline": 0,
+  "heteroscedastic": 0
+ },
+ "standardization": {
+  "t_mean": 3.5,
+  "t_scale": 1.707825127659933,
+  "sent_mean": 0.09012992063492065,
+  "sent_scale": 0.18132705415382672
+ },
+ "precision": "full",
+ "podium": {
+  "winner": {
+   "name": "Hotel",
+   "prob": 0.6491
+  },
+  "runner_up": {
+   "name": "Bravo",
+   "prob": 0.1427
+  },
+  "second_runner_up": {
+   "name": "Charlie",
+   "prob": 0.1505
+  }
+ },
+ "trend_projection": {
+  "method": "beta_i momentum extrapolation to finale",
+  "uncertainty": "posterior NB residual CV x sqrt(horizon); sigma_week=0.4969",
+  "horizon_week": 10,
+  "podium": [
+   "Bravo",
+   "Golf",
+   "Alpha"
+  ]
+ },
+ "model_weights": {
+  "momentum": 0.334,
+  "baseline": 0.3333,
+  "heteroscedastic": 0.3327
+ },
+ "run_seconds": 3731.5
+}
