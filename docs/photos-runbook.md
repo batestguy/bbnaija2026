@@ -1,9 +1,22 @@
 # Housemate photos — runbook (deferred task, ~30–45 min)
 
-**Status: not started.** The dashboard code is already photo-complete: roster cards
-and chart end-labels load `photo` from `config/housemates.json` and fall back to
-colored initials avatars when the file is missing (the 24 console 404s seen in QA are
-this fallback working as designed). Adding the files is all that remains.
+**Status: DONE (2026-09-16).** All 24 photos sourced, processed, and committed.
+QA: 24/24 `<img>` loaded (naturalWidth > 0), zero console errors, zero 404s.
+
+**Provenance (all $0, downloaded, no hotlinking):** official Africa Magic/DStv
+housemate headshots — `https://cdn-africamagic.dstv.com/images/003/504/{id}/original/{NAME}.png`
+(exact per-housemate URLs recorded in `raw_photos/manifest.json`, local-only).
+Source page: the DStv housemates grid (`.../big-brother-naija/season/11/housemates`).
+Backup source with 23/24 headshots: Vanguard's roster article (2026/07 uploads).
+
+**Processing notes:** originals were 960×1440 (2:3 portrait, face in the upper
+third) — so the crop is **top-anchored**, not center (a center square crop would
+have decapitated everyone). 256×256 JPEG q82; largest file 14.6 KB (budget 40 KB).
+Rerun: `python /tmp/process_photos.py`-style pass over `raw_photos/*.png` — script
+preserved in this doc's git history; raw PNGs are gitignored, re-downloadable via
+the manifest URLs.
+
+Original runbook text follows for reference.
 
 ## Where photos appear
 - **Roster cards** (`docs/assets/script.js` → `avatarHTML`): `<img src="{photo}">`
@@ -27,7 +40,7 @@ Verify any drift with:
 python -c "import json;[print(h['photo']) for h in json.load(open('config/housemates.json',encoding='utf-8'))['housemates']]"
 ```
 
-## Steps
+## Steps (as originally planned)
 1. **Source** images — Africa Magic/DStv housemate pages or Wikipedia cast portraits.
    Respect the $0 ceiling: no paid image APIs; hotlinking is not allowed (dashboard
    must be fully static), so download files into the repo.

@@ -17,3 +17,4 @@ data/predictions.json
 Thumbs.db
 .DS_Store
 .playwright-cli/
+raw_photos/
