@@ -250,7 +250,9 @@ def test_end_to_end_season_run(season_table):
     idatas = {}
     for cand in m.BMA_CANDIDATES:
         model = m.build_model(season_table, std, candidate=cand)
-        idatas[cand] = m.sample_model(model, draws=25, tune=25, chains=1,
+        # 15/15: plumbing smoke only (2026-09-16 right-sizing — 25/25 exceeded
+        # every practical pytest timeout on the BLAS-less box under FAST_COMPILE).
+        idatas[cand] = m.sample_model(model, draws=15, tune=15, chains=1,
                                       seed=1234, lite=True)
     weights = m.bma_weights(idatas)
     assert abs(sum(weights.values()) - 1.0) < 1e-6

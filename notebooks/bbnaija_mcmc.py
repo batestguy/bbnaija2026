@@ -376,10 +376,13 @@ def sample_model(model: pm.Model, draws: int, tune: int, chains: int, seed: int,
     BBN_MCMC_CORES for the Saturday run on machines where spawn is safe.
     """
     cores = int(os.environ.get("BBN_MCMC_CORES", "1"))
+    # Geometry dial (divergence mitigation): default 0.9; raise to 0.95-0.99 via
+    # BBN_TARGET_ACCEPT when probes show divergences (runbook: cheapest fix first).
+    target_accept = float(os.environ.get("BBN_TARGET_ACCEPT", "0.9"))
     with model:
         idata = pm.sample(draws=draws, tune=tune, chains=chains,
                           cores=max(1, min(cores, chains)), random_seed=seed,
-                          target_accept=0.9, progressbar=False,
+                          target_accept=target_accept, progressbar=False,
                           compute_convergence_checks=True)
     div = int(idata.sample_stats["diverging"].values.sum())
     LOG.info("sampled: %d draws x %d chains seed=%d divergences=%d lite=%s",
@@ -407,9 +410,25 @@ def rhat_max(idata: az.InferenceData) -> float:
 
     NaN on single-chain runs (R-hat is undefined there) — `convergence_gate`
     treats 1 chain as a smoke-run exemption, never a silent pass.
+
+    Structural constants are excluded: e.g. the LKJ Cholesky correlation's
+    diagonal is 1.0 by construction, so its R-hat is 0/0 = NaN (arviz divides
+    zero between-variance by zero within-variance). NaN there is NOT a
+    pathology — a genuinely stuck chain yields huge/inf R-hat, which the gate
+    still rejects. This is what crashed the 2026-09-16 validation (2.6 h of
+    healthy draws lost to `np.max` propagating one structural NaN).
     """
     rh = az.rhat(idata, method="rank")
-    return float(np.max([np.asarray(rh[v]).max() for v in rh.data_vars]))
+    finite: list[float] = []
+    n_struct = 0
+    for v in rh.data_vars:
+        arr = np.asarray(rh[v], dtype=float).ravel()
+        n_struct += int(np.isnan(arr).sum())
+        finite.extend(arr[np.isfinite(arr)].tolist())
+    if n_struct:
+        LOG.info("rhat: %d structural-constant coordinate(s) excluded (e.g. LKJ corr diagonal)",
+                 n_struct)
+    return float(np.max(finite)) if finite else float("nan")
 
 
 def convergence_gate(idata: az.InferenceData, gate: float = RHAT_GATE) -> tuple[float, bool]:
@@ -426,6 +445,26 @@ def convergence_gate(idata: az.InferenceData, gate: float = RHAT_GATE) -> tuple[
     ok = rmax < gate
     (LOG.info if ok else LOG.error)("R-hat gate: max=%.4f gate=%.2f -> %s",
                                     rmax, gate, "PASS" if ok else "REJECT")
+    if not ok:
+        # Diagnostics: name the worst coordinates so the geometry fix is targeted,
+        # not guessed (2026-09-16 decision: log-on-failure only, not per-run).
+        rh = az.rhat(idata, method="rank")
+        flat = [(float(np.nanmax(np.asarray(rh[v], dtype=float))), v) for v in rh.data_vars]
+        # Structural constants (NaN R-hat, e.g. LKJ corr diagonal) excluded —
+        # see rhat_max(). Sort descending over finite values only.
+        flat = [(r, v) for r, v in flat if np.isfinite(r)]
+        flat.sort(key=lambda t: -t[0])
+        LOG.error("gate diagnostics - worst variables: %s",
+                  [(v, round(r, 4)) for r, v in flat[:5]])
+        worst_var = flat[0][1]
+        arr = np.asarray(rh[worst_var])
+        if arr.ndim >= 1:
+            for idx in np.argsort(arr.ravel())[-3:][::-1]:
+                coords = np.unravel_index(idx, arr.shape)
+                labels = [f"{d}={rh[worst_var].coords[d].values[c]}"
+                          for d, c in zip(rh[worst_var].dims, coords)]
+                LOG.error("  %s: R-hat=%.4f [%s]",
+                          worst_var, arr.ravel()[idx], ", ".join(labels))
     return rmax, ok
 
 
@@ -897,7 +936,12 @@ def assemble_from_draws(idatas: dict[str, az.InferenceData], weights: dict[str, 
 
 def run_inference(payload: dict[str, Any], housemates_cfg: list[dict[str, Any]],
                   lite: bool = False, full: bool = False, t_now: int | None = None,
-                  seed: int = MASTER_SEED, prior_check: bool = False) -> dict[str, Any]:
+                  seed: int = MASTER_SEED, prior_check: bool = False,
+                  draws_override: int | None = None,
+                  chains_override: int | None = None,
+                  candidates_override: list[str] | None = None,
+                  checkpoint_dir: str | None = None,
+                  tune_override: int | None = None) -> dict[str, Any]:
     """Table -> 3 candidate models -> gates -> BMA -> standings products."""
     started = time.time()
     table = build_table(payload, housemates_cfg, t_now=t_now)
@@ -911,22 +955,42 @@ def run_inference(payload: dict[str, Any], housemates_cfg: list[dict[str, Any]],
 
     idatas: dict[str, az.InferenceData] = {}
     rhats: dict[str, float] = {}
-    for k, cand in enumerate(BMA_CANDIDATES):
+    draws_eff = draws_override if draws_override is not None else draws
+    chains_eff = chains_override if chains_override is not None else chains
+    tune_eff = tune_override if tune_override is not None else tune
+    candidates_eff = candidates_override or BMA_CANDIDATES
+    for k, cand in enumerate(candidates_eff):
+        cpath = (Path(checkpoint_dir) / f"idata_{cand}.nc") if checkpoint_dir else None
+        if cpath and cpath.exists():  # A4 insurance: resume after a crash/kill
+            LOG.info("resume: loading checkpoint %s", cpath)
+            idatas[cand] = az.from_netcdf(cpath)
+            rhats[cand] = rhat_max(idatas[cand])
+            continue
         model = build_model(table, std, candidate=cand)
         if prior_check:
             prior_predictive_check(model, table, seed=seed + 700 + k)
-        idatas[cand] = sample_model(model, draws, tune, chains, seed + k, lite)
+        idatas[cand] = sample_model(model, draws_eff, tune_eff, chains_eff, seed + k, lite)
         rhats[cand] = rhat_max(idatas[cand])
+        if cpath:  # save before the next stage — sampling is never thrown away
+            cpath.parent.mkdir(parents=True, exist_ok=True)
+            az.to_netcdf(idatas[cand], cpath)
+            LOG.info("checkpoint: %s", cpath)
         del model
 
-    rhat_head, ok = convergence_gate(idatas["baseline"])
+    gate_cand = "baseline" if "baseline" in idatas else next(iter(idatas))
+    rhat_head, ok = convergence_gate(idatas[gate_cand])
     if not ok:  # reject BEFORE BMA/assembly — caller keeps the last good file
-        raise ModelRejected(f"R-hat {rhat_head:.4f} >= {RHAT_GATE} — run rejected; "
-                            "keep last good predictions.json and flag staleness")
+        raise ModelRejected(f"R-hat {rhat_head:.4f} >= {RHAT_GATE} on '{gate_cand}' — "
+                            "run rejected; keep last good predictions.json and flag staleness")
     weights = bma_weights(idatas, seed=seed + 600)
     products = assemble_products(idatas, weights, table, std, lite, seed=seed)
     products["rhat_max"] = round(rhat_head, 5)
     products["rhat_by_candidate"] = {k: round(v, 5) for k, v in rhats.items()}
+    # Divergence bookkeeping per the 2026-09-16 gate decision: headline candidate
+    # must sample 0 divergences; non-headline residue is tolerated, logged, and
+    # carries BMA weight consequences via the R-hat gate only.
+    products["divergences_by_candidate"] = {
+        k: int(ida.sample_stats["diverging"].values.sum()) for k, ida in idatas.items()}
     products["priors"] = dict(PRIORS)
     products["standardization"] = {k: v for k, v in std.items()
                                    if k in ("t_mean", "t_scale", "sent_mean", "sent_scale")}
@@ -1095,6 +1159,18 @@ def main(argv: list[str] | None = None) -> int:
                     help="write products JSON here (e.g. data/predictions.json) in "
                          "prior-placeholder mode")
     ap.add_argument("--record", default=None, help="run-record filename under notebooks/")
+    ap.add_argument("--draws", type=int, default=None,
+                    help="override posterior draws per chain (diagnostic probes)")
+    ap.add_argument("--chains", type=int, default=None,
+                    help="override chain count (diagnostic probes)")
+    ap.add_argument("--tune", type=int, default=None,
+                    help="override tuning iterations (diagnostic probes)")
+    ap.add_argument("--candidates", nargs="*", default=None,
+                    choices=sorted(set(BMA_CANDIDATES)),
+                    help="subset of BMA candidates to sample (probes)")
+    ap.add_argument("--resume", nargs="?", const=".mcmc_checkpoints", default=None,
+                    help="checkpoint idata per candidate under this dir; if files "
+                         "exist they are loaded instead of resampling (crash insurance)")
     args = ap.parse_args(argv)
 
     if args.selftest:
@@ -1125,8 +1201,17 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     products = run_inference(payload, hms, lite=lite, full=args.full,
-                             prior_check=args.prior_check)
+                             prior_check=args.prior_check,
+                             draws_override=args.draws, chains_override=args.chains,
+                             candidates_override=args.candidates,
+                             checkpoint_dir=args.resume, tune_override=args.tune)
     _print_summary(products)
+    if args.out:  # real runs also honour --out (P6 handoff to the runner)
+        out_path = Path(args.out)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(json.dumps(products, indent=1, ensure_ascii=False),
+                            encoding="utf-8")
+        LOG.info("products written: %s (precision=%s)", out_path, products["precision"])
 
     record_name = args.record or ("run_record_synthetic.json" if (args.synthetic or args.selftest)
                                   else "run_record_latest.json")
@@ -1136,6 +1221,7 @@ def main(argv: list[str] | None = None) -> int:
                                 "synthetic" if args.synthetic else "real-data"),
         "priors": PRIORS, "seed": MASTER_SEED,
         "rhat_max": products["rhat_max"], "rhat_by_candidate": products["rhat_by_candidate"],
+        "divergences_by_candidate": products["divergences_by_candidate"],
         "standardization": products["standardization"], "precision": products["precision"],
         "podium": products["podium"], "trend_projection": products["trend_projection"],
         "model_weights": products["model_weights"], "run_seconds": products["run_seconds"],
