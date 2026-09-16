@@ -1,0 +1,95 @@
+# P8 — Deploy-only pipeline. Push-triggered; NO schedule, NO cron (single-writer
+# rule: the only writer is the Saturday run_weekly.py + human push).
+#
+# Gates: step 1 validates docs/predictions.json against the shared schema — a bad
+# file fails the deploy and the last published file stays live on all surfaces.
+# Secrets: HF_TOKEN only (HF Space + Dataset sync). Pages needs no secret.
+#
+# One-time setup (manual): Settings -> Pages -> Source: "GitHub Actions".
+# HF sync (optional path): repo secret HF_TOKEN; if unset, Pages still deploys
+# and the HF steps are skipped — one surface is always better than zero.
+
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}   # manual re-deploy only; still never scheduled
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false   # never cancel mid-publish; last push wins cleanly
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Schema-validate predictions.json (P8.2)
+        run: python -m src.products_schema docs/predictions.json
+
+  pages:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pages site = docs/ (dashboard + photos + validated JSON)
+        run: test -f docs/index.html && test -f docs/predictions.json
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  huggingface:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Skip HF sync when HF_TOKEN is not configured (Pages still live)
+        if: ${{ env.HF_TOKEN == '' }}
+        run: echo "HF_TOKEN not set — skipping HF Space/Dataset sync (Pages remains the live mirror)."
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      - name: Sync JSON to HF Dataset repo + Space (P8.3)
+        if: ${{ env.HF_TOKEN != '' }}
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_USER: ${{ secrets.HF_USER }}
+        run: |
+          set -e
+          pip install -q huggingface_hub
+          python - <<'PY'
+          import os
+          from huggingface_hub import HfApi
+          token = os.environ["HF_TOKEN"]
+          user = os.environ.get("HF_USER") or HfApi(token=token).whoami()["name"]
+          api = HfApi(token=token)
+          # Dataset repo: raw predictions + timestamped archive
+          api.upload_file(
+              path_or_fileobj="docs/predictions.json",
+              path_in_repo="predictions.json",
+              repo_id=f"{user}/bbnaija2026-predictions",
+              repo_type="dataset",
+          )
+          # Static Space: mirror the whole docs/ dashboard
+          api.upload_folder(
+              folder_path="docs",
+              repo_id=f"{user}/bbnaija2026-dashboard",
+              repo_type="space",
+              space_sdk="static",
+          )
+          print("HF sync complete (dataset + static space)")
+          PY
