@@ -7,6 +7,7 @@ predicted final standings** with win probabilities, published to a static
 dashboard.
 
 **Live dashboard:** https://batestguy.github.io/bbnaija2026/
+**Mirrors:** [HF Space](https://batestguy-bbnaija2026-dashboard.static.hf.space/) · [HF Dataset archive](https://huggingface.co/datasets/batestguy/bbnaija2026-predictions)
 (Currently showing **prior-predictive placeholder** data, DEMO-labeled — the
 MCMC convergence gate has not yet certified a real run. See status below.)
 
