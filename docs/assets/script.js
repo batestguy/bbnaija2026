@@ -14,6 +14,16 @@
   const active = P.housemates.filter((h) => h.status === "active");
   const byName = Object.fromEntries(P.housemates.map((h) => [h.name, h]));
 
+  /* ---------- shared avatar helpers (defined before any renderer uses them) ---------- */
+  const initials = (n) => n.split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+  const color = (n) => PALETTE[[...n].reduce((s, c) => s + c.charCodeAt(0), 0) % PALETTE.length];
+  function avatarHTML(hm, cls) {
+    const fallback = `<div class="avatar ${cls || ""}" style="background:${color(hm.name)}">${initials(hm.name)}</div>`;
+    if (!hm.photo) return fallback;
+    return `<div class="avatar ${cls || ""}"><img src="${hm.photo}" alt=""
+      onerror="this.parentNode.outerHTML=${JSON.stringify(fallback).replace(/"/g, "&quot;")}"></div>`;
+  }
+
   /* ---------- badges + banner ---------- */
   const badges = [];
   if (P.placeholder) badges.push(["DEMO — PRIOR PREDICTIVE, NOT REAL INFERENCE", "demo"]);
@@ -27,12 +37,32 @@
   $("badges").innerHTML = badges.map(([t, c]) =>
     `<span class="badge ${c}">${t}</span>`).join("");
 
+  /* ---------- freshness line + share ---------- */
+  const nextSat = (() => { const d = new Date(); d.setDate(d.getDate() + ((6 - d.getDay() + 7) % 7 || 7)); return d; })();
+  $("fresh").textContent = `refresh: every Saturday after the weekly run · next update ` +
+    nextSat.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+  $("shareBtn").onclick = async () => {
+    if (navigator.share) { try { await navigator.share({ title: document.title, url: location.href }); return; } catch (e) { /* user cancelled */ } }
+    try { await navigator.clipboard.writeText(location.href);
+      $("shareBtn").textContent = "Link copied"; setTimeout(() => ($("shareBtn").textContent = "Share"), 1600);
+    } catch (e) { /* clipboard unavailable */ }
+  };
+
   const flagged = active.filter((h) => h.gambit_flag === 1).map((h) => h.name);
   if (flagged.length) {
     $("gambitBanner").classList.add("on");
     $("gambitBanner").insertAdjacentHTML("beforeend",
       `<div style="margin-top:4px;color:var(--muted)">Flagged: ${flagged.join(", ")}</div>`);
   }
+
+  /* ---------- hero headline ---------- */
+  const nowWeek = Math.max(1, ...active.flatMap((h) => (h.history || []).map((p) => p.week)));
+  const W0 = P.podium.winner, W0hm = byName[W0.name] || {};
+  $("hero").innerHTML = `${avatarHTML(W0hm, "big")}
+    <div style="min-width:0"><div class="k">The model's call after week ${nowWeek}</div>
+      <div class="line">${W0.name} <span class="pc">${pct(W0.prob, 0)}</span> to win</div>
+      <div class="muted">Runner-up projection: ${P.podium.runner_up.name} · from 10,000 season simulations ·
+        ${genDays != null && genDays < 1 ? "updated today" : "updated " + (genDays == null ? "?" : Math.round(genDays) + "d ago")}</div></div>`;
 
   /* ---------- podium ---------- */
   const slots = [["w1", "1", P.podium.winner, "winner"],
@@ -95,14 +125,6 @@
   renderPair();
 
   /* ---------- roster ---------- */
-  const initials = (n) => n.split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
-  const color = (n) => PALETTE[[...n].reduce((s, c) => s + c.charCodeAt(0), 0) % PALETTE.length];
-  function avatarHTML(hm, cls) {
-    const fallback = `<div class="avatar ${cls || ""}" style="background:${color(hm.name)}">${initials(hm.name)}</div>`;
-    if (!hm.photo) return fallback;
-    return `<div class="avatar ${cls || ""}"><img src="${hm.photo}" alt=""
-      onerror="this.parentNode.outerHTML=${JSON.stringify(fallback).replace(/"/g, "&quot;")}"></div>`;
-  }
   $("roster").innerHTML = P.housemates.map((h) => {
     const st = h.status === "active" ? "active" :
       `${h.status} wk ${h.evicted_week ?? "?"}`;
@@ -122,13 +144,6 @@
   const sel = $("addSel");
   sel.innerHTML = namesA.filter((n) => !top5.includes(n))
     .map((n) => `<option>${n}</option>`).join("");
-  const photos = {};                  // name -> Image (may fail -> initials)
-  P.housemates.forEach((h) => {
-    if (!h.photo) return;
-    const im = new Image();
-    im.onload = () => { photos[h.name] = im; draw(); };
-    im.src = h.photo;
-  });
 
   function rebuild() {
     const want = [...top5, ...extra];
@@ -138,8 +153,14 @@
       return { name: n, color: PALETTE[i % PALETTE.length],
         pts: h.history.map((p) => ({ w: p.week, m: p.median, lo: p.hdi_89[0], hi: p.hdi_89[1] })) };
     }).filter(Boolean);
-    $("legend").innerHTML = series.map((s) =>
-      `<span class="lchip" data-n="${s.name}"><span class="sw" style="background:${s.color}"></span>${s.name}</span>`).join("");
+    $("legend").innerHTML = series.map((s) => {
+      const hm = byName[s.name] || {};
+      const av = hm.photo
+        ? `<img class="lav" src="${hm.photo}" alt="" onerror="this.remove()">`
+        : `<span class="lav" style="display:inline-flex;align-items:center;justify-content:center;background:${s.color};color:#0b0d12;font-weight:700;font-size:8px">${initials(s.name)}</span>`;
+      return `<span class="lchip" data-n="${s.name}" title="Click to remove">
+        <span class="sw" style="background:${s.color}"></span>${av}${s.name}</span>`;
+    }).join("");
     $("legend").querySelectorAll(".lchip").forEach((el) =>
       el.onclick = () => {
         const n = el.dataset.n;
@@ -188,30 +209,37 @@
       ctx.strokeStyle = s.color; ctx.lineWidth = 2; ctx.beginPath();
       s.pts.forEach((p, i) => i ? ctx.lineTo(X(p.w), Y(p.m)) : ctx.moveTo(X(p.w), Y(p.m)));
       ctx.stroke(); ctx.lineWidth = 1;
-      // end marker + photo/initials avatar + name label (clamped, never clipped)
+      // end marker + color-keyed name label (no avatar on the line — photos live in the legend)
       const last = s.pts[s.pts.length - 1], lx = X(last.w), ly = Y(last.m);
-      ctx.fillStyle = s.color; ctx.beginPath(); ctx.arc(lx, ly, 3.2, 0, 7); ctx.fill();
-      const r = 8, cx = Math.min(Math.max(lx + 14, padL + r + 2), W - r - 2);
-      const iy = Math.min(Math.max(ly - 9, padT + r + 2), H - padB - r - 14);
-      ctx.beginPath(); ctx.arc(cx, iy, r, 0, 7);
-      ctx.fillStyle = "#0b0d12"; ctx.fill(); ctx.strokeStyle = s.color; ctx.stroke();
-      const im = photos[s.name];
-      if (im) { ctx.save(); ctx.beginPath(); ctx.arc(cx, iy, r - 1, 0, 7); ctx.clip();
-        ctx.drawImage(im, cx - r, iy - r, 2 * r, 2 * r); ctx.restore(); }
-      else { ctx.fillStyle = s.color; ctx.font = "600 7.5px Archivo, sans-serif";
-        ctx.textAlign = "center"; ctx.textBaseline = "middle";
-        ctx.fillText(initials(s.name), cx, iy + 0.5); }
-      ctx.font = "600 10px Archivo, sans-serif";
+      ctx.fillStyle = s.color; ctx.beginPath(); ctx.arc(lx, ly, 3.5, 0, 7); ctx.fill();
+      ctx.font = "600 12px Archivo, sans-serif";
       const tw = ctx.measureText(s.name).width;
-      const tx = Math.min(Math.max(cx, tw / 2 + 2), W - tw / 2 - 2);
-      ctx.textAlign = "center"; ctx.fillStyle = "#ece9e1";
-      ctx.fillText(s.name, tx, iy + r + 12);
-      ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+      const tx = Math.min(lx + 10, W - tw - 4);
+      const ty = Math.min(Math.max(ly + 4, padT + 12), H - padB - 4);
+      ctx.fillStyle = s.color; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+      ctx.fillText(s.name, tx, ty);
       ctx.font = "10px 'IBM Plex Mono', monospace";
     });
   }
   new ResizeObserver(draw).observe(cv);
   draw();
+
+  /* ---------- prediction vs outcome tracker ---------- */
+  fetch("track_record.json", { cache: "no-store" })
+    .then((r) => (r.ok ? r.json() : Promise.reject()))
+    .then((TR) => {
+      if (!TR.weeks || !TR.weeks.length) return;
+      $("trackPanel").style.display = "";
+      $("track").innerHTML = TR.weeks.map((t) => `
+        <div class="trow"><span class="wk">Wk ${t.week}</span>
+          <span>called <b>${t.predicted_winner}</b> (${pct(t.predicted_prob, 0)}) · evicted <b>${t.evicted}</b></span>
+          <span class="${t.hit ? "ok" : "miss"}">${t.hit ? "HIT" : "MISS"}</span>
+          <span class="wk" title="Brier score on predicted-vs-actual eviction outcome; lower is better">Brier ${t.brier != null ? t.brier.toFixed(3) : "—"}</span>
+        </div>`).join("") +
+        (TR.summary ? `<div class="trow" style="border:none"><span class="wk">season to date</span>
+          <span>${TR.summary.hits}/${TR.summary.scored} called winners survived their week · mean Brier ${TR.summary.mean_brier.toFixed(3)}</span></div>` : "");
+    })
+    .catch(() => { /* no track_record.json yet — panel stays hidden */ });
 
   /* ---------- footer ---------- */
   $("foot").innerHTML = `

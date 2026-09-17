@@ -1,0 +1,5 @@
+{
+  "method": "Each Saturday the model publishes a projected winner and each housemate's eviction risk for the coming week. After Sunday's eviction we score: did the projected winner survive (hit/miss), and Brier scores for the eviction outcome. Rows are appended by the weekly run — never edited by hand.",
+  "weeks": [],
+  "summary": null
+}

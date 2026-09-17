@@ -6,6 +6,14 @@
 <title>BBNaija 2026 — Win Probability Tally</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0d12'/%3E%3Ctext x='16' y='22' font-family='Arial Black' font-size='16' fill='%23f5b301' text-anchor='middle'%3EBB%3C/text%3E%3C/svg%3E">
 <meta name="description" content="Bayesian weekly standings projection for Big Brother Naija 2026: win probabilities, podium slots, at-risk hazards.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="BBNaija 2026 Win Probability">
+<meta property="og:title" content="BBNaija 2026 — Who wins? Weekly Bayesian tally">
+<meta property="og:description" content="Model-based win probabilities, podium projection and at-risk hazards. Refreshed every Saturday after the weekly run.">
+<meta property="og:image" content="https://batestguy.github.io/bbnaija2026/assets/social-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -23,9 +31,11 @@ html{scroll-behavior:smooth}
 body{
   background:var(--bg) fixed; color:var(--ink); font-family:var(--body);
   background-image:
+    url('assets/bg.svg'),
     radial-gradient(1200px 600px at 80% -10%, rgba(245,179,1,.06), transparent 60%),
     radial-gradient(900px 500px at -10% 30%, rgba(61,214,195,.05), transparent 60%),
     repeating-linear-gradient(0deg, transparent 0 2px, rgba(255,255,255,.008) 2px 4px);
+  background-size:520px 520px, auto, auto, auto;
   min-height:100vh; padding:clamp(12px,3vw,36px);
 }
 .wrap{max-width:1180px;margin:0 auto}
@@ -75,12 +85,13 @@ h1 .yr{color:var(--gold)}
 select{background:var(--panel-2);color:var(--ink);border:1px solid var(--line);border-radius:3px;
   font-family:var(--body);font-size:12px;padding:4px 8px;max-width:170px}
 /* ---------- chart ---------- */
-#chart{width:100%;height:380px;display:block}
+#chart{width:100%;height:500px;display:block}
 .legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .lchip{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-family:var(--mono);color:var(--muted);
   border:1px solid var(--line);border-radius:3px;padding:3px 7px;cursor:pointer}
 .lchip:hover{border-color:var(--red);color:var(--red)}
 .lchip .sw{width:10px;height:10px;border-radius:2px}
+.lchip .lav{width:18px;height:18px;border-radius:50%;object-fit:cover;border:1px solid var(--line)}
 /* ---------- chips / lists ---------- */
 .chips{display:flex;flex-direction:column;gap:6px}
 .chip-row{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:4px;
@@ -125,8 +136,38 @@ footer b{color:var(--muted)}
 .avatar{width:34px;height:34px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;
   font-weight:700;font-size:12px;color:#0b0d12;overflow:hidden}
 .avatar img{width:100%;height:100%;object-fit:cover}
+/* ---------- freshness + share ---------- */
+.fresh{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:6px;letter-spacing:.04em}
+.sharebtn{margin-left:auto;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--gold);
+  background:transparent;border:1px solid var(--gold-dim);border-radius:3px;padding:5px 12px;cursor:pointer;text-transform:uppercase}
+.sharebtn:hover{background:rgba(245,179,1,.12)}
+/* ---------- hero ---------- */
+.hero{display:flex;align-items:center;gap:16px;margin:18px 0 6px;padding:14px 18px;border:1px solid var(--gold-dim);
+  border-radius:6px;background:linear-gradient(90deg,rgba(245,179,1,.08),transparent 65%)}
+.hero .k{font-size:10px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:5px}
+.hero .line{font-family:var(--disp);font-size:clamp(18px,3.2vw,30px);line-height:1.15}
+.hero .line .pc{color:var(--gold)}
+.hero .muted{color:var(--muted);font-size:12px;margin-top:5px}
+.hero .avatar.big{width:64px;height:64px;font-size:22px;flex:none}
+/* ---------- track record ---------- */
+.track .trow{display:flex;gap:12px;align-items:baseline;font-size:12.5px;border-bottom:1px dashed var(--line);padding:7px 0;flex-wrap:wrap}
+.track .trow:last-child{border-bottom:none}
+.track .wk{font-family:var(--mono);color:var(--faint);font-size:11px}
+.track .ok{color:var(--teal);font-family:var(--mono);font-size:11px}
+.track .miss{color:var(--red);font-family:var(--mono);font-size:11px}
+.track .pend{color:var(--gold);font-family:var(--mono);font-size:11px}
+/* ---------- how accordion ---------- */
+.how{margin-top:26px;border:1px solid var(--line);border-radius:6px;background:var(--panel);padding:12px 16px;font-size:12.5px}
+.how summary{cursor:pointer;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;font-size:11px}
+.how .howsum{margin-top:6px}
+.how p{margin:8px 0 0;line-height:1.65}
 @media(max-width:860px){.grid{grid-template-columns:1fr}.podium{grid-template-columns:1fr 1fr 1fr;gap:8px}
-  .slot{flex-direction:column;align-items:flex-start;gap:6px}.slot .prob{margin-left:0;text-align:left}}
+  .slot{flex-direction:column;align-items:flex-start;gap:6px}.slot .prob{margin-left:0;text-align:left}
+  .chip-row{flex-wrap:wrap}.sharebtn{margin-left:0}}
+@media(max-width:480px){#chart{height:360px}.slot{padding:10px 8px}.slot .nm{font-size:13px}
+  .pair .big{font-size:26px}.roster{grid-template-columns:repeat(auto-fill,minmax(128px,1fr))}
+  .hero{padding:12px}.hero .avatar.big{width:52px;height:52px;font-size:18px}
+  .podium{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -137,6 +178,8 @@ footer b{color:var(--muted)}
       <h1>BBNaija <span class="yr">2026</span> Win Probability</h1>
     </div>
     <div class="badges" id="badges"></div>
+    <div class="fresh" id="fresh"></div>
+    <button id="shareBtn" class="sharebtn" type="button" title="Copy or share this page">Share</button>
   </header>
 
   <div class="gambit" id="gambitBanner">
@@ -144,6 +187,8 @@ footer b{color:var(--muted)}
     <u>disqualified from the grand prize</u> — P(#1) is exactly 0 for flagged housemates;
     runner-up / top-3 / top-5 remain live.
   </div>
+
+  <section class="hero" id="hero" aria-label="Headline call"></section>
 
   <section class="podium" id="podium" aria-label="Projected podium"></section>
 
@@ -190,6 +235,22 @@ footer b{color:var(--muted)}
     <h2>House status</h2>
     <div class="roster" id="roster"></div>
   </section>
+
+  <section class="panel" id="trackPanel" aria-label="Prediction vs outcome" style="display:none">
+    <h2>Prediction vs outcome <span class="tag sec">grows weekly · lower Brier is better</span></h2>
+    <div class="track" id="track"></div>
+  </section>
+
+  <details class="how">
+    <summary>How this works — in four lines</summary>
+    <div class="howsum">
+      <p><b>1.</b> Every day we scan Nigerian entertainment blogs and news feeds for mentions of each housemate.</p>
+      <p><b>2.</b> Mentions, comments and shares become a daily engagement score (CPI) per housemate.</p>
+      <p><b>3.</b> A Bayesian model learns each housemate's momentum and eviction risk from those scores and the eviction record.</p>
+      <p><b>4.</b> 10,000 simulations of the rest of the season produce the win probabilities, podium projection and at-risk panel.</p>
+      <p style="color:var(--faint)">Probabilities are model shares of win probability — never vote counts. Full technical detail below.</p>
+    </div>
+  </details>
 
   <footer id="foot"></footer>
 </div>
