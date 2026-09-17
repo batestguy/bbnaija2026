@@ -19,3 +19,9 @@ Thumbs.db
 .playwright-cli/
 raw_photos/
 .mcmc_checkpoints/
+
+# transient MCMC probe/checkpoint dirs + local run records
+.mcmc_probe*/
+.mcmc_full_v3/
+notebooks/run_record_latest.json
+data/.last_good_predictions.json

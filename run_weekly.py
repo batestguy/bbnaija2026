@@ -50,6 +50,10 @@ def run_step(title: str, args: list[str], env: dict | None = None) -> None:
     merged = dict(os.environ)
     if env:
         merged.update(env)
+    # Windows consoles default to cp1252 and logging crashes on non-Latin1
+    # glyphs (e.g. the -> in renormalisation logs). UTF-8 everywhere, always.
+    merged.setdefault("PYTHONUTF8", "1")
+    merged.setdefault("PYTHONIOENCODING", "utf-8")
     proc = subprocess.run([sys.executable, *args], cwd=ROOT, env=merged)
     dt = time.time() - t0
     LOG.info("=== %s done in %.1fs (exit %d) ===", title, dt, proc.returncode)
@@ -70,13 +74,24 @@ def cmd_preprocess(weeks: list[int], scrape_missing: bool) -> None:
 
 
 def cmd_model(lite: bool, prior_placeholder: bool) -> None:
-    """Model stage. Weeks are calendar-true inside the model (config-driven)."""
-    env = {"BBN_MCMC_CORES": os.environ.get("BBN_MCMC_CORES", "4")}
+    """Model stage. Weeks are calendar-true inside the model (config-driven).
+
+    Default is the full spec tier (4 chains x 2000 draws); --lite is the
+    explicitly-requested, honestly-labelled fallback. target_accept=0.95 is
+    the value the P5 validation was certified with (2026-09-16) — overridable
+    via BBN_TARGET_ACCEPT but never silently changed.
+    """
+    env = {
+        "BBN_MCMC_CORES": os.environ.get("BBN_MCMC_CORES", "4"),
+        "BBN_TARGET_ACCEPT": os.environ.get("BBN_TARGET_ACCEPT", "0.95"),
+    }
     args = ["notebooks/bbnaija_mcmc.py"]
     if prior_placeholder:
         args.append("--prior-placeholder")
     elif lite:
         args.append("--lite")
+    else:
+        args.append("--full")
     args += ["--out", str(PREDICTIONS)]
     run_step("model", args, env=env)
 
@@ -147,18 +162,27 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         if not args.skip_mcmc:
-            weeks = [args.week] if args.week else None
-            if weeks is None:
+            if args.week:
+                current = args.week
+            else:
                 season = sb.load_season()
-                weeks = [sb.current_week(season)]
-            LOG.info("pipeline week(s): %s (lite=%s)", weeks, args.lite)
+                current = sb.current_week(season)
+            # Scrape the current week; PREPROCESS the full season range —
+            # build_all rewrites daily_cpi.json with only the requested weeks,
+            # so a partial rebuild would silently drop earlier history
+            # (caught 2026-09-16: weeks 1-5 vanished after a --weeks 6 7 run).
+            # Rebuilding all weeks is idempotent: load_week_items dedupes by
+            # (source, url) and the scraper appends deduped items.
+            all_weeks = list(range(1, current + 1))
+            LOG.info("pipeline: scrape wk%d, preprocess wks%s (lite=%s)",
+                     current, all_weeks, args.lite)
 
             t0 = time.time()
-            cmd_scrape(weeks)
+            cmd_scrape([current])
             timings["scrape"] = time.time() - t0
 
             t0 = time.time()
-            cmd_preprocess(weeks, scrape_missing=True)
+            cmd_preprocess(all_weeks, scrape_missing=True)
             timings["preprocess"] = time.time() - t0
 
             t0 = time.time()
