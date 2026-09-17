@@ -108,15 +108,24 @@
     </div>`;
   }).join("");
   const headWinner = P.podium.winner.name, trendWinner = TP[0];
-  let noteTxt = T.method ? `${T.method} → week ${T.horizon_week}. ` : "";
+  const greek = (s) => s.replace(/beta_i/g, "βᵢ").replace(/beta/g, "β")
+    .replace(/sigma_week/g, "σ_week").replace(/->/g, "→");
+  // bold mini-heading: state the basis, flag disagreement with the headline
+  const tnH = $("trendNoteH");
   if (trendWinner && trendWinner !== headWinner) {
-    noteTxt = `Momentum-only what-if — it disagrees with the headline (the finale simulation keeps ` +
-      `${headWinner} ahead). It extrapolates engagement slopes and ignores eviction risk and current ` +
-      `level; the headline podium stays authoritative. ` + noteTxt;
+    tnH.innerHTML = `BASED ON MOMENTUM ONLY — DISAGREES WITH HEADLINE (SIM KEEPS ${headWinner.toUpperCase()} AHEAD)`;
+    tnH.style.color = "var(--red)";
+  } else {
+    tnH.innerHTML = `BASED ON MOMENTUM → WEEK ${T.horizon_week || "?"}`;
+    tnH.style.color = "var(--teal)";
   }
-  noteTxt += T.uncertainty ? `${T.uncertainty}. Secondary readout — never merged into the headline.` : "";
+  let noteTxt = T.method ? greek(T.method) + ` → week ${T.horizon_week}. ` : "";
+  if (trendWinner && trendWinner !== headWinner) {
+    noteTxt = `This is a momentum-only what-if: it extrapolates engagement slopes and ignores eviction risk and ` +
+      `current level; the headline podium stays authoritative. ` + noteTxt;
+  }
+  noteTxt += T.uncertainty ? greek(T.uncertainty) + ". Secondary readout — never merged into the headline." : "";
   $("trendNote").textContent = noteTxt;
-  $("trendNote").style.color = (trendWinner && trendWinner !== headWinner) ? "var(--gold)" : "";
 
   const risk = P.at_risk || [];
   $("risk").innerHTML = risk.length ? risk.map((r) => `
