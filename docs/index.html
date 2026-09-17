@@ -87,6 +87,9 @@ select{background:var(--panel-2);color:var(--ink);border:1px solid var(--line);b
 /* ---------- chart ---------- */
 #chart{width:100%;height:500px;display:block}
 .legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+#chartTip{position:absolute;pointer-events:none;background:#0e1119;border:1px solid var(--line);
+  border-radius:4px;padding:6px 9px;font-family:var(--mono);font-size:11px;color:var(--ink);
+  opacity:0;transition:opacity .12s;z-index:5;max-width:200px;line-height:1.5}
 .lchip{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-family:var(--mono);color:var(--muted);
   border:1px solid var(--line);border-radius:3px;padding:3px 7px;cursor:pointer}
 .lchip:hover{border-color:var(--red);color:var(--red)}
@@ -113,7 +116,22 @@ select{background:var(--panel-2);color:var(--ink);border:1px solid var(--line);b
 .trend ol{list-style:none;display:flex;flex-direction:column;gap:6px}
 .trend li{display:flex;gap:10px;align-items:baseline;font-size:13px}
 .trend .pos{font-family:var(--disp);color:var(--faint);font-size:12px}
-.trend .note{margin-top:8px;font-size:10.5px;color:var(--faint);line-height:1.5}
+.trend .note{margin-top:8px;font-size:10.5px;color:var(--faint);line-height:1.5;font-style:italic}
+/* ---------- 3d trend podium ---------- */
+.tp3d{position:relative;height:190px;margin:14px 0 6px;pointer-events:none}
+.tp3d .box{position:absolute;bottom:0;border:1px solid var(--line);background:linear-gradient(180deg,#232a3a,#151a26);
+  box-shadow:0 10px 22px rgba(0,0,0,.45)}
+.tp3d .top{height:14px;background:linear-gradient(180deg,#2c3548,#1d2432);transform:skewX(-38deg);transform-origin:bottom left}
+.tp3d .side{position:absolute;bottom:14px;width:14px;background:linear-gradient(180deg,#151a26,#0e1119);
+  transform:skewY(-52deg);transform-origin:top left}
+.tp3d .face{position:absolute;bottom:100%;left:50%;transform:translate(-50%,10px);display:flex;flex-direction:column;align-items:center;gap:4px}
+.tp3d .face .avatar{width:46px;height:46px;font-size:16px;box-shadow:0 4px 14px rgba(0,0,0,.5)}
+.tp3d .face .nm{font-size:10px;font-weight:700;white-space:nowrap;max-width:96px;overflow:hidden;text-overflow:ellipsis}
+.tp3d .face .num{font-family:var(--disp);font-size:15px;color:var(--gold)}
+.tp3d .p1{left:50%;transform:translateX(-50%);width:74px;height:84px}
+.tp3d .p2{left:18%;transform:translateX(-50%);width:74px;height:56px}
+.tp3d .p3{left:82%;transform:translateX(-50%);width:74px;height:42px}
+@media(max-width:480px){.tp3d{height:150px}.tp3d .face .avatar{width:38px;height:38px;font-size:13px}}
 /* ---------- pairwise ---------- */
 .pair{margin-top:12px}
 .pair .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
@@ -130,9 +148,9 @@ select{background:var(--panel-2);color:var(--ink);border:1px solid var(--line);b
 .hcard .st{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
 .st.active{color:var(--teal)} .st.evicted{color:var(--red)} .st.walked{color:var(--bronze)}
 /* ---------- footer ---------- */
-footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--line);color:var(--faint);
-  font-size:11px;line-height:1.7}
-footer b{color:var(--muted)}
+footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--line);
+  font-size:12.5px;line-height:1.8;font-style:italic;color:#f2f0ea;font-weight:600}
+footer b{color:#ffffff;font-weight:800;font-style:italic}
 .avatar{width:34px;height:34px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;
   font-weight:700;font-size:12px;color:#0b0d12;overflow:hidden}
 .avatar img{width:100%;height:100%;object-fit:cover}
@@ -199,7 +217,7 @@ footer b{color:var(--muted)}
         <label style="font-size:10px;color:var(--faint);letter-spacing:.1em">ADD</label>
         <select id="addSel"></select>
       </h2>
-      <canvas id="chart"></canvas>
+      <div style="position:relative"><canvas id="chart"></canvas></div>
       <div class="legend" id="legend"></div>
     </section>
 
@@ -210,6 +228,7 @@ footer b{color:var(--muted)}
       </section>
       <section class="panel trend" aria-label="Trend projection">
         <h2>Trend-projected podium <span class="tag sec">secondary</span></h2>
+        <div class="tp3d" id="tp3d" aria-hidden="true"></div>
         <ol id="trendList"></ol>
         <div class="note" id="trendNote"></div>
       </section>

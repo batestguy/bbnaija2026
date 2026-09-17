@@ -97,6 +97,16 @@
   const T = P.trend_projection || {};
   $("trendList").innerHTML = (T.podium || []).map((n, i) =>
     `<li><span class="pos">${i + 1}</span><span>${n}</span></li>`).join("");
+  // literal 3D podium with faces, ordered by position
+  const TP = T.podium || [];
+  const heights = ["84px", "56px", "42px"], cls3d = ["p1", "p2", "p3"];
+  $("tp3d").innerHTML = TP.slice(0, 3).map((n, i) => {
+    const hm = byName[n] || {};
+    return `<div class="box ${cls3d[i]}" style="height:${heights[i]}">
+      <div class="top"></div><div class="side"></div>
+      <div class="face">${avatarHTML(hm)}<div class="nm">${n}</div><div class="num">${i + 1}</div></div>
+    </div>`;
+  }).join("");
   $("trendNote").textContent = T.method ? `${T.method} → week ${T.horizon_week}. ${T.uncertainty}. Secondary readout — never merged into the headline snapshot.` : "";
 
   const risk = P.at_risk || [];
@@ -138,7 +148,9 @@
 
   /* ---------- trajectory chart (canvas) ---------- */
   const cv = $("chart"), ctx = cv.getContext("2d");
+  let hoverIdx = -1;                  // hovered series index (-1 = none); read inside draw()
   let series = [];                    // {name, color, pts:[{w, m, lo, hi}]}
+  let X = () => 0, Y = () => 0;       // week/value -> canvas coords (refreshed each draw; shared with hover)
   const top5 = chips.slice(0, 5).map((h) => h.name);
   const extra = new Set();
   const sel = $("addSel");
@@ -181,48 +193,78 @@
     const iw = W - padL - padR, ih = H - padT - padB;
     if (!series.length || !iw) return;
     const weeks = [...new Set(series.flatMap((s) => s.pts.map((p) => p.w)))].sort((a, b) => a - b);
-    const X = (w) => padL + ((w - weeks[0]) / Math.max(1, weeks[weeks.length - 1] - weeks[0])) * iw;
-    const Y = (v) => padT + (1 - v) * ih;
+    X = (w) => padL + ((w - weeks[0]) / Math.max(1, weeks[weeks.length - 1] - weeks[0])) * iw;
+    Y = (v) => padT + (1 - v) * ih;
 
     ctx.font = "10px 'IBM Plex Mono', monospace"; ctx.fillStyle = "#5a6175";
     for (let g = 0; g <= 4; g++) {
       const v = g / 4, y = Y(v);
       ctx.strokeStyle = "#1b2130"; ctx.beginPath();
       ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
-      ctx.fillText(v * 100 + "%", 6, y + 3);
     }
     weeks.forEach((w) => {
       const x = X(w);
-      ctx.fillText("W" + w, x - 6, H - 8);
       ctx.strokeStyle = "#151a26"; ctx.beginPath();
       ctx.moveTo(x, padT); ctx.lineTo(x, padT + ih); ctx.stroke();
     });
 
-    series.forEach((s) => {
+    series.forEach((s, si) => {
+      const focus = hoverIdx === -1 || hoverIdx === si;   // hovered line pops, others fade
+      ctx.globalAlpha = focus ? 1 : 0.22;
       // 89% CrI band
       ctx.beginPath();
       s.pts.forEach((p, i) => i ? ctx.lineTo(X(p.w), Y(p.hi)) : ctx.moveTo(X(p.w), Y(p.hi)));
       for (let i = s.pts.length - 1; i >= 0; i--) ctx.lineTo(X(s.pts[i].w), Y(s.pts[i].lo));
-      ctx.closePath(); ctx.globalAlpha = 0.16; ctx.fillStyle = s.color; ctx.fill();
-      ctx.globalAlpha = 1;
-      // median line
-      ctx.strokeStyle = s.color; ctx.lineWidth = 2; ctx.beginPath();
+      ctx.closePath(); ctx.globalAlpha = focus ? 0.16 : 0.05; ctx.fillStyle = s.color; ctx.fill();
+      ctx.globalAlpha = focus ? 1 : 0.22;
+      // median line (bolder for clarity)
+      ctx.strokeStyle = s.color; ctx.lineWidth = focus && hoverIdx === si ? 3.5 : 3; ctx.beginPath();
       s.pts.forEach((p, i) => i ? ctx.lineTo(X(p.w), Y(p.m)) : ctx.moveTo(X(p.w), Y(p.m)));
       ctx.stroke(); ctx.lineWidth = 1;
       // end marker + color-keyed name label (no avatar on the line — photos live in the legend)
       const last = s.pts[s.pts.length - 1], lx = X(last.w), ly = Y(last.m);
-      ctx.fillStyle = s.color; ctx.beginPath(); ctx.arc(lx, ly, 3.5, 0, 7); ctx.fill();
-      ctx.font = "600 12px Archivo, sans-serif";
+      ctx.fillStyle = s.color; ctx.beginPath(); ctx.arc(lx, ly, 4.5, 0, 7); ctx.fill();
+      ctx.font = "600 14px Archivo, sans-serif";
       const tw = ctx.measureText(s.name).width;
       const tx = Math.min(lx + 10, W - tw - 4);
-      const ty = Math.min(Math.max(ly + 4, padT + 12), H - padB - 4);
+      const ty = Math.min(Math.max(ly + 5, padT + 14), H - padB - 4);
       ctx.fillStyle = s.color; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
       ctx.fillText(s.name, tx, ty);
       ctx.font = "10px 'IBM Plex Mono', monospace";
     });
+    ctx.globalAlpha = 1;
   }
   new ResizeObserver(draw).observe(cv);
   draw();
+
+  /* ---------- hover: tooltip + line focus (annotations live here, not on the canvas) ---------- */
+  function onMove(ev) {
+    const rect = cv.getBoundingClientRect();
+    const mx = ev.clientX - rect.left, my = ev.clientY - rect.top;
+    let best = -1, bestD = 28 * 28;                       // generous 28px hover radius
+    series.forEach((s, si) => s.pts.forEach((p) => {
+      const dx = X(p.w) - mx, dy = Y(p.m) - my, d = dx * dx + dy * dy;
+      if (d < bestD) { bestD = d; best = si; }
+    }));
+    if (best !== hoverIdx) { hoverIdx = best; draw(); }
+    if (best === -1) { tip.style.opacity = 0; return; }
+    const s = series[best];
+    let bp = s.pts[0], bd = 1e9;
+    s.pts.forEach((p) => { const d = Math.abs(X(p.w) - mx); if (d < bd) { bd = d; bp = p; } });
+    tip.innerHTML = `<b style="color:${s.color}">${s.name}</b> · wk ${bp.w}<br>` +
+      `median ${pct(bp.m)} · 89% CrI ${pct(bp.lo)}–${pct(bp.hi)}`;
+    const tw2 = cv.clientWidth, px = Math.min(Math.max(mx + 14, 8), tw2 - 190);
+    tip.style.left = px + "px";
+    tip.style.top = Math.max(4, my - 46) + "px";
+    tip.style.opacity = 1;
+  }
+  const tip = document.createElement("div");
+  tip.id = "chartTip";
+  cv.parentNode.appendChild(tip);
+  const onLeave = () => { hoverIdx = -1; tip.style.opacity = 0; draw(); };
+  cv.addEventListener("mousemove", onMove);
+  cv.addEventListener("mouseleave", onLeave);
+  cv.addEventListener("touchstart", (e) => onMove(e.touches[0]), { passive: true });
 
   /* ---------- prediction vs outcome tracker ---------- */
   fetch("track_record.json", { cache: "no-store" })
