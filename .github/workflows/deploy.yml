@@ -79,6 +79,11 @@ jobs:
           token = os.environ["HF_TOKEN"]
           user = os.environ.get("HF_USER") or HfApi(token=token).whoami()["name"]
           api = HfApi(token=token)
+          # First-run bootstrap: create the repos if missing (no-op afterwards)
+          api.create_repo(repo_id=f"{user}/bbnaija2026-predictions",
+                          repo_type="dataset", exist_ok=True)
+          api.create_repo(repo_id=f"{user}/bbnaija2026-dashboard",
+                          repo_type="space", space_sdk="static", exist_ok=True)
           # Dataset repo: raw predictions + timestamped archive
           api.upload_file(
               path_or_fileobj="docs/predictions.json",
