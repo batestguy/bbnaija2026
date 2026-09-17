@@ -1,5 +1,12 @@
 # Sprint plan — live by Saturday Sep 19 (compiled 2026-09-16)
 
+> **✅ CLOSED 2026-09-17 — every item delivered two days early.** Real week-8 run certified
+> (0 divergences, R-hat 1.0028) and deployed to all three surfaces; P6 runner exit-tested;
+> P8 Pages + HF Space + HF dataset live; wk-7/8 data in; dashboard hardened (hero, race
+> strip, tracker panel, share cards, mobile pass) and README rewritten with full model
+> spec. Session record: `docs/session-handoff-2026-09-17.md`. Remaining work lives there
+> (tracker auto-scoring, P9 rehearsal) — this file is kept for the record only.
+
 ## The clock (from config/season.json: premiere 2026-07-26, finale 2026-10-04)
 
 - Season week 7 of 10 today (day 52/72). Eviction Sundays: **Sep 20, Sep 27, Oct 4**.
