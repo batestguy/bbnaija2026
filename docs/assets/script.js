@@ -107,7 +107,16 @@
       <div class="face">${avatarHTML(hm)}<div class="nm">${n}</div><div class="num">${i + 1}</div></div>
     </div>`;
   }).join("");
-  $("trendNote").textContent = T.method ? `${T.method} → week ${T.horizon_week}. ${T.uncertainty}. Secondary readout — never merged into the headline snapshot.` : "";
+  const headWinner = P.podium.winner.name, trendWinner = TP[0];
+  let noteTxt = T.method ? `${T.method} → week ${T.horizon_week}. ` : "";
+  if (trendWinner && trendWinner !== headWinner) {
+    noteTxt = `Momentum-only what-if — it disagrees with the headline (the finale simulation keeps ` +
+      `${headWinner} ahead). It extrapolates engagement slopes and ignores eviction risk and current ` +
+      `level; the headline podium stays authoritative. ` + noteTxt;
+  }
+  noteTxt += T.uncertainty ? `${T.uncertainty}. Secondary readout — never merged into the headline.` : "";
+  $("trendNote").textContent = noteTxt;
+  $("trendNote").style.color = (trendWinner && trendWinner !== headWinner) ? "var(--gold)" : "";
 
   const risk = P.at_risk || [];
   $("risk").innerHTML = risk.length ? risk.map((r) => `
@@ -189,7 +198,7 @@
     cv.width = W * dpr; cv.height = H * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, W, H);
-    const padL = 34, padR = 96, padT = 12, padB = 26;
+    const padL = 34, padR = 30, padT = 12, padB = 26;
     const iw = W - padL - padR, ih = H - padT - padB;
     if (!series.length || !iw) return;
     const weeks = [...new Set(series.flatMap((s) => s.pts.map((p) => p.w)))].sort((a, b) => a - b);
@@ -221,15 +230,9 @@
       ctx.strokeStyle = s.color; ctx.lineWidth = focus && hoverIdx === si ? 3.5 : 3; ctx.beginPath();
       s.pts.forEach((p, i) => i ? ctx.lineTo(X(p.w), Y(p.m)) : ctx.moveTo(X(p.w), Y(p.m)));
       ctx.stroke(); ctx.lineWidth = 1;
-      // end marker + color-keyed name label (no avatar on the line — photos live in the legend)
+      // end marker only — identity lives in the legend (color + photo); no on-canvas name labels
       const last = s.pts[s.pts.length - 1], lx = X(last.w), ly = Y(last.m);
       ctx.fillStyle = s.color; ctx.beginPath(); ctx.arc(lx, ly, 4.5, 0, 7); ctx.fill();
-      ctx.font = "600 14px Archivo, sans-serif";
-      const tw = ctx.measureText(s.name).width;
-      const tx = Math.min(lx + 10, W - tw - 4);
-      const ty = Math.min(Math.max(ly + 5, padT + 14), H - padB - 4);
-      ctx.fillStyle = s.color; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
-      ctx.fillText(s.name, tx, ty);
       ctx.font = "10px 'IBM Plex Mono', monospace";
     });
     ctx.globalAlpha = 1;
