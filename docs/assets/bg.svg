@@ -1,18 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="520" height="520" viewBox="0 0 520 520">
   <!-- BBNaija 2026 watermark tile — very low opacity, professional dark-theme layer -->
-  <g transform="rotate(-12 160 130)" fill="none" stroke="#f5b301" stroke-opacity="0.12">
+  <g transform="rotate(-12 160 130)" fill="none" stroke="#f5b301" stroke-opacity="0.20">
     <!-- surveillance-eye motif (original, generic) -->
     <path d="M60 130 Q160 58 260 130 Q160 202 60 130 Z" stroke-width="3"/>
     <circle cx="160" cy="130" r="36" stroke-width="3"/>
-    <circle cx="160" cy="130" r="13" fill="#f5b301" fill-opacity="0.10" stroke="none"/>
-    <path d="M160 94 V166" stroke-opacity="0.08" stroke-width="2"/>
-    <path d="M124 130 H196" stroke-opacity="0.08" stroke-width="2"/>
+    <circle cx="160" cy="130" r="13" fill="#f5b301" fill-opacity="0.16" stroke="none"/>
+    <path d="M160 94 V166" stroke-opacity="0.13" stroke-width="2"/>
+    <path d="M124 130 H196" stroke-opacity="0.13" stroke-width="2"/>
   </g>
   <g transform="rotate(-12 350 400)" font-family="Arial Black, Arial, sans-serif" font-weight="900">
     <!-- outline wordmark -->
     <text x="230" y="392" font-size="58" letter-spacing="8" fill="none"
-          stroke="#ffffff" stroke-opacity="0.09" stroke-width="1.4">BBNAIJA</text>
+          stroke="#ffffff" stroke-opacity="0.16" stroke-width="1.6">BBNAIJA</text>
     <text x="230" y="456" font-size="58" letter-spacing="18" fill="none"
-          stroke="#f5b301" stroke-opacity="0.12" stroke-width="1.4">2026</text>
+          stroke="#f5b301" stroke-opacity="0.20" stroke-width="1.6">2026</text>
   </g>
 </svg>
