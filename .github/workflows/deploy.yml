@@ -96,7 +96,6 @@ jobs:
               folder_path="docs",
               repo_id=f"{user}/bbnaija2026-dashboard",
               repo_type="space",
-              space_sdk="static",
           )
           print("HF sync complete (dataset + static space)")
           PY
