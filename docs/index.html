@@ -121,7 +121,7 @@ select{background:var(--panel-2);color:var(--ink);border:1px solid var(--line);b
   color:var(--ink);margin-top:12px}
 .trend .tnote-h sub{font-size:9px}
 /* ---------- race-to-finale strip (trend momentum) ---------- */
-.race{position:relative;height:120px;margin:14px 0 4px;pointer-events:none}
+.race{position:relative;height:150px;margin:14px 0 4px;pointer-events:none}
 .race .lane{position:absolute;left:0;right:16px;bottom:34px;height:8px;border-radius:4px;border:1px solid var(--line);
   background:linear-gradient(90deg,#1b2130,#232a3a)}
 .race .lane i{position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 14px,rgba(255,255,255,.07) 14px 28px)}
@@ -133,6 +133,9 @@ select{background:var(--panel-2);color:var(--ink);border:1px solid var(--line);b
 .race .runner::before{right:calc(100% - 4px);top:14px;width:30px}
 .race .runner::after{right:calc(100% + 2px);top:22px;width:18px;opacity:.6}
 .race .runner .avatar{width:44px;height:44px;font-size:15px;animation:bob 1.5s ease-in-out infinite}
+.race .runner.w1 .avatar{box-shadow:0 0 0 2px var(--gold)}
+.race .runner.w2 .avatar{box-shadow:0 0 0 2px var(--silver)}
+.race .runner.w3 .avatar{box-shadow:0 0 0 2px var(--bronze)}
 .race .runner .nm{font-size:10px;font-weight:700;max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .race .runner .num{font-family:var(--disp);font-size:13px;color:var(--gold)}
 @keyframes bob{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(-4px) rotate(-8deg)}}

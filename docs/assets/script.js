@@ -104,10 +104,10 @@
   const ringColor = { w1: "var(--gold)", w2: "var(--silver)", w3: "var(--bronze)" };
   $("race").innerHTML = TP.slice(0, 3).map((n, i) => {
     const hm = byName[n] || {};
-    return `<div class="runner" style="left:${fractions[i]}%">
+    return `<div class="runner" style="left:${Math.round(fractions[i] * 100)}%">
       ${avatarHTML(hm, ring[i])}
       <div class="nm">${n}</div><div class="num">${i + 1}</div>
-    </div>`.replace('class="avatar', `style="box-shadow:0 0 0 2px ${ringColor[ring[i]]}";class="avatar`);
+    </div>`;
   }).join("");
   $("race").insertAdjacentHTML("beforeend",
     '<div class="lane"><i></i></div><div class="finish" title="Finale — week 10"></div>');
