@@ -97,16 +97,20 @@
   const T = P.trend_projection || {};
   $("trendList").innerHTML = (T.podium || []).map((n, i) =>
     `<li><span class="pos">${i + 1}</span><span>${n}</span></li>`).join("");
-  // literal 3D podium with faces, ordered by position
+  // race-to-finale strip: runners on a momentum track, leading runner closest to the checkered finale
   const TP = T.podium || [];
-  const heights = ["84px", "56px", "42px"], cls3d = ["p1", "p2", "p3"];
-  $("tp3d").innerHTML = TP.slice(0, 3).map((n, i) => {
+  const fractions = [0.86, 0.62, 0.38];
+  const ring = ["w1", "w2", "w3"];
+  const ringColor = { w1: "var(--gold)", w2: "var(--silver)", w3: "var(--bronze)" };
+  $("race").innerHTML = TP.slice(0, 3).map((n, i) => {
     const hm = byName[n] || {};
-    return `<div class="box ${cls3d[i]}" style="height:${heights[i]}">
-      <div class="top"></div><div class="side"></div>
-      <div class="face">${avatarHTML(hm)}<div class="nm">${n}</div><div class="num">${i + 1}</div></div>
-    </div>`;
+    return `<div class="runner" style="left:${fractions[i]}%">
+      ${avatarHTML(hm, ring[i])}
+      <div class="nm">${n}</div><div class="num">${i + 1}</div>
+    </div>`.replace('class="avatar', `style="box-shadow:0 0 0 2px ${ringColor[ring[i]]}";class="avatar`);
   }).join("");
+  $("race").insertAdjacentHTML("beforeend",
+    '<div class="lane"><i></i></div><div class="finish" title="Finale — week 10"></div>');
   const headWinner = P.podium.winner.name, trendWinner = TP[0];
   const greek = (s) => s.replace(/beta_i/g, "βᵢ").replace(/beta/g, "β")
     .replace(/sigma_week/g, "σ_week").replace(/->/g, "→");

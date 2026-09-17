@@ -120,21 +120,24 @@ select{background:var(--panel-2);color:var(--ink);border:1px solid var(--line);b
 .trend .tnote-h{font-family:var(--disp);font-size:12px;letter-spacing:.1em;text-transform:uppercase;
   color:var(--ink);margin-top:12px}
 .trend .tnote-h sub{font-size:9px}
-/* ---------- 3d trend podium ---------- */
-.tp3d{position:relative;height:190px;margin:14px 0 6px;pointer-events:none}
-.tp3d .box{position:absolute;bottom:0;border:1px solid var(--line);background:linear-gradient(180deg,#232a3a,#151a26);
-  box-shadow:0 10px 22px rgba(0,0,0,.45)}
-.tp3d .top{height:14px;background:linear-gradient(180deg,#2c3548,#1d2432);transform:skewX(-38deg);transform-origin:bottom left}
-.tp3d .side{position:absolute;bottom:14px;width:14px;background:linear-gradient(180deg,#151a26,#0e1119);
-  transform:skewY(-52deg);transform-origin:top left}
-.tp3d .face{position:absolute;bottom:100%;left:50%;transform:translate(-50%,10px);display:flex;flex-direction:column;align-items:center;gap:4px}
-.tp3d .face .avatar{width:46px;height:46px;font-size:16px;box-shadow:0 4px 14px rgba(0,0,0,.5)}
-.tp3d .face .nm{font-size:10px;font-weight:700;white-space:nowrap;max-width:96px;overflow:hidden;text-overflow:ellipsis}
-.tp3d .face .num{font-family:var(--disp);font-size:15px;color:var(--gold)}
-.tp3d .p1{left:50%;transform:translateX(-50%);width:74px;height:84px}
-.tp3d .p2{left:18%;transform:translateX(-50%);width:74px;height:56px}
-.tp3d .p3{left:82%;transform:translateX(-50%);width:74px;height:42px}
-@media(max-width:480px){.tp3d{height:150px}.tp3d .face .avatar{width:38px;height:38px;font-size:13px}}
+/* ---------- race-to-finale strip (trend momentum) ---------- */
+.race{position:relative;height:120px;margin:14px 0 4px;pointer-events:none}
+.race .lane{position:absolute;left:0;right:16px;bottom:34px;height:8px;border-radius:4px;border:1px solid var(--line);
+  background:linear-gradient(90deg,#1b2130,#232a3a)}
+.race .lane i{position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 14px,rgba(255,255,255,.07) 14px 28px)}
+.race .finish{position:absolute;right:0;bottom:20px;width:12px;height:36px;border:1px solid var(--line);
+  background:repeating-conic-gradient(#d8dbe2 0 25%,#151a26 0 50%) 0 0/6px 6px}
+.race .runner{position:absolute;bottom:48px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:2px}
+.race .runner::before,.race .runner::after{content:"";position:absolute;height:2px;border-radius:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.30))}
+.race .runner::before{right:calc(100% - 4px);top:14px;width:30px}
+.race .runner::after{right:calc(100% + 2px);top:22px;width:18px;opacity:.6}
+.race .runner .avatar{width:44px;height:44px;font-size:15px;animation:bob 1.5s ease-in-out infinite}
+.race .runner .nm{font-size:10px;font-weight:700;max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.race .runner .num{font-family:var(--disp);font-size:13px;color:var(--gold)}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(-4px) rotate(-8deg)}}
+@media(prefers-reduced-motion:reduce){.race .runner .avatar{animation:none}}
+@media(max-width:480px){.race{height:104px}.race .runner .avatar{width:36px;height:36px;font-size:12px}}
 /* ---------- pairwise ---------- */
 .pair{margin-top:12px}
 .pair .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
@@ -231,7 +234,7 @@ footer b{color:#ffffff;font-weight:800;font-style:italic}
       </section>
       <section class="panel trend" aria-label="Trend projection">
         <h2>Trend-projected podium <span class="tag sec">secondary</span></h2>
-        <div class="tp3d" id="tp3d" aria-hidden="true"></div>
+        <div class="race" id="race" aria-hidden="true"></div>
         <div class="tnote-h" id="trendNoteH"></div>
         <ol id="trendList"></ol>
         <div class="note" id="trendNote"></div>
