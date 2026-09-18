@@ -539,16 +539,15 @@ def dm_win_shares(mu: np.ndarray, gambit_flag: np.ndarray, rng: np.random.Genera
             p = rng.dirichlet(alpha)
         else:
             p = row
+        # Pass the FULL probability vector: numpy's multinomial treats the last
+        # PASSED pval as the remainder bin, so p[:-1] silently folded the last
+        # housemate's mass into the second-to-last column (the week-8 bug that
+        # hard-zeroed Yusuf's snapshot while inflating everyone else slightly).
+        # With the full vector, numpy handles the final category internally and
+        # the drift-shave hack is unnecessary.
         p = p / p.sum()
-        # numpy only consumes pvals[:-1] and hard-fails if their sum exceeds 1.0;
-        # float drift can trip that when the tail cell is ~0 (e.g. Gambit-zeroed
-        # last column) — shave the excess off the head deterministically.
-        head = p[:-1]
-        if head.sum() > 1.0:
-            head = head / (head.sum() * (1.0 + 1e-12))
-        votes = rng.multinomial(NOMINAL_VOTES, head)
-        shares[d, :-1] = votes / NOMINAL_VOTES
-        shares[d, -1] = 1.0 - shares[d, :-1].sum()   # remainder cell, as numpy does
+        votes = rng.multinomial(NOMINAL_VOTES, p)
+        shares[d] = votes / NOMINAL_VOTES
     return shares
 
 

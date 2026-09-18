@@ -59,6 +59,44 @@ def test_gambit_filter_all_flagged_is_an_error():
 
 
 # --------------------------------------------------------------------------- #
+# DM shares — regression for the week-8 "Yusuf = 0.0" bug (2026-09-18)
+# --------------------------------------------------------------------------- #
+
+def test_dm_shares_never_zero_out_a_non_gambit_column():
+    """numpy's multinomial treats the LAST PASSED pval as the remainder bin.
+    Passing p[:-1] silently folded the last housemate's mass into the
+    second-to-last column, hard-zeroing the last active housemate's snapshot
+    (Yusuf, week 8). The bug's signature: the STRONGEST housemate gets exactly
+    0.0 in ~every draw while the second-to-last column absorbs its mass.
+    (Weak columns do earn genuine exact zeros from the DM multinomial when
+    their true share rounds to 0 votes — that is legal, not a bug.)"""
+    rng = np.random.default_rng(7)
+    n_draws, n_hm = 400, 5
+    mu = rng.normal(size=(n_draws, n_hm))
+    mu += 1.5 * np.arange(n_hm)                           # column 4 strongest
+    flag = np.zeros(n_hm, dtype=int)                      # nobody is Gambit
+    shares = m.dm_win_shares(mu, flag, np.random.default_rng(8), n_draws=300)
+    assert np.all(shares.sum(axis=1) > 0.999)              # rows still conserve
+    # the strongest column must essentially never be exactly zero — the old
+    # remainder-bin code failed this with a ~100% zero rate
+    assert (shares[:, -1] == 0.0).mean() < 0.01, "strongest column zeroed — remainder-bin bug is back"
+    assert (shares[:, -2] == 0.0).mean() < 0.01            # old theft target, second-to-last
+    assert np.median(shares[:, -1]) > 0.3                  # and it actually leads
+
+
+def test_dm_shares_gambit_zero_survives_full_vector_fix():
+    """The Gambit-zeroed column must stay exactly 0 with the full-vector
+    multinomial (no stolen remainder, no invalid-Dirichlet regression)."""
+    rng = np.random.default_rng(9)
+    mu = rng.normal(size=(200, 4))
+    flag = np.array([0, 0, 0, 1])                          # last housemate is Gambit
+    shares = m.dm_win_shares(mu, flag, np.random.default_rng(10), n_draws=200)
+    assert np.all(shares[:, 3] == 0.0)                     # exact zero preserved
+    assert np.allclose(shares.sum(axis=1), 1.0, atol=1e-9)
+    nearly(list(shares[:, :3].mean(axis=0)))
+
+
+# --------------------------------------------------------------------------- #
 # Rank machinery
 # --------------------------------------------------------------------------- #
 
