@@ -173,6 +173,7 @@
   let hoverIdx = -1;                  // hovered series index (-1 = none); read inside draw()
   let series = [];                    // {name, color, pts:[{w, m, lo, hi}]}
   let X = () => 0, Y = () => 0;       // week/value -> canvas coords (refreshed each draw; shared with hover)
+  let yMax = 1;                       // tight y-axis top, recomputed per draw (see draw())
   const top5 = chips.slice(0, 5).map((h) => h.name);
   const extra = new Set();
   const sel = $("addSel");
@@ -211,19 +212,28 @@
     cv.width = W * dpr; cv.height = H * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, W, H);
-    const padL = 34, padR = 30, padT = 12, padB = 26;
+    const padL = 40, padR = 30, padT = 12, padB = 26;
     const iw = W - padL - padR, ih = H - padT - padB;
     if (!series.length || !iw) return;
     const weeks = [...new Set(series.flatMap((s) => s.pts.map((p) => p.w)))].sort((a, b) => a - b);
     X = (w) => padL + ((w - weeks[0]) / Math.max(1, weeks[weeks.length - 1] - weeks[0])) * iw;
-    Y = (v) => padT + (1 - v) * ih;
+    // Tight y-axis: baseline stays 0, but the top sits just above the tallest visible
+    // CrI bound (3% headroom) instead of reserving dead space up to 100% — with
+    // medians topping out near 40%, a fixed 0-100% axis wasted most of the plot.
+    const dataMax = Math.max(...series.flatMap((s) => s.pts.map((p) => Math.max(p.hi, p.m))));
+    yMax = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1].find((c) => c >= dataMax * 1.03) || 1;
+    Y = (v) => padT + (1 - v / yMax) * ih;
 
     ctx.font = "10px 'IBM Plex Mono', monospace"; ctx.fillStyle = "#5a6175";
+    ctx.textAlign = "right";
     for (let g = 0; g <= 4; g++) {
-      const v = g / 4, y = Y(v);
+      const v = (g / 4) * yMax, y = Y(v);
       ctx.strokeStyle = "#1b2130"; ctx.beginPath();
       ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+      const pv = Math.round(1000 * v) / 10;   // snap to 0.1% — kills float dust (0.15*100 = 15.000000000000002)
+      ctx.fillText((pv % 1 ? pv.toFixed(1) : pv.toFixed(0)) + "%", padL - 5, y + 3);
     }
+    ctx.textAlign = "start";
     weeks.forEach((w) => {
       const x = X(w);
       ctx.strokeStyle = "#151a26"; ctx.beginPath();
