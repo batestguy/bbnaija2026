@@ -1,5 +1,24 @@
 {
-  "method": "Each Saturday the model publishes a projected winner and each housemate's eviction risk for the coming week. After Sunday's eviction we score: did the projected winner survive (hit/miss), and Brier scores for the eviction outcome. Rows are appended by the weekly run — never edited by hand.",
-  "weeks": [],
-  "summary": null
+  "method": "Each Saturday the model publishes a projected winner and each housemate's eviction risk for the coming week. After Sunday's eviction we score: did the projected winner survive (hit/miss), and Brier scores for the eviction outcome. Rows are appended by src/score_week.py (run after each Sunday eviction once the exit rows land in data/raw/manual_notes.csv, or automatically as run_weekly.py's score_previous catch-up stage) — never edited by hand. Weeks with no published snapshot predating their eviction get a scored:false tombstone explaining why, once. Eviction model: within the nominated set, Cox relative hazards normalise to p_evict(h) = hazard(h) / sum(hazard over nominees); Brier = mean of (p − y)^2 over nominees, y = 1 per exit (double evictions each count). Poll concordance (when docs/polls.json has the week) compares poll save-% order to the snapshot's hazard order over their common housemates; exact ties count as agreement.",
+  "weeks": [
+    {
+      "week": 3,
+      "scored": false,
+      "reason": "no published predictions snapshot predates this week's eviction (snapshot coverage starts at week 8); not retroactively scorable",
+      "scored_at": "2026-09-20T08:47:39+00:00"
+    },
+    {
+      "week": 7,
+      "scored": false,
+      "reason": "no published predictions snapshot predates this week's eviction (snapshot coverage starts at week 8); not retroactively scorable",
+      "scored_at": "2026-09-20T08:47:39+00:00"
+    }
+  ],
+  "summary": {
+    "weeks_scored": 0,
+    "winner_survived_hits": 0,
+    "mean_brier": null,
+    "mean_poll_concordance": null,
+    "updated_at": "2026-09-20T08:47:39+00:00"
+  }
 }

@@ -228,7 +228,7 @@ python run_weekly.py [--lite] [--week N]
 | P10.2 | **Week-3 checkpoint:** review HDI widths + coverage + eviction concordance; document whether priors/standardization are behaving; any change requires a committed note + re-run (no silent retuning) |
 | P10.3 | **Mid-season twist switch:** if the real twist is confirmed, update `config/twist.json` only (model code frozen); toggle label drops "(provisional)"; banner behavior per spec |
 | P10.4 | **Weekly hygiene:** quarantine list reviewed; `manual_notes.csv` entries for any mid-week DQ/walkout; roster additions get entry-week rows |
-| P10.5 | **Concordance tracking:** at-risk top pick vs actual Sunday eviction, logged weekly; podium churn logged |
+| P10.5 | **Concordance tracking:** at-risk top pick vs actual Sunday eviction, logged weekly; podium churn logged. AUTOMATED 2026-09-20: `python src/score_week.py` after the Sunday exit rows land in `manual_notes.csv` (or the `score_previous` catch-up stage in `run_weekly.py`); also pre-flights the notes (`--validate-notes`) |
 | P10.6 | **Staleness insurance:** a missed Saturday is handled next week by the backfill-bridge; if >2 weeks are missed, publish an honest stale banner and rebuild from archives |
 
 **Exit criteria:** `predictions.json` exists and is schema-valid for every season week (bridge-labeled where backfilled); concordance + churn log complete.

@@ -35,6 +35,7 @@ sys.path.insert(0, str(ROOT))
 
 from src import preprocess as pp  # noqa: E402
 from src import scrape_blogs as sb  # noqa: E402
+from src import score_week as sw  # noqa: E402
 from src.products_schema import SchemaError, validate_products  # noqa: E402
 
 LOG = logging.getLogger("run_weekly")
@@ -176,6 +177,18 @@ def main(argv: list[str] | None = None) -> int:
             all_weeks = list(range(1, current + 1))
             LOG.info("pipeline: scrape wk%d, preprocess wks%s (lite=%s)",
                      current, all_weeks, args.lite)
+
+            # P10.5 catch-up: score any pending eviction week against the
+            # last-good archive BEFORE this run refreshes it. Best-effort —
+            # a scoring problem must never block the certified run.
+            t0 = time.time()
+            try:
+                for line in sw.score_pending_from_last_good():
+                    LOG.info("score_previous: %s", line)
+                timings["score_previous"] = time.time() - t0
+            except Exception as e:  # noqa: BLE001 — scoring is never load-bearing
+                LOG.warning("score_previous skipped: %s", e)
+                timings["score_previous"] = time.time() - t0
 
             t0 = time.time()
             cmd_scrape([current])

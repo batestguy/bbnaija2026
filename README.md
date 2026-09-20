@@ -225,6 +225,7 @@ run_weekly.py            Saturday entrypoint (scrape → preprocess → MCMC →
 src/scrape_blogs.py      per-source parsers (RSS primary; BeautifulSoup for the rest)
 src/preprocess.py        weekly CPI builder (gap-tolerant, quarantine-aware)
 src/products_schema.py   the deploy gate — validates predictions.json
+src/score_week.py        P10.5 tracker auto-scoring + manual_notes.csv validator
 notebooks/bbnaija_mcmc.py  the model + sampling + BMA + products (single file, heavily commented)
 config/season.json       premiere/finale dates → calendar-true week numbering
 config/twist.json        Gambit periods (weekly-varying flags)
@@ -232,7 +233,7 @@ config/housemates.json   canonical names, aliases, photo filenames
 data/raw/                scrape archive (jsonl) + manual_notes.csv override channel
 docs/                    the dashboard (index.html + script.js, zero dependencies) + photos
 .github/workflows/deploy.yml  push-triggered deploy: schema gate → Pages + HF sync
-tests/                   49 fixture-based tests (no network, no real-data dependence)
+tests/                   70 fixture-based tests (no network, no real-data dependence)
 ```
 
 ## Running it
@@ -244,14 +245,19 @@ python run_weekly.py --lite   # reduced draws, products honestly labelled "lite"
 ```
 
 Saturday cadence: run → eyeball the console review → commit `docs/predictions.json` → push.
-The deploy workflow does the rest. Missed Saturdays are bridged, never fabricated.
+The deploy workflow does the rest. After each Sunday eviction: log the exit(s) in
+`data/raw/manual_notes.csv` (with a source URL), then `python src/score_week.py` scores
+the week into `docs/track_record.json` (winner survival, Brier over the nominated set,
+poll concordance) and validates the notes. Missed Saturdays are bridged, never fabricated.
 
 ## Testing
 
-49 tests, all fixture-based and offline: preprocess math (CPI weights, renormalisation,
+70 tests, all fixture-based and offline: preprocess math (CPI weights, renormalisation,
 gap tolerance), scraper parsing against saved HTML/RSS fixtures, model machinery
 (Gambit zeroing, tie-breaks, BMA weighting incl. gate rejection, R-hat gate on a degraded
-run), schema gate, and a right-sized end-to-end smoke.
+run), schema gate, tracker scoring (winner survival, hazard→eviction Brier, poll
+concordance, unscorable-week tombstones), the manual-notes validator, and a right-sized
+end-to-end smoke.
 
 ```bash
 pytest -m "not e2e"   # fast machinery suite

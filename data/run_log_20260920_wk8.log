@@ -1,0 +1,259 @@
+2026-09-20 06:45:23,566 INFO run_weekly: pipeline: scrape wk8, preprocess wks[1, 2, 3, 4, 5, 6, 7, 8] (lite=False)
+2026-09-20 06:45:23,566 INFO run_weekly: === scrape ===
+2026-09-20 06:46:00,627 INFO scrape_blogs: google-news: 120 unique items for week 8
+2026-09-20 06:46:01,725 INFO scrape_blogs: wikipedia: 19 exit rows, nominations summary captured
+2026-09-20 06:46:03,628 INFO scrape_blogs: bellanaija: 0 items (week window 2026-09-13..2026-09-20)
+2026-09-20 06:46:05,632 INFO scrape_blogs: punch: 0 items (tag page is recency-only; backfill relies on RSS+wikipedia)
+2026-09-20 06:46:08,258 INFO scrape_blogs: dstv: 16 items (JS-heavy page — RSS covers backfill)
+2026-09-20 06:46:09,259 INFO scrape_blogs: legitng: 0 items
+2026-09-20 06:46:09,415 INFO scrape_blogs: week 8: 113 matched, 24 quarantined {'googlenews-rss': 120, 'wikipedia': 1, 'bellanaija': 0, 'punch': 0, 'dstv': 16, 'legitng': 0}
+2026-09-20 06:46:09,415 INFO scrape_blogs: quarantine sample (last week): ['BBNaija 2026 Week 8 Vote Poll, Result and Eviction - bbnaija', 'Day 52: Housemates reveal how people switch up in the house ', 'Day 55: Housemates campaign hard for MIPOW – BBNaija - DStv', 'Africa Magic - Big Brother: Show Ya Self – Highlights - DStv', 'BBNaija 2026 Day 52 Live Streaming, Updates, Tasks, Results,']
+{
+  "weeks": {
+    "8": {
+      "matched": 113,
+      "quarantined": 24,
+      "sources": {
+        "googlenews-rss": 120,
+        "wikipedia": 1,
+        "bellanaija": 0,
+        "punch": 0,
+        "dstv": 16,
+        "legitng": 0
+      }
+    }
+  }
+}
+2026-09-20 06:46:09,493 INFO run_weekly: === scrape done in 45.9s (exit 0) ===
+2026-09-20 06:46:09,493 INFO run_weekly: === preprocess ===
+2026-09-20 06:46:10,071 INFO scrape_blogs: manual notes: 7 override rows loaded
+2026-09-20 06:46:10,399 INFO scrape_blogs: manual notes: 7 override rows loaded
+2026-09-20 06:46:10,415 INFO preprocess: CPI renormalisation: sources exposed no ['comments', 'shares'] this week — weights renormalised over ['article_mentions', 'headline_features'] (weight mass 1.00 → 0.30)
+2026-09-20 06:46:10,415 INFO preprocess: CPI renormalisation: sources exposed no ['comments', 'shares'] this week — weights renormalised over ['article_mentions', 'headline_features'] (weight mass 1.00 → 0.30)
+2026-09-20 06:46:10,431 INFO preprocess: CPI renormalisation: sources exposed no ['comments', 'shares'] this week — weights renormalised over ['article_mentions', 'headline_features'] (weight mass 1.00 → 0.30)
+2026-09-20 06:46:10,431 INFO preprocess: CPI renormalisation: sources exposed no ['comments', 'shares'] this week — weights renormalised over ['article_mentions', 'headline_features'] (weight mass 1.00 → 0.30)
+2026-09-20 06:46:10,431 INFO preprocess: CPI renormalisation: sources exposed no ['comments', 'shares'] this week — weights renormalised over ['article_mentions', 'headline_features'] (weight mass 1.00 → 0.30)
+2026-09-20 06:46:10,431 INFO preprocess: CPI renormalisation: sources exposed no ['comments', 'shares'] this week — weights renormalised over ['article_mentions', 'headline_features'] (weight mass 1.00 → 0.30)
+2026-09-20 06:46:10,446 INFO preprocess: CPI renormalisation: sources exposed no ['comments', 'shares'] this week — weights renormalised over ['article_mentions', 'headline_features'] (weight mass 1.00 → 0.30)
+2026-09-20 06:46:10,446 INFO preprocess: CPI renormalisation: sources exposed no ['comments', 'shares'] this week — weights renormalised over ['article_mentions', 'headline_features'] (weight mass 1.00 → 0.30)
+2026-09-20 06:46:10,462 INFO preprocess: daily_cpi.json written: 157 records across weeks [1, 2, 3, 4, 5, 6, 7, 8] (missing: [])
+{
+  "weeks_built": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "missing_weeks": [],
+  "records": 157,
+  "per_week": {
+    "1": {
+      "records": 24,
+      "backfilled": false,
+      "sources": [
+        "dstv",
+        "googlenews-rss"
+      ],
+      "nominated": 0
+    },
+    "2": {
+      "records": 24,
+      "backfilled": false,
+      "sources": [
+        "dstv",
+        "googlenews-rss"
+      ],
+      "nominated": 16
+    },
+    "3": {
+      "records": 22,
+      "backfilled": false,
+      "sources": [
+        "dstv",
+        "googlenews-rss"
+      ],
+      "nominated": 16
+    },
+    "4": {
+      "records": 20,
+      "backfilled": false,
+      "sources": [
+        "dstv",
+        "googlenews-rss"
+      ],
+      "nominated": 8
+    },
+    "5": {
+      "records": 19,
+      "backfilled": false,
+      "sources": [
+        "dstv",
+        "googlenews-rss"
+      ],
+      "nominated": 14
+    },
+    "6": {
+      "records": 17,
+      "backfilled": false,
+      "sources": [
+        "dstv",
+        "googlenews-rss"
+      ],
+      "nominated": 15
+    },
+    "7": {
+      "records": 16,
+      "backfilled": false,
+      "sources": [
+        "dstv",
+        "googlenews-rss"
+      ],
+      "nominated": 13
+    },
+    "8": {
+      "records": 15,
+      "backfilled": false,
+      "sources": [
+        "dstv",
+        "googlenews-rss"
+      ],
+      "nominated": 11
+    }
+  }
+}
+2026-09-20 06:46:10,509 INFO run_weekly: === preprocess done in 1.0s (exit 0) ===
+2026-09-20 06:46:10,509 INFO run_weekly: === model ===
+2026-09-20 06:46:18,775 WARNING bbnaija_mcmc: table: no t_now record for ['Cassi', 'Gerard', 'Goddessa', 'Kamsy', 'Mercedes', 'Martins', 'Neche', 'Nomy', 'Sultex'] (treated as not in house)
+2026-09-20 06:46:18,775 INFO bbnaija_mcmc: standardization: t mean=4.5000 scale=2.2913 | sentiment mean=0.0458 scale=0.1906
+C:\Users\TOSHIBA\miniconda3\envs\bap3\Lib\site-packages\pymc\data.py:433: UserWarning: The `mutable` kwarg was not specified. Before v4.1.0 it defaulted to `pm.Data(mutable=True)`, which is equivalent to using `pm.MutableData()`. In v4.1.0 the default changed to `pm.Data(mutable=False)`, equivalent to `pm.ConstantData`. Use `pm.ConstantData`/`pm.MutableData` or pass `pm.Data(..., mutable=False/True)` to avoid this warning.
+  warnings.warn(
+2026-09-20 06:46:20,025 INFO bbnaija_mcmc: priors[momentum]: fixed effects Normal(0, 2.5); offsets non-centered, s_alpha HalfNormal(1); s_beta HalfNormal(2.0); rho = 2*Beta(2,2)-1 [LKJ(2) at n=2]
+C:\Users\TOSHIBA\miniconda3\envs\bap3\Lib\site-packages\pymc\data.py:433: UserWarning: The `mutable` kwarg was not specified. Before v4.1.0 it defaulted to `pm.Data(mutable=True)`, which is equivalent to using `pm.MutableData()`. In v4.1.0 the default changed to `pm.Data(mutable=False)`, equivalent to `pm.ConstantData`. Use `pm.ConstantData`/`pm.MutableData` or pass `pm.Data(..., mutable=False/True)` to avoid this warning.
+  warnings.warn(
+2026-09-20 06:46:20,244 INFO bbnaija_mcmc: model[momentum]: N=24 T=8 weeks, cox events at weeks [2, 3, 4, 5, 6, 7, 8]
+Auto-assigning NUTS sampler...
+2026-09-20 06:46:38,862 INFO pymc.sampling.mcmc: Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+2026-09-20 06:46:38,862 INFO pymc.sampling.mcmc: Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+2026-09-20 06:47:20,265 INFO pymc.sampling.mcmc: Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [alpha, beta, gamma, delta, theta, eta, s_alpha, s_beta, rho01, z_alpha, z_beta, psi, nb_alpha]
+2026-09-20 06:47:20,265 INFO pymc.sampling.mcmc: NUTS: [alpha, beta, gamma, delta, theta, eta, s_alpha, s_beta, rho01, z_alpha, z_beta, psi, nb_alpha]
+Sampling 4 chains for 1_000 tune and 2_000 draw iterations (4_000 + 8_000 draws total) took 1184 seconds.
+2026-09-20 07:07:17,902 INFO pymc.sampling.mcmc: Sampling 4 chains for 1_000 tune and 2_000 draw iterations (4_000 + 8_000 draws total) took 1184 seconds.
+2026-09-20 07:07:32,721 INFO bbnaija_mcmc: sampled: 2000 draws x 4 chains seed=20260912 divergences=0 lite=False
+C:\Users\TOSHIBA\miniconda3\envs\bap3\Lib\site-packages\arviz\stats\diagnostics.py:592: RuntimeWarning: invalid value encountered in scalar divide
+  (between_chain_variance / within_chain_variance + num_samples - 1) / (num_samples)
+2026-09-20 07:07:34,473 INFO bbnaija_mcmc: rhat: 35 structural-constant coordinate(s) excluded (e.g. LKJ corr diagonal)
+C:\Users\TOSHIBA\miniconda3\envs\bap3\Lib\site-packages\pymc\data.py:433: UserWarning: The `mutable` kwarg was not specified. Before v4.1.0 it defaulted to `pm.Data(mutable=True)`, which is equivalent to using `pm.MutableData()`. In v4.1.0 the default changed to `pm.Data(mutable=False)`, equivalent to `pm.ConstantData`. Use `pm.ConstantData`/`pm.MutableData` or pass `pm.Data(..., mutable=False/True)` to avoid this warning.
+  warnings.warn(
+2026-09-20 07:07:34,551 INFO bbnaija_mcmc: priors[baseline]: fixed effects Normal(0, 2.5); offsets non-centered, s_alpha HalfNormal(1); s_beta HalfNormal(0.5); rho = 2*Beta(2,2)-1 [LKJ(2) at n=2]
+C:\Users\TOSHIBA\miniconda3\envs\bap3\Lib\site-packages\pymc\data.py:433: UserWarning: The `mutable` kwarg was not specified. Before v4.1.0 it defaulted to `pm.Data(mutable=True)`, which is equivalent to using `pm.MutableData()`. In v4.1.0 the default changed to `pm.Data(mutable=False)`, equivalent to `pm.ConstantData`. Use `pm.ConstantData`/`pm.MutableData` or pass `pm.Data(..., mutable=False/True)` to avoid this warning.
+  warnings.warn(
+2026-09-20 07:07:34,770 INFO bbnaija_mcmc: model[baseline]: N=24 T=8 weeks, cox events at weeks [2, 3, 4, 5, 6, 7, 8]
+Auto-assigning NUTS sampler...
+2026-09-20 07:07:50,557 INFO pymc.sampling.mcmc: Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+2026-09-20 07:07:50,557 INFO pymc.sampling.mcmc: Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+2026-09-20 07:08:47,052 INFO pymc.sampling.mcmc: Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [alpha, beta, gamma, delta, theta, eta, s_alpha, s_beta, rho01, z_alpha, z_beta, psi, nb_alpha]
+2026-09-20 07:08:47,052 INFO pymc.sampling.mcmc: NUTS: [alpha, beta, gamma, delta, theta, eta, s_alpha, s_beta, rho01, z_alpha, z_beta, psi, nb_alpha]
+Sampling 4 chains for 1_000 tune and 2_000 draw iterations (4_000 + 8_000 draws total) took 1446 seconds.
+2026-09-20 07:33:30,603 INFO pymc.sampling.mcmc: Sampling 4 chains for 1_000 tune and 2_000 draw iterations (4_000 + 8_000 draws total) took 1446 seconds.
+2026-09-20 07:34:01,694 INFO bbnaija_mcmc: sampled: 2000 draws x 4 chains seed=20260913 divergences=0 lite=False
+C:\Users\TOSHIBA\miniconda3\envs\bap3\Lib\site-packages\arviz\stats\diagnostics.py:592: RuntimeWarning: invalid value encountered in scalar divide
+  (between_chain_variance / within_chain_variance + num_samples - 1) / (num_samples)
+2026-09-20 07:34:04,952 INFO bbnaija_mcmc: rhat: 35 structural-constant coordinate(s) excluded (e.g. LKJ corr diagonal)
+C:\Users\TOSHIBA\miniconda3\envs\bap3\Lib\site-packages\pymc\data.py:433: UserWarning: The `mutable` kwarg was not specified. Before v4.1.0 it defaulted to `pm.Data(mutable=True)`, which is equivalent to using `pm.MutableData()`. In v4.1.0 the default changed to `pm.Data(mutable=False)`, equivalent to `pm.ConstantData`. Use `pm.ConstantData`/`pm.MutableData` or pass `pm.Data(..., mutable=False/True)` to avoid this warning.
+  warnings.warn(
+2026-09-20 07:34:05,069 INFO bbnaija_mcmc: priors[heteroscedastic]: fixed effects Normal(0, 2.5); offsets non-centered, s_alpha HalfNormal(1); s_beta HalfNormal(1.0); rho = 2*Beta(2,2)-1 [LKJ(2) at n=2]
+C:\Users\TOSHIBA\miniconda3\envs\bap3\Lib\site-packages\pymc\data.py:433: UserWarning: The `mutable` kwarg was not specified. Before v4.1.0 it defaulted to `pm.Data(mutable=True)`, which is equivalent to using `pm.MutableData()`. In v4.1.0 the default changed to `pm.Data(mutable=False)`, equivalent to `pm.ConstantData`. Use `pm.ConstantData`/`pm.MutableData` or pass `pm.Data(..., mutable=False/True)` to avoid this warning.
+  warnings.warn(
+2026-09-20 07:34:05,477 INFO bbnaija_mcmc: model[heteroscedastic]: N=24 T=8 weeks, cox events at weeks [2, 3, 4, 5, 6, 7, 8]
+Auto-assigning NUTS sampler...
+2026-09-20 07:34:41,776 INFO pymc.sampling.mcmc: Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+2026-09-20 07:34:41,793 INFO pymc.sampling.mcmc: Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+2026-09-20 07:36:16,308 INFO pymc.sampling.mcmc: Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [alpha, beta, gamma, delta, theta, eta, s_alpha, s_beta, rho01, z_alpha, z_beta, s_spike, psi, nb_alpha]
+2026-09-20 07:36:16,308 INFO pymc.sampling.mcmc: NUTS: [alpha, beta, gamma, delta, theta, eta, s_alpha, s_beta, rho01, z_alpha, z_beta, s_spike, psi, nb_alpha]
+Sampling 4 chains for 1_000 tune and 2_000 draw iterations (4_000 + 8_000 draws total) took 1280 seconds.
+2026-09-20 07:57:52,844 INFO pymc.sampling.mcmc: Sampling 4 chains for 1_000 tune and 2_000 draw iterations (4_000 + 8_000 draws total) took 1280 seconds.
+2026-09-20 07:58:07,826 INFO bbnaija_mcmc: sampled: 2000 draws x 4 chains seed=20260914 divergences=0 lite=False
+C:\Users\TOSHIBA\miniconda3\envs\bap3\Lib\site-packages\arviz\stats\diagnostics.py:592: RuntimeWarning: invalid value encountered in scalar divide
+  (between_chain_variance / within_chain_variance + num_samples - 1) / (num_samples)
+2026-09-20 07:58:09,645 INFO bbnaija_mcmc: rhat: 35 structural-constant coordinate(s) excluded (e.g. LKJ corr diagonal)
+2026-09-20 07:58:11,363 INFO bbnaija_mcmc: rhat: 35 structural-constant coordinate(s) excluded (e.g. LKJ corr diagonal)
+2026-09-20 07:58:11,363 INFO bbnaija_mcmc: R-hat gate: max=1.0038 gate=1.01 -> PASS
+2026-09-20 07:58:13,176 INFO bbnaija_mcmc: rhat: 35 structural-constant coordinate(s) excluded (e.g. LKJ corr diagonal)
+2026-09-20 07:58:13,176 INFO bbnaija_mcmc: R-hat gate: max=1.0056 gate=1.01 -> PASS
+2026-09-20 07:58:14,917 INFO bbnaija_mcmc: rhat: 35 structural-constant coordinate(s) excluded (e.g. LKJ corr diagonal)
+2026-09-20 07:58:14,917 INFO bbnaija_mcmc: R-hat gate: max=1.0038 gate=1.01 -> PASS
+2026-09-20 07:58:16,655 INFO bbnaija_mcmc: rhat: 35 structural-constant coordinate(s) excluded (e.g. LKJ corr diagonal)
+2026-09-20 07:58:16,655 INFO bbnaija_mcmc: R-hat gate: max=1.0037 gate=1.01 -> PASS
+C:\Users\TOSHIBA\miniconda3\envs\bap3\Lib\site-packages\arviz\stats\stats.py:803: UserWarning: Estimated shape parameter of Pareto distribution is greater than 0.7 for one or more samples. You should consider using a more robust model, this is because importance sampling is less likely to work well if the marginal posterior and LOO posterior are very different. This is more likely to happen with a non-robust model and highly influential observations.
+  warnings.warn(
+C:\Users\TOSHIBA\miniconda3\envs\bap3\Lib\site-packages\arviz\stats\stats.py:803: UserWarning: Estimated shape parameter of Pareto distribution is greater than 0.7 for one or more samples. You should consider using a more robust model, this is because importance sampling is less likely to work well if the marginal posterior and LOO posterior are very different. This is more likely to happen with a non-robust model and highly influential observations.
+  warnings.warn(
+C:\Users\TOSHIBA\miniconda3\envs\bap3\Lib\site-packages\arviz\stats\stats.py:803: UserWarning: Estimated shape parameter of Pareto distribution is greater than 0.7 for one or more samples. You should consider using a more robust model, this is because importance sampling is less likely to work well if the marginal posterior and LOO posterior are very different. This is more likely to happen with a non-robust model and highly influential observations.
+  warnings.warn(
+2026-09-20 07:58:18,155 INFO bbnaija_mcmc: BMA BB-pseudo-BMA+ weights (P=192 cells): {'baseline': 0.3331, 'heteroscedastic': 0.3332, 'momentum': 0.3337}
+2026-09-20 07:58:18,155 INFO bbnaija_mcmc: assembling products from ['baseline', 'heteroscedastic', 'momentum'] (anchor for trend/at-risk: momentum)
+2026-09-20 07:58:19,201 INFO bbnaija_mcmc: run_inference done in 4320.4s (gate PASS, rhat_max=1.0038)
+
+=== P5 modeling run summary ===
+precision: full   rhat_max: 1.00382   candidates R-hat: {'momentum': 1.0056, 'baseline': 1.00382, 'heteroscedastic': 1.00369}
+BMA weights: {'momentum': 0.3337, 'baseline': 0.3331, 'heteroscedastic': 0.3332}
+podium: 1) Chimsom Chuka (0.36)  2) Tram (0.15)  3) Oyin (0.11)
+trend projection (secondary): ['Chimsom Chuka', 'Tram', 'Barry']
+at risk (relative hazard): [('Chimsom Chuka', 1.94), ('Tram', 1.37), ('Flora', 1.12), ('Oyin', 1.09), ('Yusuf', 0.86), ('Sheba', 0.85), ('Temi Nkem', 0.81), ('Bells', 0.8), ('Bluethopia', 0.74), ('Ricky', 0.7), ('Keivo', 0.59)]
+  Chimsom Chuka P(#1)=0.36  P(top3)=0.66  P(top5)=0.81  median=0.131 HDI89=[0.043027, 0.225138]
+  Tram         P(#1)=0.14  P(top3)=0.42  P(top5)=0.62  median=0.096 HDI89=[0.026317, 0.172661]
+  Oyin         P(#1)=0.08  P(top3)=0.29  P(top5)=0.49  median=0.081 HDI89=[0.018621, 0.148587]
+  Barry        P(#1)=0.08  P(top3)=0.28  P(top5)=0.47  median=0.078 HDI89=[0.016244, 0.147744]
+  Flora        P(#1)=0.06  P(top3)=0.23  P(top5)=0.41  median=0.072 HDI89=[0.014244, 0.13925]
+2026-09-20 07:58:19,241 INFO bbnaija_mcmc: products written: D:\BBnaija26\data\predictions.json (precision=full)
+2026-09-20 07:58:19,246 INFO bbnaija_mcmc: run record written: D:\BBnaija26\notebooks\run_record_latest.json
+2026-09-20 07:58:21,476 INFO run_weekly: === model done in 4331.0s (exit 0) ===
+2026-09-20 07:58:21,535 INFO run_weekly: last-good archive refreshed: .last_good_predictions.json
+2026-09-20 07:58:21,540 INFO run_weekly: docs/predictions.json refreshed (commit + push to deploy)
+
+================================================================
+WEEKLY RUN REVIEW — human decision required before push
+================================================================
+  Winner        : Chimsom Chuka        0.365
+  Runner-up     : Tram                 0.153
+  2nd runner-up : Oyin                 0.105
+
+  P(#1) leaders:
+    Chimsom Chuka        0.365  (tie: Tram)
+    Tram                 0.142  (tie: Chimsom Chuka, Oyin)
+    Oyin                 0.081  (tie: Barry, Tram)
+    Barry                0.080  (tie: Flora, Oyin)
+    Flora                0.059  (tie: Barry, Yusuf)
+    Yusuf                0.045  (tie: Aikou, Flora)
+
+  At risk (relative hazard, nominated only):
+    Chimsom Chuka        x1.94
+    Tram                 x1.37
+    Flora                x1.12
+    Oyin                 x1.09
+    Yusuf                x0.86
+
+  Precision      : full
+  R-hat max      : 1.00382
+  Model weights  : {'momentum': 0.3337, 'baseline': 0.3331, 'heteroscedastic': 0.3332}
+  Divergences    : {'momentum': 0, 'baseline': 0, 'heteroscedastic': 0}
+  Missing weeks  : n/a
+  Backfilled     : n/a
+
+  Stage timings  : scrape 46s, preprocess 1s, model 4331s, schema_gate 0s
+================================================================
+Next step (human): verify the numbers, then `git add docs/predictions.json && git commit && git push` to deploy.
+2026-09-20 07:58:21,541 INFO run_weekly: total wall time: 4378.0s
