@@ -12,6 +12,7 @@ data/raw/*
 !data/raw/manual_notes.csv
 data/processed/*
 data/predictions.json
+data/poll_matrix.csv
 
 # OS junk
 Thumbs.db

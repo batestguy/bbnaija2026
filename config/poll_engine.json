@@ -1,0 +1,54 @@
+{
+  "engine": "poll_matrix",
+  "spec": "poll-matrix-engine-spec.md (2026-09-22, owner-approved; supersedes Readme.txt as build brief)",
+  "recorded_in_outputs": true,
+  "note": "Every value here is copied into predictions.json's engine block on each run so published numbers are always traceable to the exact parameters that produced them.",
+
+  "window_weeks": 3,
+  "cap": 5000,
+  "lambda_decay": 0.6,
+  "epsilon_constraint": 0.01,
+  "bootstrap_replicates": 1000,
+  "bootstrap_seed": 20260922,
+  "interval_percent": 89,
+
+  "grades": {
+    "bbnaijadaily": 1.0,
+    "manual": 0.7,
+    "bbnaijadaily-result-transcribed": 1.0,
+    "ngnews247": 0.5,
+    "official_bottom_top_n": 1.0
+  },
+  "grades_note": "Keys are source_name values as they appear in snapshot sources / docs/polls.json rows. Transcribed result images ARE the widget's final numbers (grade A, transcription risk carried in provenance). FB-group manual rows = B. ngnews247 rank-only titles = C (constraint rows only, never shares).",
+
+  "pseudo_n": {
+    "ngnews247": 50,
+    "official_bottom_top_n": 200,
+    "full_share_missing_votes": 100
+  },
+
+  "constraint_rules": {
+    "mode": "soften_on_conflict",
+    "halfway_factor": 0.5,
+    "note": "Full cap/floor when the constraint's ordering agrees with the aggregated shares; halfway pull toward the bound on conflict. Every application (soft or full) is logged with before/after shares."
+  },
+
+  "dedupe_rule": "latest_wins_per_source_week",
+  "carry_forward": {
+    "enabled": true,
+    "flag": "carried",
+    "note": "Actives not covered by any full-share source this week inherit last week's aggregated share before renormalisation. Never fabricated poll numbers; the carry is explicit and flagged."
+  },
+
+  "gambit": {
+    "source": "config/twist.json",
+    "rule": "housemates with an active gambit period in week N never enter the matrix",
+    "dashboard": "auto-finalists strip (no share, no win number)"
+  },
+
+  "decision_rules": {
+    "clear_lead_p_ab": 0.90,
+    "too_close_p_ab": 0.60,
+    "tie_break": "alphabetical (display only)"
+  }
+}

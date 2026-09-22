@@ -1,8 +1,10 @@
 # PHASES.md — BBNaija 2026 Predictor: Full Project Lifecycle
 
+> **⚠ 2026-09-22 OVERHAUL (owner-approved via structured interview):** P0–P8 shipped as designed, but the **engine is being replaced** by the poll-matrix engine per `poll-matrix-engine-spec.md` (now the canonical build brief, superseding `Readme.txt`). Campaign **E0–E6** below is the live execution plan; the MCMC pipeline is **retired in place** (leaves the run path, stays in the repo). P1's compressed-schedule note and the P5/P7/P8 descriptions below remain accurate as **history of what was built**.
+
 > **Purpose:** one ordered phase plan, beginning to end, turning `PLAN.md` + `weekly-standings-spec.md` into shippable increments. Each phase has verifiable exit criteria; no phase starts before its entry criteria hold.
-> **Status:** proposed execution plan. Writing production code still requires the Phase 0 approval gate.
-> **Sources of truth:** `PLAN.md` (architecture, math, deploy) · `weekly-standings-spec.md` (weekly standings, podium, priors deltas — referred to as "the spec") · `AGENTS.md` (non-negotiables) · `ENVIRONMENTS.md` (local envs).
+> **Status:** P0–P8 COMPLETE (MCMC engine, 2026-09-09→09-20). E-campaign IN PROGRESS (poll-matrix engine, 2026-09-22→).
+> **Sources of truth:** `poll-matrix-engine-spec.md` (engine spec, owner-approved 2026-09-22) · `PLAN.md` (architecture history, deploy topology — unchanged) · `weekly-standings-spec.md` (standings product history) · `AGENTS.md` (non-negotiables) · `ENVIRONMENTS.md` (local envs).
 
 > **⚠ SEASON STATUS UPDATE (P1 recon, 2026-09-09 — see `docs/season-recon.md`):** Season 11 is **LIVE** — premiered 26 Jul 2026, currently week 7 of ~10, finale ≈ 4 Oct. Consequences:
 > 1. **Backfill-first:** weeks 1–6 must be reconstructed from archives (RSS history, Wikipedia structured tables, blog recaps) before any live prediction publishes. P4.4's bridge is now the *first-run* path, not a fallback.
@@ -261,6 +263,88 @@ python run_weekly.py [--lite] [--week N]
 5. **Honesty gates** — R-hat < 1.01 else reject+stale; `--lite` always labeled; no claim of independent voter sampling; interval-first presentation; precision label everywhere.
 6. **Local-first** — sampling on C: envs (`bap3` primary), working copy + data on D:; Colab documented alternative only, no PAT push-back.
 7. **Current season only** — no backtesting, no show-history priors.
+
+## E-Campaign — Poll-Matrix Engine Overhaul (2026-09-22)
+
+> **Spec:** `poll-matrix-engine-spec.md` (21 owner decisions in its §12). **Why:** the accuracy gap — CPI is effectively article-mentions only and the MCMC podium contradicted fan polls (Chimsom P(#1)=0.365 vs poll-last at 5.31%). **Goal:** Readme.txt's poll-matrix engine (long-format matrix → weighted aggregation → softened constraints → bootstrap) becomes the **only** model, certified live **Sat Sep 26** (MCMC retired in place). Timeline: finale ≈ Oct 4 — **two** certified runs remain (Sep 26, Oct 3).
+
+### E0 — Governance fold-in
+| Task | Detail |
+|---|---|
+| E0.1 | Append E-campaign to `PHASES.md`; spec cross-refs in `AGENTS.md` + `knowledge.md` |
+| E0.2 | Record authority chain: spec §12 decisions > `Readme.txt` historical > retired MCMC rules |
+
+**Exit:** docs updated; no code yet.
+
+### E1 — Matrix layer (`src/poll_matrix.py`, `config/poll_engine.json`)
+| Task | Detail |
+|---|---|
+| E1.1 | `config/poll_engine.json`: cap=5000, λ=0.6, ε=0.01, window_weeks=3, B=1000, grades (widget A, transcribed-image A, FB manual B, ngnews C pseudo-50, official-N A pseudo-200) — single tunables file per Readme §5.4 |
+| E1.2 | Matrix builder: snapshot sources → long-format rows (Readme §2 schema + `snapshot_id`/`n_collapsed`/`provenance`/`carried` columns); **Gambit gate** — housemates with active `gambit_periods` (from `config/twist.json`) never enter rows |
+| E1.3 | Seed: transcribed finals (wk-8 manual row + wk1–8 transcriptions as they land) enter as past-week `full_share` rows, `provenance=transcribed_seed`, grade A — legitimate rolling-window history, not outcome leakage (spec §8) |
+| E1.4 | **Latest-wins dedupe** per (source, week) with `n_collapsed` audit |
+| E1.5 | Persistence: `data/poll_matrix.csv` rebuilt idempotently each run from `docs/polls.json` + `data/raw/week_XX/polls_snapshot.json` (raw snapshots stay the source of truth) |
+| E1.6 | Fixture tests: schema shape, dedupe, Gambit gate, seed grading, quarantine propagation |
+
+**Exit:** `pytest tests/test_poll_matrix.py` green; matrix builds from current `docs/polls.json` + fixtures without network.
+
+### E2 — Aggregation & products (`src/aggregate.py`)
+| Task | Detail |
+|---|---|
+| E2.1 | Filter (window_weeks, active_set, ≥2-covered rule) → weights `w = q·min(n,cap)·λ^Δt` → full-share aggregation (Readme §3.1–3.3) |
+| E2.2 | **Carry-forward:** poll-uncovered actives inherit last week's aggregated share pre-renormalization, flagged `carried` (spec §5.4) |
+| E2.3 | Constraints with **soften-on-conflict** (full apply when ordering agrees, halfway pull on conflict, every softening logged); ngnews leaders → top_N=2 rows (C, pseudo-50); official-N rows pass through identically (Readme §3.4 + spec §5.5) |
+| E2.4 | Bootstrap B=1000 (∝ w, resample rows) → **89%** percentiles (owner override of Readme's 95%), P(A>B) replicate fractions, P(#1)/top3/top5 chips, podium slot probs from the same replicates (Readme §3.6 + spec §5.7) |
+| E2.5 | Momentum = Δ share WoW; statistical ties per Readme §4 decision rules (0.90/0.60 thresholds); eviction renormalization honored from config exit ledger |
+| E2.6 | Fixture tests: weight math by hand, constraint soften/cap paths, carry-forward flagging, tie detection, Gambit exclusion, replicate determinism (seeded) |
+
+**Exit:** `pytest tests/test_aggregate.py` green; one end-to-end synthetic aggregation hand-verifiable against the matrix.
+
+### E3 — Runner integration (`run_weekly.py`)
+| Task | Detail |
+|---|---|
+| E3.1 | Stage order: scrape (existing) → **polls (existing fetch, now load-bearing input)** → matrix → aggregate → products; MCMC stage removed from the path (code stays) |
+| E3.2 | Console review rewrite: standings table (share, 89% CI, momentum, P(win)), carried flags, constraint softenings, anchor/source status, data-sufficiency lines (rows in window, sources reporting) |
+| E3.3 | Flags `--lite`/`--prior-placeholder` removed or stubbed with honest messages (no MCMC to thin); `--skip-mcmc` renamed `--review-only` |
+| E3.4 | Gates: schema → write → last-good archive refresh (unchanged mechanics) |
+
+**Exit:** full run on fixtures + current raw data produces schema-valid `predictions.json` end-to-end; review readable by a human in 2 minutes.
+
+### E4 — Schema & dashboard swap
+| Task | Detail |
+|---|---|
+| E4.1 | `products_schema.py` v2 (adapt-in-place per spec §9): shares/CI/chips field names kept; `priors`→`engine` block; `precision`/`rhat_max` dropped; `polls` block gains provenance/carry/constraint logs — **deploy gate updated in the same change** |
+| E4.2 | Dashboard data remap (shell kept): bands→bootstrap CI, hazard panel→bottom-N + low-share risk list, momentum strip→Δ share; MCMC-only panels dropped; **auto-finalists strip** added (Gambit housemates, no numbers) |
+| E4.3 | Methodology note rewritten: poll-engine description + correlated-voters limitation + carry-forward explanation |
+
+**Exit:** dashboard renders new `predictions.json` at edge sizes; every claim traceable to a JSON field.
+
+### E5 — Seed transcription + official-N recon
+| Task | Detail |
+|---|---|
+| E5.1 | Transcribe archived result images (wk1–8, where legible) into `docs/polls.json` as seed rows — wk-8 manual row is already in; earlier weeks as they become legible |
+| E5.2 | Official bottom/top-N recon (news blogs); wire adapter if found; **zero-rows is a valid state**, documented if not found |
+
+**Exit:** matrix window for wk9 has ≥2 weeks of seed rows; recon verdict recorded in `docs/season-recon.md`.
+
+### E6 — Rehearsal, cutover, season ops
+| Task | Detail |
+|---|---|
+| E6.1 | **Midweek rehearsal (Thu–Fri Sep 24–25):** live-DOM fetch validates `parse_totalpoll` for real; full dry run on seeded matrix; hand-verify every number; `--reparse` drill against archived HTML |
+| E6.2 | **Sat Sep 26: certified first publish** (run inside the live window, before 21:00 close). Rollback = restore last-good `predictions.json` (2026-09-20 MCMC output, untouched) |
+| E6.3 | **Sat Oct 3:** second run; Sunday finale ≈ Oct 4 |
+| E6.4 | Weekly concordance continues (score_week.py pattern: predicted vs actual eviction ordering) as P11 evidence — **no cross-season backtest, no pre-finale tuning** (spec §12 #14) |
+| E6.5 | P11 closeout absorbs engine fate decisions: cap posture, anchor strength, Reddit/Telegram adapters, Gambit podium reconciliation, legacy MCMC removal |
+
+**Exit:** Sep 26 standings published from the poll engine; concordance log accruing; P11 carries the open decisions.
+
+### E-campaign cross constraints
+1. All PHASES cross constraints still hold ($0, no Twitter, manual-only Saturdays, single writer, calendar-true weeks, quarantine-never-drop, honest gaps).
+2. **Gambit rule change:** matrix-exclusion (spec §6) replaces the zero-out filter for the new engine; driven entirely by `config/twist.json` `gambit_periods` (currently weeks 1–5 = Flora/Aikou, released wk6 → exclusion inert unless the twist reactivates).
+3. **Honesty gates v2:** 89% intervals only; carried flags visible; softenings logged; data-sufficiency printed; missing/dark poll degrades honestly (no fabrication).
+4. Rollback discipline: last-good `predictions.json` restored on any gate rejection (mechanics unchanged from P6.3).
+
+---
 
 ## Risk register (from PLAN §7, phase-mapped)
 

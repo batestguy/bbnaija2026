@@ -1,20 +1,20 @@
 #!/usr/bin/env python
-"""P6 — Weekly runner: the single Saturday entrypoint.
+"""E3 — Weekly runner: the single Saturday entrypoint (poll-matrix engine).
 
-    python run_weekly.py [--lite] [--week N] [--prior-placeholder] [--skip-mcmc]
+    python run_weekly.py [--week N] [--review-only]
 
-Flow (P6.1): scrape current week(s) -> manual overrides (already ingested by
-preprocess) -> preprocess (gap-tolerant, backfill-bridge) -> MCMC -> products
--> SCHEMA GATE -> R-hat gate -> atomic write of data/predictions.json.
+Flow (E3.1): score_previous catch-up -> blog scrape (archive continuity only
+— CPI is retired) -> poll fetch (the load-bearing input) -> poll-matrix build
+-> aggregation/bootstrap -> SCHEMA GATE -> atomic write of data/predictions.json.
 
-Gates in order (P6.3): schema validation, then the model's own R-hat gate.
-A rejected run keeps the last good data/predictions.json and flags staleness —
-never overwrites good output with bad.
+The MCMC/BMA stage is RETIRED from the path (owner decision 2026-09-22,
+poll-matrix-engine-spec.md); its code stays in the repo untouched.
 
-The console review summary (P6.4) + per-stage timings (P6.5) end the run;
-the human decides to `git push` (which fires the P8 deploy). Placeholder mode
-exists only for deploy plumbing tests — it refuses to run on Saturdays so it
-can never be mistaken for the real run (decision 2026-09-13).
+Gates: schema validation (products_schema.py). A rejected run keeps the last
+good data/predictions.json and flags staleness — never overwrites good output
+with bad. There is no R-hat gate anymore; the honesty signal is the review's
+data-sufficiency block (rows in window, sources reporting, carried/unmeasured
+flags) — the human reads it before pushing.
 """
 
 from __future__ import annotations
@@ -33,8 +33,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
-from src import preprocess as pp  # noqa: E402
-from src import scrape_blogs as sb  # noqa: E402
+from src import scrape_blogs as sb  # noqa: E402  (season config + current_week)
 from src import score_week as sw  # noqa: E402
 from src.products_schema import SchemaError, validate_products  # noqa: E402
 
@@ -67,71 +66,86 @@ def cmd_scrape(weeks: list[int]) -> None:
     run_step("scrape", ["-m", "src.scrape_blogs", "--week", *[str(w) for w in weeks]])
 
 
-def cmd_preprocess(weeks: list[int], scrape_missing: bool) -> None:
-    args = ["-m", "src.preprocess", "--weeks", *[str(w) for w in weeks]]
-    if scrape_missing:
-        args.append("--scrape-missing")
-    run_step("preprocess", args)
+def cmd_matrix(week: int) -> None:
+    """E1 stage: rebuild the long-format poll matrix from archived snapshots
+    + the manual log (idempotent, network-free)."""
+    run_step("matrix", ["-m", "src.poll_matrix", "--week", str(week)])
 
 
-def cmd_model(lite: bool, prior_placeholder: bool) -> None:
-    """Model stage. Weeks are calendar-true inside the model (config-driven).
+def cmd_polls(week: int) -> None:
+    """Poll fetch stage — now the LOAD-BEARING input (E3.1): the Saturday
+    snapshot IS this week's primary observation. Still best-effort by
+    contract (a fetch failure degrades the run to seeds-only with a loud
+    review warning, never a rejected run)."""
+    run_step("polls", ["-m", "src.scrape_polls", "--week", str(week)])
 
-    Default is the full spec tier (4 chains x 2000 draws); --lite is the
-    explicitly-requested, honestly-labelled fallback. target_accept=0.95 is
-    the value the P5 validation was certified with (2026-09-16) — overridable
-    via BBN_TARGET_ACCEPT but never silently changed.
-    """
-    env = {
-        "BBN_MCMC_CORES": os.environ.get("BBN_MCMC_CORES", "4"),
-        "BBN_TARGET_ACCEPT": os.environ.get("BBN_TARGET_ACCEPT", "0.95"),
-    }
-    args = ["notebooks/bbnaija_mcmc.py"]
-    if prior_placeholder:
-        args.append("--prior-placeholder")
-    elif lite:
-        args.append("--lite")
-    else:
-        args.append("--full")
-    args += ["--out", str(PREDICTIONS)]
-    run_step("model", args, env=env)
+
+def cmd_aggregate(week: int) -> None:
+    """E2 stage: weighted aggregation + softened constraints + bootstrap ->
+    products (share=P(win), 89% CI, rank chips, podium)."""
+    run_step("aggregate", ["-m", "src.aggregate", "--week", str(week),
+                           "--out", str(PREDICTIONS)])
 
 
 def review_summary(products: dict, timings: dict[str, float]) -> None:
-    """P6.4 console review — the human decides to push after reading this."""
+    """E3.2 console review — the human decides to push after reading this."""
     print("\n" + "=" * 64)
-    print("WEEKLY RUN REVIEW — human decision required before push")
+    print("WEEKLY RUN REVIEW (poll-matrix engine) — human decision required")
     print("=" * 64)
     pod = products.get("podium", {})
     for slot, label in (("winner", "Winner"),
                         ("runner_up", "Runner-up"),
                         ("second_runner_up", "2nd runner-up")):
-        p = pod.get(slot, {})
-        print(f"  {label:14s}: {p.get('name', '?'):20s} {p.get('prob', 0):.3f}")
+        p = pod.get(slot) or {}
+        if p.get("name"):
+            print(f"  {label:14s}: {p['name']:20s} {p.get('prob', 0):.3f}")
 
     actives = [h for h in products.get("housemates", []) if h.get("status") == "active"]
-    top = sorted(actives, key=lambda h: -h.get("p_rank_1", 0.0))[:6]
-    print("\n  P(#1) leaders:")
-    for h in top:
-        tie = f"  (tie: {', '.join(h['statistical_tie_with'])})" if h.get("statistical_tie_with") else ""
-        print(f"    {h['name']:20s} {h['p_rank_1']:.3f}{tie}")
+    print("\n  Standings (share = P(win), 89% bootstrap CI):")
+    for h in sorted(actives, key=lambda x: -x.get("share", 0.0)):
+        mo = h.get("momentum")
+        mo_s = f"{mo:+.3f}" if isinstance(mo, (int, float)) else "  —  "
+        flags = (" CARRIED" if h.get("carried") else "") \
+            + (" UNMEASURED" if h.get("unmeasured") else "")
+        tie = (f"  (tie: {', '.join(h['statistical_tie_with'])})"
+               if h.get("statistical_tie_with") else "")
+        print(f"    {h['name']:16s} S={h['share']:.4f} "
+              f"[{h['ci_89'][0]:.3f},{h['ci_89'][1]:.3f}] "
+              f"mom={mo_s} P1={h['p_rank_1']:.3f} P3={h['p_top3']:.3f}{flags}{tie}")
 
     risks = products.get("at_risk", [])[:5]
     if risks:
-        print("\n  At risk (relative hazard, nominated only):")
+        print("\n  At risk (lowest share; bottom-N flagged marked *):")
         for a in risks:
-            print(f"    {a['name']:20s} x{a['relative_hazard']:.2f}")
+            star = "*" if a.get("bottom_n_flag") else " "
+            print(f"    {star}{a['name']:18s} {a['share']:.4f}")
 
-    print("\n  Precision      :", products.get("precision"))
-    print("  R-hat max      :", products.get("rhat_max"))
-    print("  Model weights  :", products.get("model_weights"))
-    print("  Divergences    :", products.get("divergences_by_candidate", "n/a"))
-    print("  Missing weeks  :", products.get("missing_weeks", "n/a"))
-    print("  Backfilled     :", products.get("backfilled_weeks", "n/a"))
-    if products.get("placeholder"):
-        print("  *** PLACEHOLDER (prior predictive) — NEVER PUBLISH AS PREDICTIONS ***")
-    if products.get("gambit_banner"):
-        print("  *** GAMBIT TWIST ACTIVE — flagged housemates: P(#1) = 0 ***")
+    cons = (products.get("polls") or {}).get("constraint_log") or []
+    if cons:
+        print("\n  Constraints applied:")
+        for c in cons:
+            print(f"    {c.get('source')} {c.get('kind')}: "
+                  f"{'agreed' if c.get('agreed') else 'CONFLICT-softened'} "
+                  f"-> {c.get('after')}")
+
+    ds = products.get("data_sufficiency", {})
+    print("\n  Data sufficiency:")
+    print(f"    rows in window : {ds.get('rows_in_window', 0)} "
+          f"(full-share {ds.get('full_share_rows', 0)}, "
+          f"constraint {ds.get('constraint_rows', 0)})")
+    print(f"    sources        : {', '.join(ds.get('sources_reporting', [])) or 'NONE'}")
+    print(f"    weeks          : {ds.get('weeks_in_window', [])}")
+    polls = products.get("polls") or {}
+    if polls.get("carried"):
+        print(f"    carried        : {', '.join(polls['carried'])}")
+    if polls.get("unmeasured_floored"):
+        print(f"    unmeasured     : {', '.join(polls['unmeasured_floored'])} "
+              "(floored at min measured share)")
+    if ds.get("rows_in_window", 0) <= 2:
+        print("    *** THIN WINDOW — CIs are wide and rankings fragile; "
+              "read before pushing ***")
+    print("\n  Engine         :", products.get("engine", {}).get("name", "?"))
+    print("  Precision      :", products.get("precision"))
     print("\n  Stage timings  :",
           ", ".join(f"{k} {v:.0f}s" for k, v in timings.items()) or "n/a")
     print("=" * 64)
@@ -142,41 +156,27 @@ def review_summary(products: dict, timings: dict[str, float]) -> None:
 def main(argv: list[str] | None = None) -> int:
     logging.basicConfig(level=logging.INFO, stream=sys.stdout,
                         format="%(asctime)s %(levelname)s %(name)s: %(message)s")
-    ap = argparse.ArgumentParser(description="P6 weekly runner (single Saturday entrypoint)")
-    ap.add_argument("--lite", action="store_true", help="reduced sampling (labelled 'lite', never silent)")
+    ap = argparse.ArgumentParser(description="E3 weekly runner (single Saturday entrypoint, poll-matrix engine)")
     ap.add_argument("--week", type=int, default=None,
                     help="force a specific season week (default: calendar-true current week)")
-    ap.add_argument("--prior-placeholder", action="store_true",
-                    help="deploy-plumbing mode: prior-predictive placeholder (refuses on Saturdays)")
-    ap.add_argument("--skip-mcmc", action="store_true",
-                    help="debug: skip scrape/preprocess/model; re-review the existing predictions.json")
+    ap.add_argument("--review-only", action="store_true",
+                    help="skip scrape/aggregate; re-review the existing predictions.json")
     args = ap.parse_args(argv)
 
     t_all = time.time()
     timings: dict[str, float] = {}
-    is_saturday = datetime.now(timezone.utc).weekday() == 5
 
-    if args.prior_placeholder and is_saturday:
-        LOG.error("--prior-placeholder refused on a Saturday (placeholder must never "
-                  "become the weekly product). Run the real pipeline.")
-        return 2
+    if args.review_only:
+        LOG.info("--review-only: re-reviewing existing %s", PREDICTIONS)
 
     try:
-        if not args.skip_mcmc:
+        if not args.review_only:
             if args.week:
                 current = args.week
             else:
                 season = sb.load_season()
                 current = sb.current_week(season)
-            # Scrape the current week; PREPROCESS the full season range —
-            # build_all rewrites daily_cpi.json with only the requested weeks,
-            # so a partial rebuild would silently drop earlier history
-            # (caught 2026-09-16: weeks 1-5 vanished after a --weeks 6 7 run).
-            # Rebuilding all weeks is idempotent: load_week_items dedupes by
-            # (source, url) and the scraper appends deduped items.
-            all_weeks = list(range(1, current + 1))
-            LOG.info("pipeline: scrape wk%d, preprocess wks%s (lite=%s)",
-                     current, all_weeks, args.lite)
+            LOG.info("pipeline: polls wk%d -> matrix -> aggregate (poll-matrix engine)", current)
 
             # P10.5 catch-up: score any pending eviction week against the
             # last-good archive BEFORE this run refreshes it. Best-effort —
@@ -190,17 +190,32 @@ def main(argv: list[str] | None = None) -> int:
                 LOG.warning("score_previous skipped: %s", e)
                 timings["score_previous"] = time.time() - t0
 
+            # Blog scrape: ARCHIVE CONTINUITY ONLY (CPI is retired) — keeps
+            # raw snapshots accruing for post-season review without feeding
+            # anything. Never blocks the certified run.
             t0 = time.time()
-            cmd_scrape([current])
+            try:
+                cmd_scrape([current])
+            except Exception as e:  # noqa: BLE001
+                LOG.warning("blog scrape skipped (%s) — archive-only stage", e)
             timings["scrape"] = time.time() - t0
 
+            # Poll fetch: the load-bearing input. Best-effort by contract —
+            # a failure degrades to seeds-only (review shows it loudly).
             t0 = time.time()
-            cmd_preprocess(all_weeks, scrape_missing=True)
-            timings["preprocess"] = time.time() - t0
+            try:
+                cmd_polls(current)
+            except Exception as e:  # noqa: BLE001 — degrade, never reject
+                LOG.warning("poll fetch failed (%s) — running on seeds only", e)
+            timings["polls"] = time.time() - t0
 
             t0 = time.time()
-            cmd_model(args.lite, args.prior_placeholder)
-            timings["model"] = time.time() - t0
+            cmd_matrix(current)
+            timings["matrix"] = time.time() - t0
+
+            t0 = time.time()
+            cmd_aggregate(current)
+            timings["aggregate"] = time.time() - t0
 
         # ---- gates (P6.3): schema first, then R-hat gate already applied in-model ----
         t0 = time.time()

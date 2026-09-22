@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BBNaija 2026 — Win Probability Tally</title>
+<title>BBNaija 2026 — Fan-Poll Win Probability Tally</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0d12'/%3E%3Ctext x='16' y='22' font-family='Arial Black' font-size='16' fill='%23f5b301' text-anchor='middle'%3EBB%3C/text%3E%3C/svg%3E">
-<meta name="description" content="Bayesian weekly standings projection for Big Brother Naija 2026: win probabilities, podium slots, at-risk hazards.">
+<meta name="description" content="Weekly fan-poll standings projection for Big Brother Naija 2026: win probabilities, podium slots, at-risk watch.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="BBNaija 2026 Win Probability">
-<meta property="og:title" content="BBNaija 2026 — Who wins? Weekly Bayesian tally">
-<meta property="og:description" content="Model-based win probabilities, podium projection and at-risk hazards. Refreshed every Saturday after the weekly run.">
+<meta property="og:title" content="BBNaija 2026 — Who wins? Weekly fan-poll tally">
+<meta property="og:description" content="Fan-poll win probabilities, podium projection and at-risk watch. Refreshed every Saturday after the weekly run.">
 <meta property="og:image" content="https://batestguy.github.io/bbnaija2026/assets/social-card.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -204,7 +204,7 @@ footer b{color:#ffffff;font-weight:800;font-style:italic}
 <div class="wrap">
   <header>
     <div>
-      <div class="sub">Season 11 · Bayesian Tally · Updated Weekly</div>
+      <div class="sub">Season 11 · Fan-Poll Tally · Updated Weekly</div>
       <h1>BBNaija <span class="yr">2026</span> Win Probability</h1>
     </div>
     <div class="badges" id="badges"></div>
@@ -219,6 +219,11 @@ footer b{color:#ffffff;font-weight:800;font-style:italic}
   </div>
 
   <section class="hero" id="hero" aria-label="Headline call"></section>
+
+  <section class="panel" id="autoFinalists" aria-label="Gambit auto-finalists" style="display:none">
+    <h2>Gambit auto-finalists <span class="tag sec">immune · ineligible for the grand prize · no poll numbers</span></h2>
+    <div class="roster" id="autoStrip"></div>
+  </section>
 
   <section class="podium" id="podium" aria-label="Projected podium"></section>
 
@@ -236,9 +241,10 @@ footer b{color:#ffffff;font-weight:800;font-style:italic}
     <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
       <section class="panel" aria-label="Rank probabilities">
         <h2>Rank probabilities <span class="tag">P(#1) · P(top3) · P(top5)</span></h2>
+        <div class="note" id="chipsNote" style="display:none;color:var(--faint);font-size:11px;margin:-4px 0 6px"></div>
         <div class="chips" id="chips"></div>
       </section>
-      <section class="panel trend" aria-label="Trend projection">
+      <section class="panel trend" id="trendPanel" aria-label="Trend projection">
         <h2>Trend-projected podium <span class="tag sec">secondary</span></h2>
         <div class="race" id="race" aria-hidden="true"></div>
         <div class="tnote-h" id="trendNoteH"></div>
@@ -246,7 +252,7 @@ footer b{color:#ffffff;font-weight:800;font-style:italic}
         <div class="note" id="trendNote"></div>
       </section>
       <section class="panel" aria-label="At risk">
-        <h2>At risk this week <span class="tag sec">relative hazard</span></h2>
+        <h2>At risk this week <span class="tag sec" id="riskTag">relative hazard</span></h2>
         <div class="risk" id="risk"></div>
       </section>
     </div>
@@ -276,18 +282,18 @@ footer b{color:#ffffff;font-weight:800;font-style:italic}
   <details class="how">
     <summary>How this works — in four lines</summary>
     <div class="howsum">
-      <p><b>1.</b> Every day we scan Nigerian entertainment blogs and news feeds for mentions of each housemate.</p>
-      <p><b>2.</b> Mentions, comments and shares become a daily engagement score (CPI) per housemate.</p>
-      <p><b>3.</b> A Bayesian model learns each housemate's momentum and eviction risk from those scores and the eviction record.</p>
-      <p><b>4.</b> 10,000 simulations of the rest of the season produce the win probabilities, podium projection and at-risk panel.</p>
-      <p style="color:var(--faint)">Probabilities are model shares of win probability — never vote counts. Full technical detail below.</p>
+      <p><b>1.</b> Every Saturday we snapshot the free fan polls: the bbnaijadaily vote widget, hand-logged rows, and official bottom-N/top-N reports from news blogs.</p>
+      <p><b>2.</b> Each observation is stored as one row in a long-format matrix, then aggregated with source-grade, sample-size and recency weights.</p>
+      <p><b>3.</b> Official ranking constraints are applied (softened where they conflict with the polls), and 1,000 bootstrap replicates quantify the uncertainty.</p>
+      <p><b>4.</b> The aggregated share IS the win probability — the 89% bands, rank chips and podium odds all come from the same bootstrap replicates.</p>
+      <p style="color:var(--faint)">Numbers are fan-poll shares — never vote counts. Full technical detail below.</p>
     </div>
   </details>
 
   <section class="about" id="about">
-    <b>Builders.</b> Conceived, engineered and operated by <b>JJMB</b> — model, pipeline and
-    dashboard are original work, run on a $0 stack: public blogs and RSS, open-source Bayesian
-    tooling, and free hosting. No official data access, no paid APIs.
+    <b>Builders.</b> Conceived, engineered and operated by <b>JJMB</b> — engine, pipeline and
+    dashboard are original work, run on a $0 stack: public fan polls and RSS, open-source
+    tooling, and free hosting. No official data access, no paid APIs, no X/Twitter.
   </section>
 
   <footer id="foot"></footer>

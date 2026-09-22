@@ -1,16 +1,29 @@
-# BBNaija 2026 Win Probability — a $0 Bayesian season tracker
+# BBNaija 2026 Win Probability — a $0 fan-poll aggregation engine
 
 [![Live dashboard](https://img.shields.io/badge/live-dashboard-f5b301)](https://batestguy.github.io/bbnaija2026/)
 [![deploy](https://github.com/batestguy/bbnaija2026/actions/workflows/deploy.yml/badge.svg)](https://github.com/batestguy/bbnaija2026/actions/workflows/deploy.yml)
-[![tests](https://img.shields.io/badge/tests-49%20passing-3dd6c3)](#testing)
+[![tests](https://img.shields.io/badge/tests-138%20passing-3dd6c3)](#testing)
 
 **Live:** https://batestguy.github.io/bbnaija2026/ ·
 Mirrors: [HF Space](https://batestguy-bbnaija2026-dashboard.static.hf.space/) ·
 [HF Dataset archive](https://huggingface.co/datasets/batestguy/bbnaija2026-predictions)
 
-A Bayesian model that reads Nigerian entertainment blogs every week and turns housemate
-buzz into **win probabilities, a podium projection, and an at-risk watch** — then publishes
-them to a static dashboard. Everything runs locally on a laptop; everything is free.
+A transparent aggregation engine that reads **free fan polls** every week — the
+bbnaijadaily vote widget, hand-logged rows, official bottom-N/top-N reports —
+and turns them into **win probabilities, a podium projection, and an at-risk
+watch**. The aggregated share *is* the win probability; every published number
+is hand-checkable against the poll log. Everything runs locally on a laptop;
+everything is free.
+
+> **2026-09-22 engine overhaul (owner decision):** the original Bayesian MCMC
+> (blog-CPI → ZINB/Cox → BMA) was **retired in place** and replaced by the
+> poll-matrix engine specified in `poll-matrix-engine-spec.md` (21 owner
+> decisions). Why: the MCMC measured *press coverage* while fans watch *polls* —
+> week 8 put Chimsom Chuka at P(#1)=0.365 while every fan poll had her last
+> (5.31%), and a coverage collapse sank the poll leader Temi Nkem to 0.040.
+> The polls are now the engine, not an afterthought. First certified run:
+> **Saturday 2026-09-26**. Until then the dashboard still serves the final
+> MCMC output. History of the retired engine is at the bottom of this file.
 
 ![Dashboard hero and trajectory chart](docs/assets/shot-top.png)
 
@@ -18,16 +31,17 @@ them to a static dashboard. Everything runs locally on a laptop; everything is f
 
 | Panel | What it tells you |
 |---|---|
-| **Hero call** | The model's current pick to win, with the headline probability |
-| **Trajectory chart** | Predicted win-share per week for the top 5 (+ anyone you add), with 89% credible bands. Hover any line for the exact median and band; hovered line pops, others fade |
+| **Hero call** | The engine's current pick to win, with the headline probability |
+| **Trajectory chart** | Aggregated share per week for the top 5 (+ anyone you add), with 89% bootstrap bands. Hover any line for the exact number |
 | **Podium strip** | Winner / runner-up / 2nd runner-up with slot probabilities and statistical-tie markers |
-| **Rank chips** | P(#1), P(top-3), P(top-5) for all active housemates |
-| **At-risk panel** | Relative eviction hazards from the survival sub-model |
-| **Race to the finale** | The secondary momentum readout as a literal race: top-3 runners on a track with a week-10 checkered finish line. When this disagrees with the headline, the panel says so in red — on purpose |
+| **Rank chips** | P(#1), P(top-3), P(top-5) for all active housemates — plus **momentum** (Δ share week-over-week) and `carried` flags |
+| **At-risk panel** | Lowest-share actives; `*` marks official bottom-N flags |
+| **Gambit auto-finalists** | Appears only while the twist is active: immune housemates with a finale seat and no poll numbers (inert since week 6 — both members were released) |
 | **House status** | Full 24-housemate roster: active, evicted (wk N), walked |
 | **Prediction vs outcome** | Grows weekly: was last week's called winner right? Brier-scored |
 
-![Race-to-finale momentum strip and trend readout](docs/assets/shot-race.png)
+*(Screenshots below are from the Sep-20 MCMC run and predate the poll-engine
+cutover; the panel shell is unchanged.)*
 
 <p align="center"><img src="docs/assets/shot-mobile.png" width="390" alt="Mobile view"></p>
 
@@ -36,228 +50,227 @@ them to a static dashboard. Everything runs locally on a laptop; everything is f
 ## How it works — the pipeline
 
 ```
- blogs & RSS ──► scrape_blogs.py ──► preprocess.py ──► bbnaija_mcmc.py ──► predictions.json ──► deploy.yml
- (Google News    (one isolated       (gap-tolerant     (ZINB + Cox,        (median, 89% HDI,      (schema gate
-  RSS primary,    parser per          weekly CPI        3 candidates,       rank probs,            then Pages +
-  BellaNaija/     source,             builder, VADER    BMA-weighted)       pairwise, at-risk)     HF Space +
-  Pulse/DStv      BeautifulSoup4)     sentiment)                                                   dataset)
+ fan polls ──► scrape_polls.py ──► poll_matrix.py ──► aggregate.py ──► predictions.json ──► deploy.yml
+ (bbnaijadaily  (state-aware         (long-format      (weights →       (share = P(win),      (schema gate
+  widget,       TotalPoll parser,    matrix, latest-    aggregate →      89% bootstrap CI,     then Pages +
+  ngnews247,    ngnews RSS,          wins dedupe,       constraints →    rank probs,           HF Space +
+  manual log)   manual log)          Gambit gate,       bootstrap)       podium, pairwise)     dataset)
+                                     transcribed seeds)
 ```
 
-Every stage is a tested CLI; `run_weekly.py` orchestrates them end-to-end on Saturdays.
+Every stage is a tested CLI; `run_weekly.py` orchestrates them end-to-end on
+Saturdays. The blog scraper still runs for archive continuity but **feeds
+nothing** — CPI is retired.
 
-**Step 1 — Scrape.** One isolated parser per source (a failure in one feed can't poison the
-others): Google News RSS (primary), BellaNaija, Pulse, DStv/Africa Magic via BeautifulSoup4.
-No X/Twitter anywhere — the free read tier was removed for new developers in Feb 2026.
+**Step 1 — Fetch the polls (the load-bearing input).** One isolated parser per
+source: the bbnaijadaily TotalPoll widget (server-rendered, state-aware —
+after the Saturday 21:00 close it reports `closed` and nothing is fabricated),
+ngnews247 YouTube RSS titles (rank-only), and the hand-logged `docs/polls.json`
+rows (FB groups, transcribed result images). No X/Twitter anywhere — the free
+read tier was removed for new developers in Feb 2026.
 
-**Step 2 — Preprocess into a weekly engagement index.** For housemate *i* in week *t*:
+**Step 2 — The matrix.** Every observation becomes one row in a long-format
+table (schema from the original brief, extended with audit columns): poll URL,
+timestamp, week, sample size, source grade, provenance, and one column per
+housemate (evicted columns retained forever). Housemates in an *active* Gambit
+period never enter the matrix. Transcribed past-week finals are legitimate
+seed rows (grade A, recency-discounted) — current-week finals never anchor the
+current week.
 
-```
-CPI(it) = 0.4·c̃(it) + 0.3·s̃(it) + 0.2·m̃(it) + 0.1·h̃(it)
-```
+**Step 3 — Aggregate.** The frozen sequence, with every parameter in
+`config/poll_engine.json` and stamped into each run's output.
 
-where each term is the raw count (comments, shares, article mentions, headline features)
-**min-max normalised across housemates that week** (the `̃`). If a term is unavailable for a
-week, the weights renormalise over the terms that survived and the renormalisation is logged.
-Sentiment per item comes from VADER polarity ∈ [−1, 1].
+**Step 4 — Products.** 1,000 bootstrap replicates → 89% bands, rank
+probabilities, podium slot odds, pairwise P(A>B). No new sampling machinery;
+the point estimate stays exactly the hand-verifiable weighted aggregation.
 
-**Step 3 — Model.** A joint Bayesian model with a count sub-model for engagement and a
-survival sub-model for evictions, sharing information through a per-housemate frailty
-(details below).
-
-**Step 4 — Products.** 10,000 Dirichlet-multinomial posterior-predictive draws → medians,
-89% HDI bands, rank probabilities, pairwise "P(A finishes above B)", at-risk hazards,
-statistical-tie markers (overlapping adjacent HDIs, alphabetical tie-break).
-
-**Step 5 — Deploy.** A schema gate validates `predictions.json`; only then does GitHub Pages
-publish, the HF Static Space mirror sync, and the dataset archive update. A failed gate
-leaves the last good file live everywhere.
+**Step 5 — Deploy.** A schema gate validates `predictions.json`; only then does
+GitHub Pages publish, the HF Static Space mirror sync, and the dataset archive
+update. A failed gate leaves the last good file live everywhere.
 
 ---
 
-## The model, precisely
+## The engine, precisely
 
-### Notation
+### Step 1 — Filter (window, active set, minimum coverage)
 
-| Symbol | Meaning |
-|---|---|
-| *i* | housemate (N = 24 entered; risk sets shrink as evictions occur) |
-| *t* | week (1…10), standardised inside the model |
-| *y(it)* | engagement count = round(100 · CPI(it)) |
-| *S(it)* | weekly mean VADER sentiment for *i* |
-| *A(it)* | 1 if *i* is nominated for eviction that week |
-| *W(t)* | 1 if the season twist is active at *t* (the "Gambit") |
+Keep observations from the last `window_weeks = 3` weeks. Restrict each row to
+the housemates it covers and to currently-active housemates. Drop any row
+covering fewer than 2 eligible housemates.
 
-### Count sub-model — engagement
-
-The observed count is zero-inflated: some housemate-weeks produce *no* coverage at all,
-which is a different state from "low coverage". So the likelihood is a
-**zero-inflated negative binomial (ZINB)**:
+### Step 2 — Weight each observation
 
 ```
-y(it) ~ ZINB(μ(it), ψ, α_NB)
-
-log μ(it) = α + α_i + (β + β_i)·t + γ·S(it) + δ·A(it) + θ·W(t) + η·(W(t)·β_i)
+w_k = q_k × min(n_k, cap) × λ^Δt_k
 ```
 
-| Term | Meaning |
-|---|---|
-| `α` | baseline log-engagement for the house |
-| `α_i` | housemate effect — how much louder *i* is than the house baseline (also the Cox frailty, below) |
-| `β + β_i` | house-wide trend + housemate-specific momentum |
-| `γ·S(it)` | sentiment tilt — positive coverage moves more units |
-| `δ·A(it)` | nomination bump — the week's nominees get written about more |
-| `θ·W(t)` | the twist's house-wide attention effect |
-| `η·(W(t)·β_i)` | twist heteroscedasticity — after the twist, housemate slopes spread out |
-| `ψ` | zero-inflation probability (Beta(2,2) prior) |
-| `α_NB` | negative-binomial overdispersion (HalfNormal(1) prior) |
-
-### Survival sub-model — evictions
-
-A **Cox proportional-hazards partial likelihood** over weekly risk sets (everyone still in
-the house during week *t*; baseline hazard eliminated by conditioning on the risk set):
-
-```
-λ(i, t) ∝ exp(α_i)
-
-L_cox = Π_t  exp( Σ_eventees-in-t α_i )  /  ( Σ_{j in risk set at t} exp(α_j) )^(d_t)
-```
-
-where *d_t* is the number of eviction events in week *t*. **`α_i` is the only covariate** —
-the same housemate-loudness parameter drives both engagement and survival, which is what
-makes the model *joint*. Output is **relative hazards only** (the at-risk panel); no absolute
-eviction probabilities are claimed.
-
-### Housemate effects — correlated, centred, non-centred
-
-The pair `(α_i, β_i)` is modelled as correlated offsets with a sum-to-zero centre:
-
-```
-[α_i]   [s_a · z_a                    ]
-[β_i] = [s_b · (ρ·z_a + √(1−ρ²)·z_b)]  −  column means
-```
-
-- `z_a, z_b ~ Normal(0,1)` per housemate (non-centred — this killed the divergences)
-- `s_a ~ HalfNormal(1)`, `s_b ~ HalfNormal(sd_B)` — the variation scales
-- `ρ = 2·Beta(2,2) − 1` — the LKJ(2) correlation at n = 2, exactly
-- sum-to-zero centring removes the unidentifiable common-shift ridge
-  (add a constant to every effect, subtract it from the population mean)
-
-### Priors (weakly informative, fixed)
-
-| Parameter | Prior | Rationale |
+| Symbol | Meaning | Value |
 |---|---|---|
-| `α, β, γ, δ, θ, η` | Normal(0, 2.5) | fixed effects; predictors standardised first |
-| `s_a` | HalfNormal(1) | variance component |
-| `s_b` | HalfNormal(sd_B) | **the BMA candidate knob** — see below |
-| `ρ` | 2·Beta(2,2) − 1 | LKJ(2) at n = 2 |
-| `ψ` | Beta(2,2) | zero-inflation, mass away from 0/1 |
-| `α_NB` | HalfNormal(1) | overdispersion |
+| `q_k` | source grade: A=1.0 (bbnaijadaily widget, transcribed widget finals, official bottom/top-N), B=0.7 (FB-group manual rows), C=0.5 (ngnews247 rank titles) | from config |
+| `n_k` | actual votes for the whole poll (pseudo-n for constraint rows: ngnews 50, official-N 200) | capped |
+| `cap` | max effective sample size — deliberately tames the widget's ~600k weekly votes so other sources keep influence | **5,000** |
+| `λ` | recency decay — one week of age multiplies weight by 0.6 | 0.6 |
+| `Δt_k` | age in weeks | — |
 
-No show-history priors: **current season only, no backtesting**. Every prior value is
-printed to the run log and recorded in the `priors` block of the run record.
+### Step 3 — Aggregate full-share observations
 
-### The Gambit twist rule (hard-coded semantics)
-
-The Gambit pair gets immunity + a guaranteed finale seat but is **disqualified from the
-prize**. This is implemented as exact zeroing in the posterior predictive — never
-down-weighting:
+Each row's shares are renormalised over the housemates it covers, then the
+per-housemate share is the weight-weighted mean across rows:
 
 ```
-P(#1 = i) = 0                              if GambitFlag_i = 1
-P(#1 = i) = exp(μ_i) / Σ_{j ∉ Gambit} exp(μ_j)    otherwise
+S_i = Σ_k w_k · s_i,k  /  Σ_k w_k          (full_share rows only)
 ```
 
-Runner-up / top-3 / top-5 eligibility is untouched: a Gambit housemate can podium, cannot win.
-Timing comes from `config/twist.json` (`gambit_periods`), never hard-coded.
+**Carry-forward:** actives the polls didn't cover this week (nominated polls
+only cover nominees) inherit last week's aggregated share and are flagged
+`carried`. Actives never measured in the window get the *minimum measured
+share* as a conservative floor, flagged `unmeasured`. Nothing is invented;
+both flags are visible in the run review and on the dashboard.
 
-### Three candidates + Bayesian model averaging
+### Step 4 — Official constraints, softened on conflict
 
-The `s_b` scale is the only thing that differs across candidates — three beliefs about how
-much housemates diverge over time:
+Official bottom-N flags cap a housemate at `m×(1−ε)` where *m* is the minimum
+share among unflagged actives (ε = 0.01); top-N flags floor at `m×(1+ε)`.
 
-| Candidate | `sd_B` | Story |
-|---|---|---|
-| momentum | 2.0 | housemates genuinely diverge over the season |
-| baseline (headline) | 0.5 | housemates stay near the shared trend |
-| heteroscedastic | 1.0 | divergence *spikes* after the twist |
+**Soften-on-conflict:** when a constraint's ordering agrees with the poll
+aggregate, it applies in full. When it conflicts — e.g. an official bottom
+placement for someone the polls rank mid-table — the affected share is pulled
+**halfway** toward the bound instead of fully capped. Every application
+(agree, soften, or no-op) is logged with before/after shares in
+`predictions.json → polls.constraint_log`.
 
-Weights come from **Bayesian-bootstrap pseudo-BMA+** over ArviZ LOO expected log-predictive
-density (1000 bootstrap replicates; candidates failing the R-hat gate get weight 0).
+ngnews247 titles ("WEEK 9 VOTE POLL RESULT: KEIVO & RICKY") become top-2
+constraint rows — grade C, pseudo-n 50 — never shares. The official-N adapter
+ships even though no official ranking source has been found this season:
+zero rows is a valid, logged state.
 
-### Sampling, gates, and honesty labels
+### Step 5 — Renormalise, then bootstrap
 
-- **Full spec:** 4 chains × 2000 draws (after tuning), NUTS, `target_accept = 0.95`
-  (the value that survived the geometry probes). **Lite fallback:** reduced draws, always
-  labelled `precision: "lite"` in the products — never silently.
-- **Gates:** R-hat max < 1.01 (computed over finite values only — the LKJ diagonal is a
-  structural constant that would otherwise poison the max with NaN) and **zero divergences
-  on the headline candidate**. A failed gate rejects the run; the last good products stay
-  published and staleness is flagged on the dashboard.
-- **Validation record:** the production-settings run passed with **0 divergences on all
-  three candidates, R-hat max 1.0028** (`notebooks/p5_full_validation.json`).
+Shares renormalise over all eligible actives. Then **B = 1,000 replicates**
+(seeded, deterministic), each resampling:
+
+1. **observations** with replacement, probability ∝ w_k (between-poll
+   disagreement), and
+2. **each poll's voters** — a multinomial draw over that row's shares with
+   n = its capped sample size (within-poll sampling noise).
+
+Both layers matter: without voter resampling, a single-poll window would
+produce zero-width intervals and falsely decisive P(A>B) — thin data must
+widen the bands, not eliminate them. The **point estimate never uses voter
+noise**; published shares stay exactly the Step-3 aggregation.
+
+Reported per housemate: point share `S_i`, the **89% interval** (5.5th/94.5th
+percentiles), P(#1)/P(top-3)/P(top-5) as replicate fractions, P(A>B) for every
+pair, podium slots with slot probabilities, and momentum = `S_i(this week) −
+S_i(last week)`.
+
+### The mapping rule: share = P(win)
+
+There is no extra model between the aggregated share and the win probability —
+**S_i *is* P(win)**, renormalised over non-Gambit actives. No softmax, no
+Dirichlet layer, no momentum tilt. The owner can verify any week's table by
+hand from `docs/polls.json` in a few minutes. Statistical ties follow the
+decision rules: P(A>B) > 0.90 clear lead, 0.60–0.90 leaning, < 0.60 too close
+to call (marked "≈", alphabetical tie-break for display).
+
+### The Gambit twist rule
+
+Housemates in an *active* Gambit period (read only from
+`config/twist.json → gambit_periods`) are **excluded from the matrix and the
+standings entirely** — they appear in the dashboard's auto-finalists strip
+with no numbers. History: the week-1 vote elected Flora + Aikou to immunity +
+guaranteed finale seats with the grand prize disqualified; "Operation Release
+the Gambit" (Aug 30) returned both to prize eligibility from week 6, so the
+exclusion is currently inert and reactivates automatically if the config ever
+gains new periods.
+
+### Honesty labels
+
+- **89% intervals everywhere** (owner decision — overrides the original
+  brief's 95% to keep the dashboard convention consistent).
+- `engine.params` in every `predictions.json` records the exact cap, λ, ε,
+  window, replicate count, seed and grades that produced the published numbers.
+- The run review prints a **data-sufficiency block** (rows in window, sources
+  reporting, weeks, carried/unmeasured lists) and a THIN-WINDOW warning when
+  rows ≤ 2 — the human reads it before pushing. There is no R-hat gate
+  anymore; bootstrap is deterministic and unconditionally reproducible
+  (`bootstrap_seed`).
+- A dark/missing/closed poll degrades the run to seeds-only with wide bands —
+  never fabricated, never blocked silently.
 
 ---
-
-## The dashboard's secondary readouts (and why they disagree)
-
-The **trend-projected podium** is a deliberate what-if: it extrapolates each housemate's
-momentum slope (β_i) to the finale and ignores eviction risk and current level. When it
-disagrees with the headline (the full finale simulation), the panel says so in a red
-all-caps banner and explains the mechanism. This is a feature: the two readouts answer
-different questions, and the headline always stays authoritative.
 
 ## Statistical honesty
 
-- **Probabilities are model shares, not vote counts.** Cross-blog voter independence is
-  unverifiable at $0 — the same commenters recur across blogs — so the CPI is treated as a
-  *correlated* engagement index. Stated here and on the dashboard itself.
-- **Statistical ties** are marked, not hidden: overlapping adjacent 89% HDIs → "≈" on the
-  chips, named in the podium strip, alphabetical tie-break.
-- **Missed Saturdays** are backfill-bridged from archived scrapes and flagged, never
-  fabricated. Mid-week DQs/walkouts are coded as evictions via `data/raw/manual_notes.csv`.
-- **Gambit flags are weekly-varying** from config; the banner only appears when flags are
-  active at the current week.
+- **Numbers are fan-poll shares, not vote counts, and not one-person-one-vote.**
+  Fan polls share the same repeat-votable mechanics (the widget allows up to
+  100 votes/person) and recurring voters across sites — no $0 dedup key exists.
+  Treat the standings as a correlated **fan-intensity index**; the limitation
+  is stated here and in the dashboard's methodology footer.
+- **Official constraints can move shares** (by design, since official reports
+  outrank fan polls), and every move is logged with before/after values.
+- **Statistical ties** are marked, not hidden.
+- **Missed Saturdays** degrade honestly: the window shrinks, bands widen, the
+  review says so. Mid-week DQs/walkouts are coded as evictions via
+  `data/raw/manual_notes.csv`.
+- **The weekly product is a fan forecast, not an official result** — stated on
+  every published surface.
 
 ## Repository layout
 
 ```
-run_weekly.py            Saturday entrypoint (scrape → preprocess → MCMC → gate → review)
-src/scrape_blogs.py      per-source parsers (RSS primary; BeautifulSoup for the rest)
-src/preprocess.py        weekly CPI builder (gap-tolerant, quarantine-aware)
-src/products_schema.py   the deploy gate — validates predictions.json
-src/score_week.py        P10.5 tracker auto-scoring + manual_notes.csv validator
-notebooks/bbnaija_mcmc.py  the model + sampling + BMA + products (single file, heavily commented)
+run_weekly.py            Saturday entrypoint (polls → matrix → aggregate → gate → review)
+src/scrape_polls.py      per-source poll parsers (TotalPoll widget, ngnews RSS, manual log)
+src/poll_matrix.py       the long-format matrix builder (dedupe, seeds, Gambit gate)
+src/aggregate.py         weights → aggregation → constraints → bootstrap → products
+src/products_schema.py   the deploy gate — shape-aware: validates both engine eras
+src/score_week.py        weekly concordance scoring + manual_notes.csv validator
+src/scrape_blogs.py      blog/RSS archive scrapers (continuity only — CPI retired)
+src/preprocess.py        retired CPI builder (stays for the historical record)
+notebooks/bbnaija_mcmc.py  retired MCMC engine (retired in place, not deleted)
+config/poll_engine.json  every engine tunable (cap, λ, ε, window, B, seed, grades)
 config/season.json       premiere/finale dates → calendar-true week numbering
-config/twist.json        Gambit periods (weekly-varying flags)
+config/twist.json        Gambit periods (weekly-varying; drives the matrix gate)
 config/housemates.json   canonical names, aliases, photo filenames
-data/raw/                scrape archive (jsonl) + manual_notes.csv override channel
+data/raw/                scrape archive + polls snapshots + manual_notes.csv override channel
 docs/                    the dashboard (index.html + script.js, zero dependencies) + photos
+docs/engine-runbook.md   the Saturday ritual: checklist, failure modes, recovery
+poll-matrix-engine-spec.md  the owner-approved overhaul spec (21 decisions)
 .github/workflows/deploy.yml  push-triggered deploy: schema gate → Pages + HF sync
-tests/                   70 fixture-based tests (no network, no real-data dependence)
+tests/                   138 fixture-based tests (no network, no real-data dependence)
 ```
 
 ## Running it
 
 ```bash
-# environment: any Python 3.11 with pymc 5.8 + arviz 0.16 (see docs/envs/pinned-versions.md)
-python run_weekly.py          # full Saturday run (~2 h: 3 candidates x 4 chains x 2000)
-python run_weekly.py --lite   # reduced draws, products honestly labelled "lite"
+# environment: Python 3.11 with numpy + requests + bs4 + feedparser (docs/envs/pinned-versions.md)
+python run_weekly.py --week 9   # full Saturday run (seconds-to-minutes, inside the live voting window)
 ```
 
-Saturday cadence: run → eyeball the console review → commit `docs/predictions.json` → push.
-The deploy workflow does the rest. After each Sunday eviction: log the exit(s) in
-`data/raw/manual_notes.csv` (with a source URL), then `python src/score_week.py` scores
-the week into `docs/track_record.json` (winner survival, Brier over the nominated set,
-poll concordance) and validates the notes. Missed Saturdays are bridged, never fabricated.
+Saturday cadence: run → read the console review (standings, constraints,
+data-sufficiency, THIN-WINDOW warning) → commit `docs/predictions.json` →
+push. The deploy workflow does the rest. Full checklist and failure-mode
+table: `docs/engine-runbook.md`. After each Sunday eviction: transcribe the
+result image into `docs/polls.json` (the engine's seed rows), log exits in
+`data/raw/manual_notes.csv`, and `python src/score_week.py` scores concordance.
+
+Weekly concordance (predicted vs actual eviction ordering) is the tuning
+posture: **no cross-season backtesting** — evidence accumulates week by week
+for the post-season (P11) review, which will decide next season's cap posture,
+anchor strength, and adapter set.
 
 ## Testing
 
-70 tests, all fixture-based and offline: preprocess math (CPI weights, renormalisation,
-gap tolerance), scraper parsing against saved HTML/RSS fixtures, model machinery
-(Gambit zeroing, tie-breaks, BMA weighting incl. gate rejection, R-hat gate on a degraded
-run), schema gate, tracker scoring (winner survival, hazard→eviction Brier, poll
-concordance, unscorable-week tombstones), the manual-notes validator, and a right-sized
-end-to-end smoke.
+138 tests, all fixture-based and offline: the matrix builder (schema shape,
+latest-wins dedupe, Gambit exclusion and renormalisation, seed grading,
+quarantine propagation, CSV round-trip), the aggregation engine
+(hand-computed weights, weighted means, constraint agree/soften geometry,
+carry-forward and unmeasured floors, share=P(win) sums, momentum, tie
+thresholds, bootstrap determinism, model-purity against legacy products,
+honest refusals on empty windows), the schema gate (both engine shapes),
+the poll scraper (TotalPoll closed/live states, RSS rank-only parsing,
+image-only backfill), the retained legacy suites (preprocess, MCMC, scoring —
+the retired engine's tests stay green), and an end-to-end smoke.
 
 ```bash
 pytest -m "not e2e"   # fast machinery suite
@@ -275,12 +288,34 @@ pytest                # everything, incl. the e2e smoke
 
 No cron, no schedules — the only writer is the Saturday run + a human push (single-writer
 rule: dual writers corrupt `data/`). Secrets: `HF_TOKEN` only. Pages needs no secret.
+The gate is shape-aware: the last published MCMC file stays deployable until the first
+certified poll-engine run replaces it.
+
+---
+
+## The retired engine (history, 2026-09-09 → 09-20)
+
+The original system scored weekly blog coverage as an engagement index —
+`CPI = 0.4·c̃ + 0.3·s̃ + 0.2·m̃ + 0.1·h̃` over comments/shares/mentions/headlines
+(min-max normalised, VADER sentiment) — and fed a joint Bayesian model: a
+zero-inflated negative-binomial count sub-model
+(`log μ(it) = α + α_i + (β+β_i)t + γS + δA + θW + η(W·β_i)`) sharing `α_i` as
+frailty with a Cox eviction partial likelihood, correlated non-centred
+housemate effects (LKJ(2)), three BMA candidates distinguished by the
+`σ_β` scale (Pseudo-BMA+ over ArviZ LOO ELPD), 4×2000 NUTS draws, R-hat < 1.01
+and zero-divergence gates. It shipped P0–P8, ran weeks 7–8 live, and produced
+genuinely calibrated *coverage* predictions — which is exactly why it lost to
+the polls on *vote* questions: comments/shares were never exposed by any
+source, so CPI collapsed to weekly article mentions, and quiet-fanbase
+housemates (Keivo, Ricky) were structurally invisible to it. Full code:
+`notebooks/bbnaija_mcmc.py` (retired in place); full validation record:
+`notebooks/p5_full_validation.json`; decision trail: `poll-matrix-engine-spec.md`.
 
 ## Credits
 
-**Built by JJMB** — conceived, engineered and operated by JJMB. Model, pipeline and
-dashboard are original work, running entirely on a $0 stack: public blogs and RSS,
-open-source Bayesian tooling (PyMC, ArviZ), and free hosting (GitHub Pages, Hugging Face).
+**Built by JJMB** — conceived, engineered and operated by JJMB. Engine, pipeline and
+dashboard are original work, running entirely on a $0 stack: public fan polls and RSS,
+open-source tooling (BeautifulSoup4, NumPy), and free hosting (GitHub Pages, Hugging Face).
 No official data access, no paid APIs, no X/Twitter.
 
-*Probabilities are model shares, not votes. If in doubt, trust the finish line on Sunday.*
+*Numbers are fan-poll shares, not votes. If in doubt, trust the finish line on Sunday.*

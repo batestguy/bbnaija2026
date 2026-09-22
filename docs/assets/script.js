@@ -38,6 +38,8 @@
     `<span class="badge ${c}">${t}</span>`).join("");
 
   /* ---------- freshness line + share ---------- */
+  // (E4.2 note: panels below branch on engine — poll_matrix remaps bands to
+  // bootstrap CIs, risk to lowest-share, and drops MCMC-only panels.)
   const nextSat = (() => { const d = new Date(); d.setDate(d.getDate() + ((6 - d.getDay() + 7) % 7 || 7)); return d; })();
   $("fresh").textContent = `refresh: every Saturday after the weekly run · next update ` +
     nextSat.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
@@ -55,19 +57,41 @@
       `<div style="margin-top:4px;color:var(--muted)">Flagged: ${flagged.join(", ")}</div>`);
   }
 
+  /* ---------- engine detection (E4.2: shell kept, data remapped) ---------- */
+  const isPollEngine = P.engine && P.engine.name === "poll_matrix";
+
+  /* ---------- auto-finalists strip (spec §6; poll engine only) ---------- */
+  const autoStrip = $("autoFinalists");
+  if (autoStrip) {
+    if (isPollEngine && (P.auto_finalists || []).length) {
+      autoStrip.style.display = "";
+      autoStrip.insertAdjacentHTML("beforeend",
+        (P.auto_finalists || []).map((g) => {
+          const hm = byName[g.name] || g;
+          return `<div class="hcard">${avatarHTML(hm)}
+            <div style="min-width:0"><div class="nm">${g.name}</div>
+            <div class="st active">auto-finalist — no poll numbers</div></div></div>`;
+        }).join(""));
+    } else {
+      autoStrip.style.display = "none";
+    }
+  }
+
   /* ---------- hero headline ---------- */
   const nowWeek = Math.max(1, ...active.flatMap((h) => (h.history || []).map((p) => p.week)));
   const W0 = P.podium.winner, W0hm = byName[W0.name] || {};
+  const basis = isPollEngine ? "aggregated fan-poll shares" : "10,000 season simulations";
+  const runnerUpName = (P.podium.runner_up || {}).name;
   $("hero").innerHTML = `${avatarHTML(W0hm, "big")}
-    <div style="min-width:0"><div class="k">The model's call after week ${nowWeek}</div>
+    <div style="min-width:0"><div class="k">The engine's call after week ${nowWeek}</div>
       <div class="line">${W0.name} <span class="pc">${pct(W0.prob, 0)}</span> to win</div>
-      <div class="muted">Runner-up projection: ${P.podium.runner_up.name} · from 10,000 season simulations ·
+      <div class="muted">Runner-up projection: ${runnerUpName || "—"} · from ${basis} ·
         ${genDays != null && genDays < 1 ? "updated today" : "updated " + (genDays == null ? "?" : Math.round(genDays) + "d ago")}</div></div>`;
 
   /* ---------- podium ---------- */
   const slots = [["w1", "1", P.podium.winner, "winner"],
   ["w2", "2", P.podium.runner_up, "runner-up"],
-  ["w3", "3", P.podium.second_runner_up, "2nd runner-up"]];
+  ["w3", "3", P.podium.second_runner_up, "2nd runner-up"]].filter(([, , s]) => s && s.name);
   $("podium").innerHTML = slots.map(([cls, n, s, lbl]) => {
     const hm = byName[s.name] || {};
     const ties = (hm.statistical_tie_with || []);
@@ -84,16 +108,31 @@
   const chips = [...active].sort((a, b) => b.p_rank_1 - a.p_rank_1);
   $("chips").innerHTML = chips.map((h) => {
     const tied = (h.statistical_tie_with || []).length ? " ≈" : "";
+    const momPill = isPollEngine && h.momentum != null
+      ? `<span class="pill dim"><b>${h.momentum > 0 ? "+" : ""}${(h.momentum * 100).toFixed(1)}</b> mom</span>`
+      : "";
+    const carriedTag = isPollEngine && h.carried ? ' <span class="pill dim">carried</span>' : "";
     return `<div class="chip-row ${h.gambit_flag ? "gambit" : ""}" title="${tied ? "statistical tie with " + h.statistical_tie_with.join(", ") : ""}">
-      <span class="nm">${h.name}${tied}</span>
+      <span class="nm">${h.name}${tied}${carriedTag}</span>
       ${h.gambit_flag ? '<span class="g">GAMBIT</span>' : ""}
       <span class="pill ${h.gambit_flag ? "dim" : ""}"><b>${pct(h.p_rank_1, 0)}</b> #1</span>
       <span class="pill"><b>${pct(h.p_top3, 0)}</b> T3</span>
       <span class="pill"><b>${pct(h.p_top5, 0)}</b> T5</span>
+      ${momPill}
     </div>`;
   }).join("");
+  const chipsNote = $("chipsNote");
+  if (chipsNote && isPollEngine) {
+    chipsNote.style.display = "";
+    chipsNote.textContent = "share = P(win) · mom = Δ share week-over-week · carried = no poll coverage this week, inherited last week's share";
+  }
 
   /* ---------- trend + at-risk ---------- */
+  const trendPanel = $("trendPanel");
+  if (isPollEngine) {
+    // MCMC-only panels dropped (spec §9): no β-trend exists in the poll engine
+    if (trendPanel) trendPanel.style.display = "none";
+  }
   const T = P.trend_projection || {};
   $("trendList").innerHTML = (T.podium || []).map((n, i) =>
     `<li><span class="pos">${i + 1}</span><span>${n}</span></li>`).join("");
@@ -132,11 +171,20 @@
   $("trendNote").textContent = noteTxt;
 
   const risk = P.at_risk || [];
-  $("risk").innerHTML = risk.length ? risk.map((r) => `
-    <div class="row"><span>${r.name}${r.nominated ? "" : ' <span class="pill dim">former</span>'}</span>
+  const riskTag = $("riskTag");
+  if (riskTag && isPollEngine) riskTag.textContent = "lowest share · * = bottom-N flag";
+  $("risk").innerHTML = risk.length ? risk.map((r) => {
+    if (isPollEngine) {
+      return `<div class="row"><span>${r.name}${r.bottom_n_flag ? ' <span class="pill dim">*</span>' : ""}</span>
+        <span class="hz">${(r.share * 100).toFixed(1)}%</span>
+        <span class="bar"><i style="width:${Math.max(4, Math.min(100, r.share * 400)).toFixed(0)}%"></i></span>
+      </div>`;
+    }
+    return `<div class="row"><span>${r.name}${r.nominated ? "" : ' <span class="pill dim">former</span>'}</span>
       <span class="hz">×${r.relative_hazard.toFixed(2)}</span>
       <span class="bar"><i style="width:${Math.min(100, (r.relative_hazard / 1.6) * 100).toFixed(0)}%"></i></span>
-    </div>`).join("") : '<div class="empty">No nominations recorded this week.</div>';
+    </div>`;
+  }).join("") : '<div class="empty">No nominations recorded this week.</div>';
 
   /* ---------- pairwise ---------- */
   const pA = $("pairA"), pB = $("pairB");
@@ -147,11 +195,18 @@
     const a = pA.value, b = pB.value;
     if (a === b || !P.pairwise || !P.pairwise[a]) { $("pairP").textContent = "—"; return; }
     const p = P.pairwise[a][b];
+    if (p == null) { $("pairP").textContent = "—"; return; }
     const fav = p >= 0.5 ? a : b;
     $("pairP").textContent = pct(p, 0);
     $("pairCap").textContent = `P(${a} finishes above ${b})`;
-    const diff = Math.round(100 * ((byName[a].win_prob_median || 0) - (byName[b].win_prob_median || 0)));
-    $("pairDiff").innerHTML = `${fav} favoured · Δmedian = ${diff > 0 ? "+" : ""}${diff} pp`;
+    if (isPollEngine) {
+      // engine emits the full P(A>B) map from bootstrap replicates
+      const pba = P.pairwise[b] ? P.pairwise[b][a] : null;
+      $("pairDiff").innerHTML = `${fav} favoured · P(${b}>${a}) = ${pba == null ? "—" : pct(pba, 0)}`;
+    } else {
+      const diff = Math.round(100 * ((byName[a].win_prob_median || 0) - (byName[b].win_prob_median || 0)));
+      $("pairDiff").innerHTML = `${fav} favoured · Δmedian = ${diff > 0 ? "+" : ""}${diff} pp`;
+    }
   }
   pA.onchange = pB.onchange = renderPair;
   renderPair();
@@ -310,8 +365,21 @@
     .catch(() => { /* no track_record.json yet — panel stays hidden */ });
 
   /* ---------- footer ---------- */
-  $("foot").innerHTML = `
-    <b>Methodology.</b> Zero-inflated negative-binomial engagement counts with Cox
+  $("foot").innerHTML = isPollEngine ? `
+    <b>Methodology.</b> Weekly fan-poll observations (bbnaijadaily vote widget,
+    hand-logged rows) are aggregated with source-grade, sample-size and recency
+    weights; official bottom-N/top-N reports act as constraints; 1,000 bootstrap
+    replicates give the 89% bands, rank probabilities and podium slot odds.
+    Share = win probability — every number is hand-checkable from the poll log.
+    Gambit auto-finalists appear in their own strip with no numbers.
+    <b>Limitation.</b> Fan polls share the same repeat-votable mechanics and
+    recurring voters across sites — treat this as a correlated fan-intensity
+    index, not independent one-person-one-vote sampling. Standings numbers are
+    shares, never vote counts.
+    <b>Status.</b> Live poll-engine run · precision ${P.precision} · window weeks
+    ${(P.data_sufficiency || {}).weeks_in_window || "?"} · rows ${(P.data_sufficiency || {}).rows_in_window || "?"}.
+    Probabilities ≠ votes.` :
+    `<b>Methodology.</b> Zero-inflated negative-binomial engagement counts with Cox
     eviction frailty, fit locally (PyMC, 4 chains) per candidate; three BMA-weighted
     variants; 10,000 Dirichlet-multinomial posterior-predictive draws → medians,
     89% credible bands, slot probabilities. Gambit pair: P(#1) ≡ 0, prize-disqualified.
