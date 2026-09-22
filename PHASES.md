@@ -330,13 +330,15 @@ python run_weekly.py [--lite] [--week N]
 ### E6 — Rehearsal, cutover, season ops
 | Task | Detail |
 |---|---|
-| E6.1 | **Midweek rehearsal (Thu–Fri Sep 24–25):** live-DOM fetch validates `parse_totalpoll` for real; full dry run on seeded matrix; hand-verify every number; `--reparse` drill against archived HTML |
-| E6.2 | **Sat Sep 26: certified first publish** (run inside the live window, before 21:00 close). Rollback = restore last-good `predictions.json` (2026-09-20 MCMC output, untouched) |
+| E6.1 | **Midweek rehearsal — DONE 2026-09-23:** live-DOM fetch validated (`empty` in-window is the correct live state — voting form renders server-side, no percentages); full stage trio green on real data; gate PASS. Findings fixed + deployed (`2b88c2c`): result-slug regex missed `week-N-vote-poll-result-and-eviction`; `save_snapshot` duplicated auto log rows (now upserts). `--reparse` drill still available via runbook §6 |
+| E6.2 | **Sat Sep 26: certified first publish** (run inside the live window, before 21:00 close). Expect `state=empty` + seeds/momentum run + THIN-WINDOW warning — by design (widget-timing model, runbook §2). Rollback = restore last-good `predictions.json` (2026-09-20 MCMC output, untouched) |
 | E6.3 | **Sat Oct 3:** second run; Sunday finale ≈ Oct 4 |
 | E6.4 | Weekly concordance continues (score_week.py pattern: predicted vs actual eviction ordering) as P11 evidence — **no cross-season backtest, no pre-finale tuning** (spec §12 #14) |
 | E6.5 | P11 closeout absorbs engine fate decisions: cap posture, anchor strength, Reddit/Telegram adapters, Gambit podium reconciliation, legacy MCMC removal |
 
 **Exit:** Sep 26 standings published from the poll engine; concordance log accruing; P11 carries the open decisions.
+
+**E5 status (2026-09-23, `664f8fc`):** result images archived wk6/wk7/wk8; **wk1–5 unrecoverable** (posts no longer on the site — exit criterion "≥2 seed weeks" is met via wk8 + post-close wk9 fetch or owner transcription of wk6/7). E5.2 recon verdict still to be recorded in `docs/season-recon.md`. Owner transcription of wk6/wk7 is the open prerequisite for a 3-week Saturday window.
 
 ### E-campaign cross constraints
 1. All PHASES cross constraints still hold ($0, no Twitter, manual-only Saturdays, single writer, calendar-true weeks, quarantine-never-drop, honest gaps).

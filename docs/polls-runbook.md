@@ -1,5 +1,11 @@
 # Poll stage runbook — scraping & the poll-anchored prior
 
+> **⚠ SUPERSEDED operationally 2026-09-22/23 — read `docs/engine-runbook.md`
+> instead** (the poll-matrix engine replaced the anchored-prior MCMC; the
+> widget-timing model and Saturday expectations live there now). This file
+> stays useful only as Sep-20-era history of the anchor design and the
+> transcription workflow.
+
 **Audience:** whoever runs `python run_weekly.py` on Saturdays (or debugs it).
 **Status:** live since 2026-09-20 (owner decision). First anchored run: **Saturday
 2026-09-26** (the 2026-09-20 run predates the stage; today's widget was already

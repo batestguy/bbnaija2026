@@ -1,6 +1,12 @@
 # Session handoff — 2026-09-22 (E0–E4: poll-matrix engine built & integrated)
 
-**Read this first.** This file supersedes `docs/session-handoff-2026-09-20.md`
+> **⚠ SUPERSEDED 2026-09-23 — read `docs/session-handoff-2026-09-23.md`
+> instead.** Kept as build history: everything below is still accurate about
+> the E0–E4 build itself, but the priority list and the "Next session" section
+> are overtaken by the rehearsal session (E6.1 done, two Saturday bugs fixed,
+> E5 inventoried, widget-timing model corrected).
+
+**Original preamble (historical):** This file supersedes `docs/session-handoff-2026-09-20.md`
 for session-to-session context. The owner-approved overhaul spec is
 `poll-matrix-engine-spec.md` (21 decisions in its §12); phase detail lives in
 `PHASES.md` (E-campaign). **Operational doc for Saturdays:
