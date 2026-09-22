@@ -169,6 +169,221 @@
    ],
    "anchor_applied": false,
    "anchor_shares": {}
+  },
+  {
+   "week": 1,
+   "week_start": null,
+   "recorded_at": "2026-09-22T08:34:02.751257+00:00",
+   "auto_scraped": true,
+   "sources": [
+    {
+     "source": "bbnaijadaily",
+     "state": "skipped",
+     "type": "full-share"
+    },
+    {
+     "source": "ngnews247",
+     "state": "not-in-feed",
+     "type": "rank-only"
+    },
+    {
+     "source": "manual",
+     "state": "empty",
+     "type": "full-share"
+    }
+   ],
+   "anchor_applied": false,
+   "anchor_shares": {}
+  },
+  {
+   "week": 2,
+   "week_start": null,
+   "recorded_at": "2026-09-22T08:34:02.806405+00:00",
+   "auto_scraped": true,
+   "sources": [
+    {
+     "source": "bbnaijadaily",
+     "state": "skipped",
+     "type": "full-share"
+    },
+    {
+     "source": "ngnews247",
+     "state": "not-in-feed",
+     "type": "rank-only"
+    },
+    {
+     "source": "manual",
+     "state": "empty",
+     "type": "full-share"
+    }
+   ],
+   "anchor_applied": false,
+   "anchor_shares": {}
+  },
+  {
+   "week": 3,
+   "week_start": null,
+   "recorded_at": "2026-09-22T08:34:02.856549+00:00",
+   "auto_scraped": true,
+   "sources": [
+    {
+     "source": "bbnaijadaily",
+     "state": "skipped",
+     "type": "full-share"
+    },
+    {
+     "source": "ngnews247",
+     "state": "not-in-feed",
+     "type": "rank-only"
+    },
+    {
+     "source": "manual",
+     "state": "empty",
+     "type": "full-share"
+    }
+   ],
+   "anchor_applied": false,
+   "anchor_shares": {}
+  },
+  {
+   "week": 4,
+   "week_start": null,
+   "recorded_at": "2026-09-22T08:34:02.899340+00:00",
+   "auto_scraped": true,
+   "sources": [
+    {
+     "source": "bbnaijadaily",
+     "state": "skipped",
+     "type": "full-share"
+    },
+    {
+     "source": "ngnews247",
+     "state": "not-in-feed",
+     "type": "rank-only"
+    },
+    {
+     "source": "manual",
+     "state": "empty",
+     "type": "full-share"
+    }
+   ],
+   "anchor_applied": false,
+   "anchor_shares": {}
+  },
+  {
+   "week": 5,
+   "week_start": null,
+   "recorded_at": "2026-09-22T08:34:02.944547+00:00",
+   "auto_scraped": true,
+   "sources": [
+    {
+     "source": "bbnaijadaily",
+     "state": "skipped",
+     "type": "full-share"
+    },
+    {
+     "source": "ngnews247",
+     "state": "not-in-feed",
+     "type": "rank-only"
+    },
+    {
+     "source": "manual",
+     "state": "empty",
+     "type": "full-share"
+    }
+   ],
+   "anchor_applied": false,
+   "anchor_shares": {}
+  },
+  {
+   "week": 6,
+   "week_start": null,
+   "recorded_at": "2026-09-22T08:34:05.465328+00:00",
+   "auto_scraped": true,
+   "sources": [
+    {
+     "source": "bbnaijadaily",
+     "state": "skipped",
+     "type": "full-share"
+    },
+    {
+     "source": "bbnaijadaily-result-image",
+     "state": "needs-transcription",
+     "type": "image"
+    },
+    {
+     "source": "ngnews247",
+     "state": "not-in-feed",
+     "type": "rank-only"
+    },
+    {
+     "source": "manual",
+     "state": "empty",
+     "type": "full-share"
+    }
+   ],
+   "anchor_applied": false,
+   "anchor_shares": {}
+  },
+  {
+   "week": 7,
+   "week_start": null,
+   "recorded_at": "2026-09-22T08:34:08.319507+00:00",
+   "auto_scraped": true,
+   "sources": [
+    {
+     "source": "bbnaijadaily",
+     "state": "skipped",
+     "type": "full-share"
+    },
+    {
+     "source": "bbnaijadaily-result-image",
+     "state": "needs-transcription",
+     "type": "image"
+    },
+    {
+     "source": "ngnews247",
+     "state": "not-in-feed",
+     "type": "rank-only"
+    },
+    {
+     "source": "manual",
+     "state": "empty",
+     "type": "full-share"
+    }
+   ],
+   "anchor_applied": false,
+   "anchor_shares": {}
+  },
+  {
+   "week": 8,
+   "week_start": null,
+   "recorded_at": "2026-09-22T08:34:10.301533+00:00",
+   "auto_scraped": true,
+   "sources": [
+    {
+     "source": "bbnaijadaily",
+     "state": "skipped",
+     "type": "full-share"
+    },
+    {
+     "source": "bbnaijadaily-result-image",
+     "state": "needs-transcription",
+     "type": "image"
+    },
+    {
+     "source": "ngnews247",
+     "state": "not-in-feed",
+     "type": "rank-only"
+    },
+    {
+     "source": "manual",
+     "state": "ok",
+     "type": "full-share"
+    }
+   ],
+   "anchor_applied": false,
+   "anchor_shares": {}
   }
  ]
 }
