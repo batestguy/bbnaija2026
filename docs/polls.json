@@ -1,49 +1,174 @@
 {
-  "method": "Unofficial fan-poll log (owner decision 2026-09-20, superseding the 2026-09-18 track-only policy): scraped weekly by src/scrape_polls.py as a run_weekly.py stage, plus hand-logged rows (FB groups, transcribed result images — marked auto_scraped:false). Sources are self-selected fan-war polls (e.g. bbnaijadaily.com widget allows up to 100 votes/person), so numbers measure vote-war intensity, not electorate share. Full-share sources (live widget + manual rows) feed a WEAK poll-anchored prior (median normalized share -> alpha-column location shift 0.25*clip(log(s_i*n), ±log 4)); rank-only sources (ngnews247 video titles) and backfilled FINAL snapshots are concordance/review-only and never anchor the prior. All snapshots are archived per week under data/raw/week_XX/.",
-  "concordance_definitions": {
-    "hazard_concordance": "Share of housemate pairs where poll save-% rank order agrees with the model's Cox relative-hazard rank order (lower hazard = safer). 0.5 = coin flip.",
-    "winner_top3": "Poll leader set vs the model's p_rank_1 top-3. Known structural gap: blog coverage (CPI) ≠ vote intensity — quiet fanbases (Keivo, Ricky) poll high while high-coverage housemates (Chimsom Chuka) can poll low with anti-vote drag."
-  },
-  "weeks": [
+ "method": "Unofficial fan-poll log (owner decision 2026-09-20, superseding the 2026-09-18 track-only policy): scraped weekly by src/scrape_polls.py as a run_weekly.py stage, plus hand-logged rows (FB groups, transcribed result images — marked auto_scraped:false). Sources are self-selected fan-war polls (e.g. bbnaijadaily.com widget allows up to 100 votes/person), so numbers measure vote-war intensity, not electorate share. Full-share sources (live widget + manual rows) feed a WEAK poll-anchored prior (median normalized share -> alpha-column location shift 0.25*clip(log(s_i*n), ±log 4)); rank-only sources (ngnews247 video titles) and backfilled FINAL snapshots are concordance/review-only and never anchor the prior. All snapshots are archived per week under data/raw/week_XX/.",
+ "concordance_definitions": {
+  "hazard_concordance": "Share of housemate pairs where poll save-% rank order agrees with the model's Cox relative-hazard rank order (lower hazard = safer). 0.5 = coin flip.",
+  "winner_top3": "Poll leader set vs the model's p_rank_1 top-3. Known structural gap: blog coverage (CPI) ≠ vote intensity — quiet fanbases (Keivo, Ricky) poll high while high-coverage housemates (Chimsom Chuka) can poll low with anti-vote drag."
+ },
+ "weeks": [
+  {
+   "week": 8,
+   "week_start": "2026-09-13",
+   "recorded_at": "2026-09-18",
+   "source": "bbnaijadaily.com/bbnaija-voting-polls (week-8 vote-to-save widget, ~621k total votes, repeat-votable)",
+   "scope": "all 11 nominated housemates",
+   "poll": [
     {
-      "week": 8,
-      "week_start": "2026-09-13",
-      "recorded_at": "2026-09-18",
-      "source": "bbnaijadaily.com/bbnaija-voting-polls (week-8 vote-to-save widget, ~621k total votes, repeat-votable)",
-      "scope": "all 11 nominated housemates",
-      "poll": [
-        {"name": "Keivo", "pct": 19.25, "votes": 119589},
-        {"name": "Temi Nkem", "pct": 17.02, "votes": 105760},
-        {"name": "Ricky", "pct": 13.5, "votes": 83870},
-        {"name": "Sheba", "pct": 8.11, "votes": 50417},
-        {"name": "Bluethopia", "pct": 6.93, "votes": 43073},
-        {"name": "Oyin", "pct": 6.46, "votes": 40140},
-        {"name": "Yusuf", "pct": 6.43, "votes": 39943},
-        {"name": "Flora", "pct": 6.38, "votes": 39657},
-        {"name": "Tram", "pct": 6.14, "votes": 38156},
-        {"name": "Chimsom Chuka", "pct": 5.31, "votes": 32984},
-        {"name": "Bells", "pct": 4.46, "votes": 27725}
-      ],
-      "model_at_snapshot": {
-        "note": "docs/predictions.json generated 2026-09-17; contains the week-8 DM remainder-bin bug (last active column Yusuf hard-zeroed) fixed in notebooks/bbnaija_mcmc.py on 2026-09-18 — numbers below are pre-fix and Yusuf's p_rank_1=0.0 is a known artifact.",
-        "hazard_concordance": {"agree": 38, "pairs": 55, "score": 0.691},
-        "poll_top3": ["Keivo", "Temi Nkem", "Ricky"],
-        "model_p_rank_1_top3": ["Temi Nkem", "Chimsom Chuka", "Flora"],
-        "per_housemate": {
-          "Keivo": {"pct": 19.25, "p_rank_1": 0.018, "rel_hazard": 0.6884},
-          "Temi Nkem": {"pct": 17.02, "p_rank_1": 0.341, "rel_hazard": 1.007},
-          "Ricky": {"pct": 13.5, "p_rank_1": 0.0254, "rel_hazard": 0.7452},
-          "Sheba": {"pct": 8.11, "p_rank_1": 0.0331, "rel_hazard": 0.9253},
-          "Bluethopia": {"pct": 6.93, "p_rank_1": 0.0281, "rel_hazard": 0.7308},
-          "Oyin": {"pct": 6.46, "p_rank_1": 0.056, "rel_hazard": 1.0605},
-          "Yusuf": {"pct": 6.43, "p_rank_1": 0.0, "rel_hazard": 0.7921},
-          "Flora": {"pct": 6.38, "p_rank_1": 0.0934, "rel_hazard": 1.3653},
-          "Tram": {"pct": 6.14, "p_rank_1": 0.0791, "rel_hazard": 1.2283},
-          "Chimsom Chuka": {"pct": 5.31, "p_rank_1": 0.2222, "rel_hazard": 1.8152},
-          "Bells": {"pct": 4.46, "p_rank_1": 0.0222, "rel_hazard": 0.7409}
-        }
-      },
-      "notes": "Poll #1 (Keivo) == model's safest nominated (hazard 0.69); poll #11 (Chimsom Chuka) == model's most at-risk (1.82). Winner-model disagreement is the documented coverage-vs-vote-intensity gap. Sunday eviction outcome to be scored into docs/track_record.json."
+     "name": "Keivo",
+     "pct": 19.25,
+     "votes": 119589
+    },
+    {
+     "name": "Temi Nkem",
+     "pct": 17.02,
+     "votes": 105760
+    },
+    {
+     "name": "Ricky",
+     "pct": 13.5,
+     "votes": 83870
+    },
+    {
+     "name": "Sheba",
+     "pct": 8.11,
+     "votes": 50417
+    },
+    {
+     "name": "Bluethopia",
+     "pct": 6.93,
+     "votes": 43073
+    },
+    {
+     "name": "Oyin",
+     "pct": 6.46,
+     "votes": 40140
+    },
+    {
+     "name": "Yusuf",
+     "pct": 6.43,
+     "votes": 39943
+    },
+    {
+     "name": "Flora",
+     "pct": 6.38,
+     "votes": 39657
+    },
+    {
+     "name": "Tram",
+     "pct": 6.14,
+     "votes": 38156
+    },
+    {
+     "name": "Chimsom Chuka",
+     "pct": 5.31,
+     "votes": 32984
+    },
+    {
+     "name": "Bells",
+     "pct": 4.46,
+     "votes": 27725
     }
-  ]
+   ],
+   "model_at_snapshot": {
+    "note": "docs/predictions.json generated 2026-09-17; contains the week-8 DM remainder-bin bug (last active column Yusuf hard-zeroed) fixed in notebooks/bbnaija_mcmc.py on 2026-09-18 — numbers below are pre-fix and Yusuf's p_rank_1=0.0 is a known artifact.",
+    "hazard_concordance": {
+     "agree": 38,
+     "pairs": 55,
+     "score": 0.691
+    },
+    "poll_top3": [
+     "Keivo",
+     "Temi Nkem",
+     "Ricky"
+    ],
+    "model_p_rank_1_top3": [
+     "Temi Nkem",
+     "Chimsom Chuka",
+     "Flora"
+    ],
+    "per_housemate": {
+     "Keivo": {
+      "pct": 19.25,
+      "p_rank_1": 0.018,
+      "rel_hazard": 0.6884
+     },
+     "Temi Nkem": {
+      "pct": 17.02,
+      "p_rank_1": 0.341,
+      "rel_hazard": 1.007
+     },
+     "Ricky": {
+      "pct": 13.5,
+      "p_rank_1": 0.0254,
+      "rel_hazard": 0.7452
+     },
+     "Sheba": {
+      "pct": 8.11,
+      "p_rank_1": 0.0331,
+      "rel_hazard": 0.9253
+     },
+     "Bluethopia": {
+      "pct": 6.93,
+      "p_rank_1": 0.0281,
+      "rel_hazard": 0.7308
+     },
+     "Oyin": {
+      "pct": 6.46,
+      "p_rank_1": 0.056,
+      "rel_hazard": 1.0605
+     },
+     "Yusuf": {
+      "pct": 6.43,
+      "p_rank_1": 0.0,
+      "rel_hazard": 0.7921
+     },
+     "Flora": {
+      "pct": 6.38,
+      "p_rank_1": 0.0934,
+      "rel_hazard": 1.3653
+     },
+     "Tram": {
+      "pct": 6.14,
+      "p_rank_1": 0.0791,
+      "rel_hazard": 1.2283
+     },
+     "Chimsom Chuka": {
+      "pct": 5.31,
+      "p_rank_1": 0.2222,
+      "rel_hazard": 1.8152
+     },
+     "Bells": {
+      "pct": 4.46,
+      "p_rank_1": 0.0222,
+      "rel_hazard": 0.7409
+     }
+    }
+   },
+   "notes": "Poll #1 (Keivo) == model's safest nominated (hazard 0.69); poll #11 (Chimsom Chuka) == model's most at-risk (1.82). Winner-model disagreement is the documented coverage-vs-vote-intensity gap. Sunday eviction outcome to be scored into docs/track_record.json."
+  },
+  {
+   "week": 9,
+   "week_start": null,
+   "recorded_at": "2026-09-22T07:51:09.002665+00:00",
+   "auto_scraped": true,
+   "sources": [
+    {
+     "source": "bbnaijadaily",
+     "state": "empty",
+     "type": "full-share"
+    },
+    {
+     "source": "ngnews247",
+     "state": "unreachable",
+     "type": "rank-only"
+    },
+    {
+     "source": "manual",
+     "state": "empty",
+     "type": "full-share"
+    }
+   ],
+   "anchor_applied": false,
+   "anchor_shares": {}
+  }
+ ]
 }

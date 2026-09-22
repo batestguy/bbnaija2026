@@ -72,7 +72,10 @@ CLOSED_MARKERS = ("voting is closed", "voting closed")
 # zero percentages in HTML). We archive the image and mark the week
 # 'needs-transcription' — a human reads it into the manual log. No OCR ever
 # feeds the model silently.
-RESULT_LINK_RE = re.compile(r"bbnaija(?:-\d{4})?-week-(\d+)-vote-result[^\"']*")
+# Real sidebar slugs: bbnaija-2026-week-9-vote-poll-result-and-eviction/
+# (older posts may omit the season or the '-poll' part; keep both tolerated).
+RESULT_LINK_RE = re.compile(
+    r"bbnaija(?:-\d{4})?-week-(\d+)-vote(?:-poll)?-result[^\"']*")
 CONTENT_IMG_RE = re.compile(
     r"<img[^>]*src=\"([^\"]*wp-content/uploads/[^\"]+)\"", re.IGNORECASE)
 
@@ -516,10 +519,20 @@ def save_snapshot(snapshot: dict[str, Any]) -> tuple[Path, None]:
             log = json.load(fh)
     else:
         log = {"weeks": []}
-    log.setdefault("weeks", []).append(log_row)
+    # Upsert semantics: one auto-scrape row per week (re-runs replace their own
+    # row instead of duplicating it; human-transcribed rows are separate rows
+    # and are never touched by an auto row).
+    auto_rows = [w for w in log.setdefault("weeks", [])
+                 if w.get("week") == week and w.get("auto_scraped")]
+    if auto_rows:
+        auto_rows[-1].clear()
+        auto_rows[-1].update(log_row)
+    else:
+        log["weeks"].append(log_row)
     POLLS_LOG.write_text(json.dumps(log, indent=1, ensure_ascii=False),
                          encoding="utf-8")
-    LOG.info("snapshot written: %s + row appended to %s", snap_path, POLLS_LOG.name)
+    LOG.info("snapshot written: %s + %s row for wk%d in %s", snap_path,
+             "updated" if auto_rows else "appended", week, POLLS_LOG.name)
     return snap_path, None
 
 

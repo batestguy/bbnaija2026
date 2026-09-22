@@ -8,6 +8,7 @@ polls block of the products schema gate.
 
 from __future__ import annotations
 
+import json
 import math
 import re
 from pathlib import Path
@@ -253,3 +254,47 @@ def test_schema_polls_nonfinite_shift_rejected():
                   "anchor": {"applied": True, "shifts": {"A": float("nan")}}}
     with pytest.raises(SchemaError, match="finite"):
         validate_products(p)
+
+
+def test_result_slug_with_poll_and_eviction_matches():
+    """E6 rehearsal 2026-09-23: the live wk-9 sidebar link is
+    'bbnaija-2026-week-9-vote-poll-result-and-eviction/' — the original
+    regex (vote-result only) missed it, which would have silently skipped
+    the wk-9 result-image backfill on Saturday."""
+    html = '<a href="https://bbnaijadaily.com/bbnaija-2026-week-9-vote-poll-result-and-eviction/">'
+    m = sp.RESULT_LINK_RE.search(html)
+    assert m is not None and m.group(1) == "9"
+    # ...and seasonless variants still match
+    assert sp.RESULT_LINK_RE.search('bbnaija-week-3-vote-result').group(1) == "3"
+
+
+def test_snapshot_log_row_is_upserted(tmp_path, monkeypatch):
+    """E6 cleanup 2026-09-23: save_snapshot used to APPEND unconditionally, so
+    a re-run (e.g. the live probe + Saturday's certified run) left duplicate
+    auto rows for the same week. Now: one auto row per week, replaced in place;
+    human-transcribed rows are never touched."""
+    monkeypatch.setattr(sp, "ROOT", tmp_path)
+    monkeypatch.setattr(sp, "POLLS_LOG", tmp_path / "polls.json")
+
+    def snap(captured_at):
+        return {"week": 9, "captured_at": captured_at,
+                "sources": [{"source": "bbnaijadaily", "type": "full-share",
+                             "state": "empty", "entries": [], "quarantined": []}],
+                "anchor": {"applied": False, "shares": {}}}
+
+    sp.save_snapshot(snap("2026-09-23T08:00:00Z"))
+    sp.save_snapshot(snap("2026-09-26T18:30:00Z"))
+    log = json.loads(sp.POLLS_LOG.read_text(encoding="utf-8"))
+    wk9 = [w for w in log["weeks"] if w["week"] == 9]
+    assert len(wk9) == 1 and wk9[0]["recorded_at"] == "2026-09-26T18:30:00Z"
+
+    # a human-transcribed row is separate and survives auto re-runs
+    log["weeks"].append({"week": 9, "auto_scraped": False, "poll": [
+        {"name": "Keivo", "pct": 41.2}]})
+    sp.POLLS_LOG.write_text(json.dumps(log), encoding="utf-8")
+    sp.save_snapshot(snap("2026-09-26T19:00:00Z"))
+    log2 = json.loads(sp.POLLS_LOG.read_text(encoding="utf-8"))
+    rows9 = [w for w in log2["weeks"] if w["week"] == 9]
+    assert len(rows9) == 2
+    human = [w for w in rows9 if not w.get("auto_scraped")][0]
+    assert human["poll"] == [{"name": "Keivo", "pct": 41.2}]
