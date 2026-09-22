@@ -98,6 +98,10 @@ PRIORS = {
     "candidate_beta_column_sd": {"momentum": "HalfNormal(2.0)", "baseline": "HalfNormal(0.5)",
                                  "heteroscedastic": "HalfNormal(1.0)"},
     "count_scale": f"y = round(CPI * {COUNT_SCALE:.0f}); Dirichlet concentration {DM_CONCENTRATION}",
+    # Poll-anchored prior (owner decision 2026-09-20). Values mirror
+    # src/scrape_polls.py KAPPA/ANCHOR_CLIP — keep the two in sync.
+    "poll_anchor": "alpha-column location shift m_i = 0.25 * clip(log(s_i * n), ±log 4); "
+                   "midweek snapshot only; backfilled finals never anchor",
 }
 
 BMA_CANDIDATES = ("momentum", "baseline", "heteroscedastic")
@@ -154,6 +158,45 @@ def load_twist_start_week() -> int:
         twist = json.load(fh)
     start = twist.get("twist_start_week")
     return 1 if start is None else int(start)
+
+
+def load_poll_anchor(week: int) -> dict[str, Any] | None:
+    """Archived poll snapshot for `week` (written by the run_weekly poll stage
+    via src/scrape_polls.py). Only snapshot_type='midweek' may anchor the
+    prior: backfilled 'final' snapshots are post-close data and must never
+    feed the likelihood (outcome-leakage rule, 2026-09-20)."""
+    path = ROOT / "data" / "raw" / f"week_{week:02d}" / "polls_snapshot.json"
+    if not path.exists():
+        return None
+    try:
+        with open(path, encoding="utf-8") as fh:
+            snap = json.load(fh)
+    except (OSError, json.JSONDecodeError) as e:
+        LOG.warning("poll snapshot unreadable (%s): %s", path, e)
+        return None
+    if snap.get("snapshot_type", "midweek") != "midweek":
+        LOG.info("poll snapshot wk%d is %r (backfilled) — never anchors the prior",
+                 week, snap.get("snapshot_type"))
+        return None
+    return snap.get("anchor")
+
+
+def poll_shift_vector(table: SeasonTable, anchor: dict[str, Any] | None) -> np.ndarray:
+    """alpha-column location shift m_i aligned to table.housemates; 0.0 for
+    housemates without a poll share. An all-zero vector reproduces the
+    un-anchored spec exactly (gap-tolerant guarantee)."""
+    m = np.zeros(table.N, dtype=float)
+    if not anchor or not anchor.get("applied"):
+        return m
+    shifts = anchor.get("shifts", {})
+    for i, name in enumerate(table.housemates):
+        v = shifts.get(name)
+        if isinstance(v, (int, float)):
+            m[i] = float(v)
+    LOG.info("poll anchor: %d/%d housemates anchored (kappa=%s, clip=%s, sources=%s)",
+             int(np.count_nonzero(m)), table.N, anchor.get("kappa"),
+             anchor.get("clip"), anchor.get("sources_used"))
+    return m
 
 
 def build_table(payload: dict[str, Any], housemates_cfg: list[dict[str, Any]],
@@ -249,9 +292,12 @@ def standardize(table: SeasonTable) -> dict[str, Any]:
 # The joint model (P5.2–P5.4) + BMA candidate variants (P5.8)
 # --------------------------------------------------------------------------- #
 
-def build_model(table: SeasonTable, std: dict[str, Any], candidate: str = "baseline") -> pm.Model:
+def build_model(table: SeasonTable, std: dict[str, Any], candidate: str = "baseline",
+                poll_shift: np.ndarray | None = None) -> pm.Model:
     """Joint ZINB-count + Cox-survival model. `candidate` only changes priors on
-    the beta_i scale (BMA); the count formula stays byte-for-byte in all three."""
+    the beta_i scale (BMA); the count formula stays byte-for-byte in all three.
+    `poll_shift` (length N) adds an alpha-column LOCATION shift only — the
+    all-zero default is exactly the un-anchored spec."""
     if candidate not in BMA_CANDIDATES:
         raise ValueError(candidate)
     T, N, housemates = table.T, table.N, table.housemates
@@ -291,8 +337,17 @@ def build_model(table: SeasonTable, std: dict[str, Any], candidate: str = "basel
         zb = pm.Normal("z_beta", 0.0, 1.0, dims="housemate")
         # rho enters through the beta-column whitening: rho*za +
         # sqrt(1-rho^2)*zb keeps the implied pair-covariance at rho*s_a*s_b.
+        # Poll-anchored prior (owner decision 2026-09-20): the poll share only
+        # SHIFTS the alpha-column location (m_i, pre-centering); the scale, the
+        # alpha/beta correlation, and the count formula below are untouched.
+        # All-zero shift == un-anchored spec (gap-tolerant guarantee).
+        poll_shift_d = pm.Data("poll_shift",
+                               (np.zeros(N, dtype=float) if poll_shift is None
+                                else np.asarray(poll_shift, dtype=float)),
+                               dims="housemate")
         raw = pm.math.stack(
-            [s_a * za, s_b * (rho * za + pm.math.sqrt(1.0 - rho**2) * zb)], axis=1)
+            [s_a * za + poll_shift_d,
+             s_b * (rho * za + pm.math.sqrt(1.0 - rho**2) * zb)], axis=1)
         # Sum-to-zero centering: `alpha + alpha_i` / `beta + beta_i` have an
         # unidentified common-shift ridge (add c to every offset, subtract from
         # the population mean). The raw MvNormal leaves that direction in the
@@ -956,6 +1011,8 @@ def run_inference(payload: dict[str, Any], housemates_cfg: list[dict[str, Any]],
     started = time.time()
     table = build_table(payload, housemates_cfg, t_now=t_now)
     std = standardize(table)
+    poll_anchor = load_poll_anchor(table.t_now)
+    poll_shift = poll_shift_vector(table, poll_anchor)
     if lite:
         draws, tune, chains = 500, 500, 2
     elif full:
@@ -976,7 +1033,7 @@ def run_inference(payload: dict[str, Any], housemates_cfg: list[dict[str, Any]],
             idatas[cand] = az.from_netcdf(cpath)
             rhats[cand] = rhat_max(idatas[cand])
             continue
-        model = build_model(table, std, candidate=cand)
+        model = build_model(table, std, candidate=cand, poll_shift=poll_shift)
         if prior_check:
             prior_predictive_check(model, table, seed=seed + 700 + k)
         idatas[cand] = sample_model(model, draws_eff, tune_eff, chains_eff, seed + k, lite)
@@ -1002,6 +1059,18 @@ def run_inference(payload: dict[str, Any], housemates_cfg: list[dict[str, Any]],
     products["divergences_by_candidate"] = {
         k: int(ida.sample_stats["diverging"].values.sum()) for k, ida in idatas.items()}
     products["priors"] = dict(PRIORS)
+    if poll_anchor is not None:
+        products["priors"]["poll_anchor"] = {
+            "applied": bool(poll_anchor.get("applied")),
+            "kappa": poll_anchor.get("kappa"), "clip": poll_anchor.get("clip"),
+            "sources_used": poll_anchor.get("sources_used", []),
+            "shifts": poll_anchor.get("shifts", {}),
+        }
+    products["polls"] = {
+        "week": table.t_now,
+        "anchor_applied": bool(poll_anchor.get("applied")) if poll_anchor else False,
+        "anchor": poll_anchor,
+    }
     products["standardization"] = {k: v for k, v in std.items()
                                    if k in ("t_mean", "t_scale", "sent_mean", "sent_scale")}
     products["run_seconds"] = round(time.time() - started, 1)
@@ -1235,6 +1304,7 @@ def main(argv: list[str] | None = None) -> int:
         "standardization": products["standardization"], "precision": products["precision"],
         "podium": products["podium"], "trend_projection": products["trend_projection"],
         "model_weights": products["model_weights"], "run_seconds": products["run_seconds"],
+        "polls": products.get("polls"),
     }
     path = RUN_RECORD_DIR / record_name
     path.write_text(json.dumps(record, indent=1, ensure_ascii=False), encoding="utf-8")

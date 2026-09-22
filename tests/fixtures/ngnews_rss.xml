@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Fixture: YouTube channel RSS (Atom) in the exact format served at
+     youtube.com/feeds/videos.xml?channel_id=UC..., with the real ngnews247
+     title patterns observed 2026-09-20 (search results). Entries are newest
+     first, as YouTube serves them. The GAMBIT video intentionally has no week
+     number — the real one doesn't either, so it can never be confused with a
+     save-poll week. -->
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:yt="http://www.youtube.com/xml/schemas/2015">
+  <title>Videos by NGNews247 TV</title>
+  <entry>
+    <id>yt:video:eh3hc84_Mj8</id>
+    <title>BBNAIJA 2026 WEEK 8 VOTE POLL RESULT: KEIVO &amp; RICKY | BIG BROTHER NAIJA LIVE STREAM | SEASON 11</title>
+    <link href="https://www.youtube.com/watch?v=eh3hc84_Mj8"/>
+    <published>2026-09-18T18:00:00+00:00</published>
+  </entry>
+  <entry>
+    <id>yt:video:IFy5btfZRWM</id>
+    <title>BBNAIJA 2026 WEEK 8 VOTE POLL RESULT: RICKY &amp; TEMI NKEM | BIG BROTHER NAIJA LIVE STREAM | SEASON 11</title>
+    <link href="https://www.youtube.com/watch?v=IFy5btfZRWM"/>
+    <published>2026-09-14T18:00:00+00:00</published>
+  </entry>
+  <entry>
+    <id>yt:video:6j6UKhkd_t8</id>
+    <title>BBNAIJA 2026 WEEK 7 VOTE POLL RESULT: TEMI NKEM &amp; KEIVO | BIG BROTHER NAIJA LIVE STREAM | SEASON 11</title>
+    <link href="https://www.youtube.com/watch?v=6j6UKhkd_t8"/>
+    <published>2026-09-11T18:00:00+00:00</published>
+  </entry>
+  <entry>
+    <id>yt:video:gambit1</id>
+    <title>BBNAIJA 2026 GAMBIT VOTE POLL RESULT: AIKOU &amp; FLORA | BIG BROTHER NAIJA</title>
+    <link href="https://www.youtube.com/watch?v=gambit1"/>
+    <published>2026-08-30T18:00:00+00:00</published>
+  </entry>
+  <entry>
+    <id>yt:video:noise1</id>
+    <title>BBNAIJA 2026 DAY 52 LIVE STREAMING SEASON 11 | EVICTION</title>
+    <link href="https://www.youtube.com/watch?v=noise1"/>
+    <published>2026-09-17T18:00:00+00:00</published>
+  </entry>
+</feed>
