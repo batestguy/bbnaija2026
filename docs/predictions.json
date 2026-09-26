@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-26T21:04:01.118099+00:00",
+ "generated_at": "2026-09-26T21:38:21.351916+00:00",
  "precision": "full",
  "week": 9,
  "podium": {
@@ -309,6 +309,128 @@
    "bottom_n_flag": false
   }
  ],
+ "roster": {
+  "Tram": {
+   "photo": "assets/photos/tram.jpg",
+   "exit_week": null,
+   "exit_type": null
+  },
+  "Abi": {
+   "photo": "assets/photos/abi.jpg",
+   "exit_week": 7,
+   "exit_type": "evicted"
+  },
+  "Aikou": {
+   "photo": "assets/photos/aikou.jpg",
+   "exit_week": null,
+   "exit_type": null
+  },
+  "Araga": {
+   "photo": "assets/photos/araga.jpg",
+   "exit_week": 7,
+   "exit_type": "evicted"
+  },
+  "Barry": {
+   "photo": "assets/photos/barry.jpg",
+   "exit_week": null,
+   "exit_type": null
+  },
+  "Bells": {
+   "photo": "assets/photos/bells.jpg",
+   "exit_week": 8,
+   "exit_type": "evicted"
+  },
+  "Bluethopia": {
+   "photo": "assets/photos/bluethopia.jpg",
+   "exit_week": null,
+   "exit_type": null
+  },
+  "Cassi": {
+   "photo": "assets/photos/cassi.jpg",
+   "exit_week": 4,
+   "exit_type": "evicted"
+  },
+  "Chimsom Chuka": {
+   "photo": "assets/photos/chimsom-chuka.jpg",
+   "exit_week": 8,
+   "exit_type": "evicted"
+  },
+  "Flora": {
+   "photo": "assets/photos/flora.jpg",
+   "exit_week": null,
+   "exit_type": null
+  },
+  "Gerard": {
+   "photo": "assets/photos/gerard.jpg",
+   "exit_week": 6,
+   "exit_type": "evicted"
+  },
+  "Goddessa": {
+   "photo": "assets/photos/goddessa.jpg",
+   "exit_week": 5,
+   "exit_type": "evicted"
+  },
+  "Keivo": {
+   "photo": "assets/photos/keivo.jpg",
+   "exit_week": null,
+   "exit_type": null
+  },
+  "Kamsy": {
+   "photo": "assets/photos/kamsy.jpg",
+   "exit_week": 3,
+   "exit_type": "evicted"
+  },
+  "Mercedes": {
+   "photo": "assets/photos/mercedes.jpg",
+   "exit_week": 2,
+   "exit_type": "evicted"
+  },
+  "Martins": {
+   "photo": "assets/photos/martins.jpg",
+   "exit_week": 2,
+   "exit_type": "evicted"
+  },
+  "Neche": {
+   "photo": "assets/photos/neche.jpg",
+   "exit_week": 3,
+   "exit_type": "walked"
+  },
+  "Nomy": {
+   "photo": "assets/photos/nomy.jpg",
+   "exit_week": 7,
+   "exit_type": "disqualified"
+  },
+  "Oyin": {
+   "photo": "assets/photos/oyin.jpg",
+   "exit_week": null,
+   "exit_type": null
+  },
+  "Ricky": {
+   "photo": "assets/photos/ricky.jpg",
+   "exit_week": null,
+   "exit_type": null
+  },
+  "Sheba": {
+   "photo": "assets/photos/sheba.jpg",
+   "exit_week": null,
+   "exit_type": null
+  },
+  "Sultex": {
+   "photo": "assets/photos/sultex.jpg",
+   "exit_week": 5,
+   "exit_type": "evicted"
+  },
+  "Temi Nkem": {
+   "photo": "assets/photos/temi-nkem.jpg",
+   "exit_week": null,
+   "exit_type": null
+  },
+  "Yusuf": {
+   "photo": "assets/photos/yusuf.jpg",
+   "exit_week": 8,
+   "exit_type": "evicted"
+  }
+ },
  "engine": {
   "name": "poll_matrix",
   "spec": "poll-matrix-engine-spec.md (2026-09-22)",
@@ -352,6 +474,7 @@
    "Tram": 0.379
   },
   "Barry": {
+   "Aikou": 0.942,
    "Bluethopia": 0.034,
    "Flora": 0.382,
    "Keivo": 0.379,
@@ -362,6 +485,8 @@
    "Tram": 0.379
   },
   "Bluethopia": {
+   "Aikou": 1.0,
+   "Barry": 0.966,
    "Flora": 0.992,
    "Keivo": 0.379,
    "Oyin": 0.989,
@@ -371,6 +496,9 @@
    "Tram": 1.0
   },
   "Flora": {
+   "Aikou": 0.621,
+   "Barry": 0.618,
+   "Bluethopia": 0.008,
    "Keivo": 0.379,
    "Oyin": 0.851,
    "Ricky": 0.0,
@@ -379,6 +507,10 @@
    "Tram": 0.107
   },
   "Keivo": {
+   "Aikou": 0.621,
+   "Barry": 0.621,
+   "Bluethopia": 0.621,
+   "Flora": 0.621,
    "Oyin": 0.621,
    "Ricky": 0.138,
    "Sheba": 0.138,
@@ -386,24 +518,60 @@
    "Tram": 0.621
   },
   "Oyin": {
+   "Aikou": 0.618,
+   "Barry": 0.56,
+   "Bluethopia": 0.011,
+   "Flora": 0.149,
+   "Keivo": 0.379,
    "Ricky": 0.0,
    "Sheba": 0.0,
    "Temi Nkem": 0.0,
    "Tram": 0.114
   },
   "Ricky": {
+   "Aikou": 1.0,
+   "Barry": 1.0,
+   "Bluethopia": 1.0,
+   "Flora": 1.0,
+   "Keivo": 0.862,
+   "Oyin": 1.0,
    "Sheba": 0.138,
    "Temi Nkem": 0.862,
    "Tram": 1.0
   },
   "Sheba": {
+   "Aikou": 1.0,
+   "Barry": 1.0,
+   "Bluethopia": 1.0,
+   "Flora": 1.0,
+   "Keivo": 0.862,
+   "Oyin": 1.0,
+   "Ricky": 0.862,
    "Temi Nkem": 0.862,
    "Tram": 1.0
   },
   "Temi Nkem": {
+   "Aikou": 1.0,
+   "Barry": 1.0,
+   "Bluethopia": 1.0,
+   "Flora": 1.0,
+   "Keivo": 0.862,
+   "Oyin": 1.0,
+   "Ricky": 0.138,
+   "Sheba": 0.138,
    "Tram": 1.0
   },
-  "Tram": {}
+  "Tram": {
+   "Aikou": 0.621,
+   "Barry": 0.621,
+   "Bluethopia": 0.0,
+   "Flora": 0.893,
+   "Keivo": 0.379,
+   "Oyin": 0.886,
+   "Ricky": 0.0,
+   "Sheba": 0.0,
+   "Temi Nkem": 0.0
+  }
  },
  "auto_finalists": [],
  "data_sufficiency": {

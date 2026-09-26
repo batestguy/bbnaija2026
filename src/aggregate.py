@@ -342,13 +342,19 @@ def rank_probabilities(reps: np.ndarray, names: list[str]) -> dict[str, dict[str
 
 
 def pairwise_beat(reps: np.ndarray, names: list[str]) -> dict[tuple[str, str], float]:
-    """P(A>B) = fraction of replicates where S_A > S_B (Readme §3.6)."""
+    """P(A>B) = fraction of replicates where S_A > S_B (Readme §3.6).
+
+    2026-09-26 fix: emit BOTH directions. The old i<j-only storage left the
+    map half-empty (each pair present only under its alphabetical-first key),
+    so dashboard lookups like P(Sheba>Keivo) missed and rendered "-"."""
     out: dict[tuple[str, str], float] = {}
     B = reps.shape[0]
     for i, a in enumerate(names):
         for j, b in enumerate(names):
             if i < j:
-                out[(a, b)] = float(np.mean(reps[:, i] > reps[:, j]))
+                p_ab = float(np.mean(reps[:, i] > reps[:, j]))
+                out[(a, b)] = p_ab
+                out[(b, a)] = 1.0 - p_ab
     return out
 
 
@@ -519,6 +525,12 @@ def build_products(rows: list[dict[str, Any]], current_week: int,
                for n in sorted(names, key=lambda x: S[x])][:5]
 
     hm_by_name = {h["name"]: h for h in housemates_cfg}
+    # dashboard passthrough: photo + exit_week per name (products carry no
+    # photo field themselves; the roster card needs both to render right)
+    roster_meta = {h["name"]: {"photo": h.get("photo"),
+                               "exit_week": h.get("exit_week"),
+                               "exit_type": h.get("exit_type")}
+                   for h in housemates_cfg}
     housemates_out = []
     for n in names:
         h = hm_by_name.get(n, {})
@@ -552,6 +564,7 @@ def build_products(rows: list[dict[str, Any]], current_week: int,
         "podium": podium,
         "housemates": housemates_out,
         "at_risk": at_risk,
+        "roster": roster_meta,
         "engine": {
             "name": "poll_matrix",
             "spec": "poll-matrix-engine-spec.md (2026-09-22)",

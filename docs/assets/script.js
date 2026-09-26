@@ -89,17 +89,20 @@
         ${genDays != null && genDays < 1 ? "updated today" : "updated " + (genDays == null ? "?" : Math.round(genDays) + "d ago")}</div></div>`;
 
   /* ---------- podium ---------- */
+  // 2026-09-26: slot prob + the housemate's aggregated share side by side —
+  // three identical slot probs (86/86/86) read as nonsense alone; the share
+  // column is the hand-checkable number fans recognise from the polls.
   const slots = [["w1", "1", P.podium.winner, "winner"],
   ["w2", "2", P.podium.runner_up, "runner-up"],
   ["w3", "3", P.podium.second_runner_up, "2nd runner-up"]].filter(([, , s]) => s && s.name);
   $("podium").innerHTML = slots.map(([cls, n, s, lbl]) => {
     const hm = byName[s.name] || {};
     const ties = (hm.statistical_tie_with || []);
+    const sharePct = hm.share != null ? pct(hm.share, 1) : null;
     return `<div class="slot ${cls}">
       <div class="medal">${n}</div>
       <div class="who"><div class="lbl">${lbl}</div><div class="nm">${s.name}</div>
-        <div class="tie">${ties.length ? "statistical tie w/ " + ties.join(", ") :
-        (hm.gambit_flag === 1 ? "gambit — cannot win the prize" : "")}</div></div>
+        <div class="tie">${sharePct ? "poll share " + sharePct : ""}${ties.length ? " · tie w/ " + ties.join(", ") : ""}</div></div>
       <div class="prob"><div class="v">${pct(s.prob, 0)}</div><div class="tie">slot prob</div></div>
     </div>`;
   }).join("");
@@ -212,11 +215,14 @@
   renderPair();
 
   /* ---------- roster ---------- */
+  const hmCfg = P.roster || {};   // engine passes name->cfg passthrough when available
   $("roster").innerHTML = P.housemates.map((h) => {
+    const meta = hmCfg[h.name] || {};
     const st = h.status === "active" ? "active" :
-      `${h.status} wk ${h.evicted_week ?? "?"}`;
+      `${h.status} wk ${h.evicted_week ?? meta.exit_week ?? "?"}`;
+    const ph = h.photo || meta.photo;
     return `<div class="hcard ${h.status !== "active" ? "out" : ""}">
-      ${avatarHTML(h)}
+      ${avatarHTML({ name: h.name, photo: ph })}
       <div style="min-width:0"><div class="nm">${h.name}</div>
         <div class="st ${h.status}">${st}</div></div>
       ${h.gambit_flag ? '<span class="g" style="font-size:9px;color:var(--red);margin-left:auto;border:1px solid var(--red);border-radius:2px;padding:1px 4px">G</span>' : ""}
@@ -243,6 +249,8 @@
       return { name: n, color: PALETTE[i % PALETTE.length],
         pts: h.history.map((p) => ({ w: p.week, m: p.median, lo: p.hdi_89[0], hi: p.hdi_89[1] })) };
     }).filter(Boolean);
+    // poll engine may emit ci_89 as the band twin of hdi_89 — accept both
+    series.forEach((s) => { if (!s.pts.some((p) => p.hi != null)) s.pts = s.pts.map((p) => ({ ...p, lo: p.lo ?? 0, hi: p.hi ?? 0 })); });
     $("legend").innerHTML = series.map((s) => {
       const hm = byName[s.name] || {};
       const av = hm.photo
@@ -271,7 +279,11 @@
     const iw = W - padL - padR, ih = H - padT - padB;
     if (!series.length || !iw) return;
     const weeks = [...new Set(series.flatMap((s) => s.pts.map((p) => p.w)))].sort((a, b) => a - b);
-    X = (w) => padL + ((w - weeks[0]) / Math.max(1, weeks[weeks.length - 1] - weeks[0])) * iw;
+    // single-week history (cold start): pad the x-domain one week each side so
+    // the point renders centred instead of an empty axis
+    const wLo = weeks[0] - (weeks.length < 2 ? 1 : 0);
+    const wHi = weeks[weeks.length - 1] + (weeks.length < 2 ? 1 : 0);
+    X = (w) => padL + ((w - wLo) / Math.max(1, wHi - wLo)) * iw;
     // Tight y-axis: baseline stays 0, but the top sits just above the tallest visible
     // CrI bound (3% headroom) instead of reserving dead space up to 100% — with
     // medians topping out near 40%, a fixed 0-100% axis wasted most of the plot.
@@ -290,6 +302,7 @@
     }
     ctx.textAlign = "start";
     weeks.forEach((w) => {
+      if (weeks.length < 2) return;   // single point: skip gridline at the lone x
       const x = X(w);
       ctx.strokeStyle = "#151a26"; ctx.beginPath();
       ctx.moveTo(x, padT); ctx.lineTo(x, padT + ih); ctx.stroke();
@@ -308,8 +321,12 @@
       ctx.strokeStyle = s.color; ctx.lineWidth = focus && hoverIdx === si ? 3.5 : 3; ctx.beginPath();
       s.pts.forEach((p, i) => i ? ctx.lineTo(X(p.w), Y(p.m)) : ctx.moveTo(X(p.w), Y(p.m)));
       ctx.stroke(); ctx.lineWidth = 1;
-      // end marker only — identity lives in the legend (color + photo); no on-canvas name labels
+      // end marker — for a single-week cold start, draw a fat dot + CI whisker
       const last = s.pts[s.pts.length - 1], lx = X(last.w), ly = Y(last.m);
+      if (s.pts.length < 2) {
+        ctx.strokeStyle = s.color; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(lx, Y(last.hi)); ctx.lineTo(lx, Y(last.lo)); ctx.stroke();
+      }
       ctx.fillStyle = s.color; ctx.beginPath(); ctx.arc(lx, ly, 4.5, 0, 7); ctx.fill();
       ctx.font = "10px 'IBM Plex Mono', monospace";
     });
@@ -351,16 +368,17 @@
   fetch("track_record.json", { cache: "no-store" })
     .then((r) => (r.ok ? r.json() : Promise.reject()))
     .then((TR) => {
-      if (!TR.weeks || !TR.weeks.length) return;
+      const scorable = (TR.weeks || []).filter((t) => t.scored && t.predicted_winner);
+      if (!scorable.length) return;   // tombstone-only log: panel stays hidden
       $("trackPanel").style.display = "";
-      $("track").innerHTML = TR.weeks.map((t) => `
+      $("track").innerHTML = scorable.map((t) => `
         <div class="trow"><span class="wk">Wk ${t.week}</span>
           <span>called <b>${t.predicted_winner}</b> (${pct(t.predicted_prob, 0)}) · evicted <b>${t.evicted}</b></span>
           <span class="${t.hit ? "ok" : "miss"}">${t.hit ? "HIT" : "MISS"}</span>
           <span class="wk" title="Brier score on predicted-vs-actual eviction outcome; lower is better">Brier ${t.brier != null ? t.brier.toFixed(3) : "—"}</span>
         </div>`).join("") +
-        (TR.summary ? `<div class="trow" style="border:none"><span class="wk">season to date</span>
-          <span>${TR.summary.hits}/${TR.summary.scored} called winners survived their week · mean Brier ${TR.summary.mean_brier.toFixed(3)}</span></div>` : "");
+        (TR.summary && TR.summary.weeks_scored ? `<div class="trow" style="border:none"><span class="wk">season to date</span>
+          <span>${TR.summary.winner_survived_hits ?? TR.summary.hits ?? 0}/${TR.summary.weeks_scored} called winners survived their week · mean Brier ${TR.summary.mean_brier != null ? TR.summary.mean_brier.toFixed(3) : "—"}</span></div>` : "");
     })
     .catch(() => { /* no track_record.json yet — panel stays hidden */ });
 
