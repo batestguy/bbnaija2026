@@ -1,5 +1,12 @@
 # Session handoff — 2026-09-23 (E6 rehearsal done, two Saturday bugs fixed, E5 inventoried)
 
+> **SUPERSEDED 2026-09-26** → read **`docs/session-handoff-2026-09-26.md`**
+> (E6.2: live wk9 vote-to-win capture, first certified poll-matrix publish,
+> backfill-image + pairwise bugs fixed). This file is build history now —
+> but its widget-timing section was itself corrected on 09-26 (vote-to-win
+> poll is cumulative, no weekly Sat-21:00 close); see the 09-26 file and the
+> ⚠ block in `docs/engine-runbook.md` §2 for the current model.
+
 **Read this first.** This file **supersedes `docs/session-handoff-2026-09-22.md`**
 (kept as build history; its header points here). Operational doc for Saturdays:
 **`docs/engine-runbook.md`** (updated this session — re-read §2/§4, the
