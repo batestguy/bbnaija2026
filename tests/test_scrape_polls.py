@@ -130,6 +130,41 @@ def test_result_article_discovery_and_image_regexes():
     assert not re.search(r"\d{1,2}(?:\.\d+)?\s*%", html)
 
 
+def test_content_image_urls_skip_logo_and_prefer_full_size():
+    """2026-09-26 regression: the archiver once saved the site LOGO for every
+    week because the old regex took the first uploads <img> on the page.
+    Logos/cropped chrome must be excluded; full-size beats thumbnail variants."""
+    html = (
+        '<img src="https://bbnaijadaily.com/wp-content/uploads/cropped-BBNaija-Logo-2-1.jpg">'
+        '<img src="https://bbnaijadaily.com/wp-content/uploads/2026/09/IMG_8869-1024x745.jpeg">'
+        '<img src="https://bbnaijadaily.com/wp-content/uploads/2026/09/WhatsApp-Image-2026-09-06-at-20.06.41.jpeg">'
+    )
+    urls = sp.content_image_urls(html)
+    assert urls[0].endswith("WhatsApp-Image-2026-09-06-at-20.06.41.jpeg")  # full-size first
+    assert all("Logo" not in u for u in urls)                             # logo excluded
+    # thumbnail-only page: large variant (>=500px side) is still a candidate
+    thumb_only = '<img src="https://bbnaijadaily.com/wp-content/uploads/2026/09/IMG_8869-1024x745.jpeg">'
+    assert sp.content_image_urls(thumb_only) == [
+        "https://bbnaijadaily.com/wp-content/uploads/2026/09/IMG_8869-1024x745.jpeg"]
+    # small thumbnails only -> no candidates at all (never archive an icon)
+    tiny = '<img src="https://bbnaijadaily.com/wp-content/uploads/2026/09/IMG_8869-86x64.jpeg">'
+    assert sp.content_image_urls(tiny) == []
+
+
+def test_parse_totalpoll_results_view():
+    """2026-09-26 extension: the widget's client-side RESULTS view uses
+    totalpoll-question-choices-item-* markup (verified live on poll-43005).
+    Parse it with names, percentages and vote counts; quarantine unknowns."""
+    out = sp.parse_totalpoll(_read("totalpoll_results_view.html"))
+    assert out["state"] == "live"
+    by_name = {e["name"]: e for e in out["entries"]}
+    assert set(by_name) == {"Sheba", "Ricky", "Keivo"}
+    assert by_name["Sheba"]["pct"] == 40.76
+    assert by_name["Sheba"]["votes"] == 98846.0
+    assert by_name["Keivo"]["votes"] == 1930.0
+    assert out["quarantined"] == ["Fake Housemate"]
+
+
 def test_backfill_anchor_never_applies():
     """A 'final' backfilled snapshot's anchor block must be inert by construction."""
     sources = [{"source": "bbnaijadaily", "type": "full-share", "state": "skipped",

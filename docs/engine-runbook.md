@@ -59,6 +59,22 @@ closed widget (expected `state=closed` WITH entries → grade-A row, auto-row
 upserted) and settles the only still-unverified parse state. Respects the
 single-writer rule: it is a manual fetch, not a scheduled job.
 
+> **⚠ Timing-model CORRECTION (verified 2026-09-26, owner-delegated agent
+> capture):** the top-of-page widget on `bbnaija-voting-polls` is now a
+> **vote-to-WIN poll (TotalPoll id 43005) — a cumulative tally over the 10
+> finalists running to the Oct 4 finale**, NOT a weekly Sat-21:00-closed
+> window. Vote counts kept climbing past Sat 21:00 WAT (+64 between a 20:33
+> and a 21:17 capture). Clicking the widget's client-side **RESULTS** button
+> renders exact percentages + vote counts in the DOM
+> (`totalpoll-question-choices-item-votes-text`) — server-side HTML still
+> shows zero numbers, which is why the auto-stage stays `empty`. Caveat:
+> old result articles (wk6/7/8) embed this SAME current poll, not that
+> week's finals — never read article-page widget numbers as that week's
+> data. Weekly finals still come only from the post-show result-image
+> transcriptions (§5). Captures archived:
+> `data/raw/week_09/widget_results_capture.json` (pre-close) and
+> `widget_results_postclose.json`.
+
 ## 3. How the engine weighs things (2-minute mental model)
 
 - `w = grade × min(n, 5000) × 0.6^age_weeks` — grade A widget (n capped at

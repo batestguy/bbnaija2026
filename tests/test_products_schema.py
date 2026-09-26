@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -12,9 +13,13 @@ from src.products_schema import SchemaError, validate_products
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def _now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
 def good_products() -> dict:
     return {
-        "generated_at": "2026-09-16T00:00:00+00:00",
+        "generated_at": _now_iso(),
         "precision": "full",
         "podium": {
             "winner": {"name": "A", "prob": 0.4},
@@ -44,7 +49,7 @@ def test_valid_product_passes():
 
 def good_poll_matrix_products() -> dict:
     return {
-        "generated_at": "2026-09-26T19:30:00+00:00",
+        "generated_at": _now_iso(),
         "precision": "full",
         "week": 9,
         "podium": {

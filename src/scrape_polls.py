@@ -79,6 +79,40 @@ RESULT_LINK_RE = re.compile(
 CONTENT_IMG_RE = re.compile(
     r"<img[^>]*src=\"([^\"]*wp-content/uploads/[^\"]+)\"", re.IGNORECASE)
 
+# 2026-09-26 fix: the old CONTENT_IMG_RE grabbed the FIRST uploads image on
+# the page — the site header logo — so wk6/7/8 all archived the identical
+# logo PNG instead of their result charts. Content images are now selected
+# by filtering obvious chrome (logos/icons) and WordPress thumbnail variants,
+# preferring full-size images in document order.
+LOGO_HINT_RE = re.compile(
+    r"logo|cropped-|icon|favicon|avatar|emoji|/themes/|/plugins/|sprite|banner", re.I)
+THUMB_SUFFIX_RE = re.compile(r"-\d{2,4}x\d{2,4}\.(?:jpe?g|png|webp)(?:$|[?&])", re.I)
+LARGE_VARIANT_RE = re.compile(r"-(\d{3,4})x(\d{3,4})\.(?:jpe?g|png|webp)", re.I)
+
+
+def content_image_urls(html: str) -> list[str]:
+    """Candidate result-chart image URLs from a result article, best first.
+
+    Pass 1: full-size uploads images (no -WxH thumbnail suffix), logos/icons
+    excluded. Pass 2 (fallback): large thumbnail variants (min side >= 500).
+    Document order preserved within each pass. Never parses numbers out of
+    the images — archiving only; transcription stays a human step."""
+    urls: list[str] = []
+    for m in CONTENT_IMG_RE.finditer(html):
+        u = m.group(1).replace("&#038;", "&")
+        if LOGO_HINT_RE.search(u) or u in urls:
+            continue
+        urls.append(u)
+    strict = [u for u in urls if not THUMB_SUFFIX_RE.search(u)]
+    if strict:
+        return strict
+    large = []
+    for u in urls:
+        vm = LARGE_VARIANT_RE.search(u)
+        if vm and min(int(vm.group(1)), int(vm.group(2))) >= 500:
+            large.append(u)
+    return large
+
 
 # --------------------------------------------------------------------------- #
 # Source 1: bbnaijadaily TotalPoll widget (full shares)
@@ -107,12 +141,49 @@ def parse_totalpoll(html: str) -> dict[str, Any]:
                if not any(k in " ".join(c.get("class", []))
                           for k in ("choice-content", "choice-results", "choice-votes",
                                     "choice-percentage", "choice-label", "choice-title"))]
-    if not choices:
-        return {"state": "empty", "entries": [], "quarantined": []}
-
     alias_index = sb.build_alias_index(sb.load_housemates())
     entries: list[dict[str, Any]] = []
     quarantined: list[str] = []
+    if not choices:
+        # 2026-09-26 extension: the widget's client-side RESULTS view renders
+        # per-choice items as totalpoll-question-choices-item-* (label +
+        # votes-text like "40.76% [98,846 Votes]"). Server-side HTML normally
+        # has no results — but a captured post-close DOM, a server cache, or a
+        # future theme change may include them. Parse when present; the
+        # original totalpoll-choice-* path below stays authoritative.
+        items = [c for c in container.find_all(
+                     class_="totalpoll-question-choices-item")
+                 if "choices-item-container" not in " ".join(c.get("class", []))]
+        for it in items:
+            title_el = it.find(class_="totalpoll-question-choices-item-label")
+            name_text = title_el.get_text(" ", strip=True) if title_el else ""
+            if not name_text:
+                continue
+            votes_el = it.find(class_="totalpoll-question-choices-item-votes-text")
+            subtree = votes_el.get_text(" ", strip=True) if votes_el \
+                else it.get_text(" ", strip=True)
+            pct_m = re.search(r"(\d+(?:\.\d+)?)\s*%", subtree)
+            votes_m = re.search(r"([\d.,]+)\s*votes", subtree, re.IGNORECASE)
+            matched = sorted(set(sb.match_housemates(name_text, alias_index)))
+            entry: dict[str, Any] = {"raw_name": name_text}
+            if pct_m:
+                entry["pct"] = float(pct_m.group(1))
+            if votes_m:
+                entry["votes"] = float(votes_m.group(1).replace(",", ""))
+            if matched:
+                if len(matched) > 1:
+                    quarantined.append(name_text)   # ambiguous label — human review
+                    continue
+                entry["name"] = matched[0]
+                entries.append(entry)
+            else:
+                quarantined.append(name_text)
+        if not entries:
+            return {"state": "empty", "entries": [], "quarantined": quarantined}
+        if any("pct" not in e for e in entries):
+            return {"state": "partial", "entries": entries, "quarantined": quarantined}
+        return {"state": "live", "entries": entries, "quarantined": quarantined}
+
     for ch in choices:
         title_el = (ch.find(class_="totalpoll-choice-title")
                     or ch.find(class_="totalpoll-choice-label")
@@ -285,18 +356,30 @@ def archive_result_image(session: requests.Session, article_url: str,
     if resp is None:
         return {"state": "unreachable", "entries": [], "quarantined": []}
     raw_dir.mkdir(parents=True, exist_ok=True)
-    img_m = CONTENT_IMG_RE.search(resp.text)
+    candidates = content_image_urls(resp.text)
     img_name = None
-    if img_m:
-        img_url = img_m.group(1).replace("&#038;", "&")
+    img_url_used = None
+    for img_url in candidates:
         img = sb.polite_get(session, img_url)
-        if img is not None:
-            img_name = "polls_result_image" + (
-                ".jpg" if ".jp" in img_url.lower() else ".png")
-            (raw_dir / img_name).write_bytes(img.content)
-    return {"state": "needs-transcription" if img_name else "no-image",
-            "entries": [], "quarantined": [],
-            "article": article_url, "image": img_name}
+        if img is None:
+            continue
+        ext = ".jpg" if (".jp" in img_url.lower() or "jpeg" in img.headers.get(
+            "content-type", "").lower()) else ".png"
+        # sanity: a real chart is tens of KB; a stray icon is < 5 KB
+        if len(img.content) < 5000:
+            continue
+        img_name = "polls_result_image" + ext
+        img_url_used = img_url
+        (raw_dir / img_name).write_bytes(img.content)
+        break
+    out = {"state": "needs-transcription" if img_name else "no-image",
+           "entries": [], "quarantined": [],
+           "article": article_url, "image": img_name}
+    if img_url_used:
+        out["image_url"] = img_url_used
+    if not img_name:
+        out["image_candidates"] = candidates[:5]
+    return out
 
 
 # --------------------------------------------------------------------------- #

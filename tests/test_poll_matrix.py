@@ -299,9 +299,10 @@ def test_build_matrix_seeds_plus_live(tmp_path, monkeypatch):
 def test_build_matrix_no_snapshot_degrades_to_seeds(monkeypatch):
     cfg = _cfg()
     monkeypatch.setattr(pm.sp, "load_snapshot", lambda w: None)
-    rows = pm.build_matrix(9, cfg)   # real docs/polls.json: the wk-8 row exists
+    rows = pm.build_matrix(9, cfg)   # real docs/polls.json: wk-8 seed + wk-9 vote-to-win seed
     assert rows, "seed rows expected from the real docs/polls.json"
-    assert all(r["week"] == 8 for r in rows)
+    assert all(r["week"] in (8, 9) for r in rows)
+    assert {r["week"] for r in rows} == {8, 9}
 
 
 def test_gambit_gate_applies_in_build(tmp_path, monkeypatch):

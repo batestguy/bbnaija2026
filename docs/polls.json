@@ -384,6 +384,87 @@
    ],
    "anchor_applied": false,
    "anchor_shares": {}
+  },
+  {
+   "week": 9,
+   "week_start": "2026-09-20",
+   "recorded_at": "2026-09-26T20:17:48+00:00",
+   "auto_scraped": false,
+   "source": "bbnaijadaily vote-to-win widget poll-43005 (live RESULTS view clicked via browser; cumulative finalist tally, latest-wins upsert)",
+   "scope": "all 10 finalists (vote-to-win phase after the wk8 triple eviction of Yusuf, Bells, Chimsom Chuka)",
+   "poll": [
+    {
+     "name": "Sheba",
+     "pct": 40.76,
+     "votes": 98846
+    },
+    {
+     "name": "Ricky",
+     "pct": 23.22,
+     "votes": 56302
+    },
+    {
+     "name": "Temi Nkem",
+     "pct": 11.72,
+     "votes": 28413
+    },
+    {
+     "name": "Bluethopia",
+     "pct": 6.0,
+     "votes": 14540
+    },
+    {
+     "name": "Barry",
+     "pct": 5.58,
+     "votes": 13526
+    },
+    {
+     "name": "Aikou",
+     "pct": 5.0,
+     "votes": 12121
+    },
+    {
+     "name": "Tram",
+     "pct": 3.53,
+     "votes": 8569
+    },
+    {
+     "name": "Flora",
+     "pct": 1.97,
+     "votes": 4773
+    },
+    {
+     "name": "Oyin",
+     "pct": 1.43,
+     "votes": 3473
+    },
+    {
+     "name": "Keivo",
+     "pct": 0.8,
+     "votes": 1930
+    }
+   ],
+   "notes": "Agent capture (owner-delegated); raw archives: data/raw/week_09/widget_results_capture.json (pre-close 19:33 UTC) and widget_results_postclose.json (20:17 UTC). CORRECTION to the runbook timing model: votes kept climbing past Sat 21:00 WAT (+64 between captures) — the vote-to-WIN poll is a cumulative tally toward the Oct 4 finale, not a weekly Sat-21:00-closed window (that wording in the widget is generic TotalPoll boilerplate). This row is an upsert-latest-wins snapshot of the running tally; re-capture anytime for a fresher read. pct sums 100.0; total 242,793 at capture. Discovery: old result articles embed the CURRENT site-wide poll, not that week's finals."
+  },
+  {
+   "week": 6,
+   "week_start": "2026-08-30",
+   "recorded_at": "2026-09-26T21:55:00+00:00",
+   "auto_scraped": false,
+   "source": "bbnaijadaily week-6 result chart (recovered 2026-09-26; agent capture)",
+   "scope": "bottom-3 only: Yusuf, Barry, Gerard",
+   "poll": [],
+   "notes": "Official 'How our viewers voted' bottom-3 reveal: Yusuf 4.23%, Barry 4.06%, Gerard 3.84% (evicted). PARTIAL chart - 3 of the nominees only, so NO seed row (renormalising 3-of-N would fabricate shares); archived for record + concordance. Chart: data/raw/week_06/polls_result_image_real.jpeg. Note: previously archived polls_result_image.png files were the site logo (backfill bug, fixed 2026-09-26)."
+  },
+  {
+   "week": 7,
+   "week_start": "2026-09-06",
+   "recorded_at": "2026-09-26T21:55:00+00:00",
+   "auto_scraped": false,
+   "source": "bbnaijadaily week-7 result chart (recovered 2026-09-26; agent capture)",
+   "scope": "bottom-3 only: Bluethopia, Araga, Abi",
+   "poll": [],
+   "notes": "Official bottom-3 reveal: Bluethopia 5.40%, Araga 4.83%, Abi 2.63% (evicted). PARTIAL - no seed row, record only. Chart: data/raw/week_07/polls_result_image_real.jpeg."
   }
  ]
 }
