@@ -26,7 +26,7 @@
     { "name": "Ricky",        "full_name": "Patrick Jumbo",           "sex": "M", "aliases": ["Ricky", "Patrick Jumbo"],                       "photo": "assets/photos/ricky.jpg",        "entry_week": 1, "status": "active",   "exit_week": null, "exit_type": null },
     { "name": "Sheba",        "full_name": "Faith Gamde",             "sex": "F", "aliases": ["Sheba", "Faith Gamde"],                         "photo": "assets/photos/sheba.jpg",        "entry_week": 1, "status": "active",   "exit_week": null, "exit_type": null },
     { "name": "Sultex",       "full_name": "Sultan Aregbe Obanikoro", "sex": "M", "aliases": ["Sultex", "Sultan Aregbe Obanikoro", "Sultan Obanikoro"], "photo": "assets/photos/sultex.jpg", "entry_week": 1, "status": "evicted", "exit_week": 5,  "exit_type": "evicted" },
-    { "name": "Temi Nkem",    "full_name": "Temitope Chigbue",        "sex": "F", "aliases": ["Temi Nkem", "TemiNkem", "Temitope Chigbue"],    "photo": "assets/photos/temi-nkem.jpg",    "entry_week": 1, "status": "active",   "exit_week": null, "exit_type": null },
+    { "name": "Temi Nkem",    "full_name": "Temitope Chigbue",        "sex": "F", "aliases": ["Temi Nkem", "Temi", "TemiNkem", "Temitope Chigbue"],    "photo": "assets/photos/temi-nkem.jpg",    "entry_week": 1, "status": "active",   "exit_week": null, "exit_type": null },
     { "name": "Yusuf",        "full_name": "Yusuf Muhammed-Awal",     "sex": "M", "aliases": ["Yusuf", "Yusuf Muhammed-Awal", "Muhammed-Awal"],                 "photo": "assets/photos/yusuf.jpg",        "entry_week": 1, "status": "evicted", "exit_week": 8,    "exit_type": "evicted" }
   ],
   "sources": [

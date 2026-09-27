@@ -465,6 +465,26 @@
    "scope": "bottom-3 only: Bluethopia, Araga, Abi",
    "poll": [],
    "notes": "Official bottom-3 reveal: Bluethopia 5.40%, Araga 4.83%, Abi 2.63% (evicted). PARTIAL - no seed row, record only. Chart: data/raw/week_07/polls_result_image_real.jpeg."
+  },
+  {
+   "week": 10,
+   "week_start": "2026-09-27",
+   "recorded_at": "2026-09-27T07:19:21.784855+00:00",
+   "auto_scraped": false,
+   "source": "bbnaijadaily vote-to-win widget — poll-cycle RESET observed (fresh cycle at 0.00% for all 10 finalists)",
+   "scope": "all 10 finalists",
+   "poll": [],
+   "notes": "Record-only telemetry row (poll:[] — never a seed). Midweek re-capture attempt found the wk9 cumulative tally CLOSED and the widget reset to a fresh finale-week cycle at zero votes. NO upsert performed: the 2026-09-26 capture (242,793 votes, Sheba 40.76) remains the final read of that cycle and stays the wk9 seed row. Next valid observation for this source = the new cycle once voting opens and votes accumulate. Raw archive: data/raw/week_10/totalpoll_reset_capture.json."
+  },
+  {
+   "week": 10,
+   "week_start": "2026-09-27",
+   "recorded_at": "2026-09-27T07:38:58.738645+00:00",
+   "auto_scraped": false,
+   "source": "youtube rank-only channels probe (ngnews247 + bbn_scoop, first successful ngnews247 parse)",
+   "scope": "concordance telemetry only",
+   "poll": [],
+   "notes": "ngnews247 fixed (stale handle ngnews24769 -> @ngnews247; SOCS-cookie consent bypass). wk9 leaders Temi Nkem, Ricky (video 2026-09-22); wk8 leaders Keivo, Ricky == widget top-2 (parser validated). bbn_scoop wired, empty until a canonical-format video appears. NOT fed into closed wk9 products (conflicting C-grade vs A-grade final). Raw: data/raw/week_10/rank_channels_probe.json."
   }
  ]
 }

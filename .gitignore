@@ -29,3 +29,4 @@ data/.last_good_predictions.json
 
 # local token files - NEVER commit
 *token*.txt
+output/

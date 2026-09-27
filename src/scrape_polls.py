@@ -62,7 +62,18 @@ KAPPA = 0.25                    # shift = kappa * clipped log-share-vs-uniform
 ANCHOR_CLIP = math.log(4.0)     # |log(s_i * n)| <= log(4): soft nudge, CPI stays dominant
 
 BBNAIJADAILY_URL = "https://bbnaijadaily.com/bbnaija-voting-polls/"
-NGNEWS_HANDLE = "ngnews24769"
+# Rank-only YouTube fan-poll channels (2026-09-27): one isolated parser per
+# channel — a handle move or layout change breaks ONE source, never the run.
+# Titles carry leader NAMES only (no percentages) -> top_N constraint rows
+# (grade C), never shares. ngnews247's old handle "ngnews24769" is STALE:
+# the channel now resolves at @ngnews247 (verified in-browser 2026-09-27).
+YT_POLL_CHANNELS: dict[str, dict[str, str]] = {
+    "ngnews247": {"handle": "ngnews247",
+                  "url": "https://www.youtube.com/@ngnews247"},
+    "bbn_scoop": {"handle": "BBNSCOOP",
+                  "url": "https://www.youtube.com/@BBNSCOOP"},
+}
+NGNEWS_HANDLE = YT_POLL_CHANNELS["ngnews247"]["handle"]
 CHANNEL_ID_CACHE = ROOT / "data" / "raw" / "ngnews_channel_id.txt"
 
 CLOSED_MARKERS = ("voting is closed", "voting closed")
@@ -283,48 +294,75 @@ def parse_ngnews_rss(xml_text: str, week: int,
             "quarantined": quarantined, "latest_video_published": latest}
 
 
-def resolve_channel_id(session: requests.Session) -> str | None:
-    """Cached YouTube channel-id resolution for the @handle."""
-    if CHANNEL_ID_CACHE.exists():
-        cid = CHANNEL_ID_CACHE.read_text(encoding="utf-8").strip()
+def resolve_channel_id(session: requests.Session, handle: str | None = None,
+                       cache_name: str = "ngnews_channel_id.txt") -> str | None:
+    """Cached YouTube channel-id resolution for an @handle (per-channel cache)."""
+    cache = CHANNEL_ID_CACHE.parent / cache_name
+    if cache.exists():
+        cid = cache.read_text(encoding="utf-8").strip()
         if cid.startswith("UC"):
             return cid
-    resp = sb.polite_get(session, f"https://www.youtube.com/@{NGNEWS_HANDLE}")
+    # YouTube consent wall: plain requests get a 302 to consent.youtube.com and
+    # never reach the channel page — THE reason ngnews247 never resolved. The
+    # standard SOCS cookie ("accept minimal") bypasses it. Still $0, still
+    # plain requests (verified 2026-09-27: both channels resolve with it).
+    session.cookies.set("SOCS", "CAI", domain=".youtube.com")
+    resp = sb.polite_get(session, f"https://www.youtube.com/@{handle or NGNEWS_HANDLE}?hl=en")
     if resp is None:
         return None
     m = re.search(r'"(?:channelId|externalId)":"(UC[^"]+)"', resp.text)
     if not m:
         return None
-    CHANNEL_ID_CACHE.parent.mkdir(parents=True, exist_ok=True)
-    CHANNEL_ID_CACHE.write_text(m.group(1), encoding="utf-8")
+    cache.parent.mkdir(parents=True, exist_ok=True)
+    cache.write_text(m.group(1), encoding="utf-8")
     return m.group(1)
 
 
-def fetch_ngnews247(session: requests.Session, week: int | None = None) -> dict[str, Any]:
-    """Channel RSS grab — rank-only, so never a prior input (concordance only).
+def fetch_yt_channel_polls(session: requests.Session, source_name: str,
+                           handle: str, week: int | None = None) -> dict[str, Any]:
+    """Generic channel RSS grab (2026-09-27) — rank-only, so never shares.
     week=None parses every week found in the feed (backfill mode) and returns
     {weeks: {week_number: parsed}} instead of one parsed dict."""
-    cid = resolve_channel_id(session)
+    cid = resolve_channel_id(session, handle=handle,
+                             cache_name=f"yt_{source_name}_channel_id.txt")
     if cid is None:
-        base = {"source": "ngnews247", "type": "rank-only", "state": "unreachable",
+        base = {"source": source_name, "type": "rank-only", "state": "unreachable",
                 "entries": [], "quarantined": []}
         return {**base, "weeks": {}} if week is None else base
     resp = sb.polite_get(session,
                          f"https://www.youtube.com/feeds/videos.xml?channel_id={cid}")
     if resp is None:
-        base = {"source": "ngnews247", "type": "rank-only", "state": "unreachable",
+        base = {"source": source_name, "type": "rank-only", "state": "unreachable",
                 "entries": [], "quarantined": []}
         return {**base, "weeks": {}} if week is None else base
     alias_index = sb.build_alias_index(sb.load_housemates())
     if week is not None:
         parsed = parse_ngnews_rss(resp.text, week, alias_index)
-        return {"source": "ngnews247", "type": "rank-only", **parsed}
+        return {"source": source_name, "type": "rank-only", **parsed}
     all_weeks: dict[int, dict[str, Any]] = {}
     for w in sorted({int(m) for m in
                      re.findall(r"week\s*(\d+)\s+vote\s+poll", resp.text, re.IGNORECASE)}):
         all_weeks[w] = parse_ngnews_rss(resp.text, w, alias_index)
-    return {"source": "ngnews247", "type": "rank-only", "state": "ok",
+    return {"source": source_name, "type": "rank-only", "state": "ok",
             "entries": [], "quarantined": [], "weeks": all_weeks}
+
+
+def fetch_ngnews247(session: requests.Session, week: int | None = None) -> dict[str, Any]:
+    """Back-compat wrapper: the ngnews247 channel via the generic fetcher."""
+    return fetch_yt_channel_polls(session, "ngnews247",
+                                  YT_POLL_CHANNELS["ngnews247"]["handle"], week)
+
+
+def fetch_bbn_scoop(session: requests.Session, week: int | None = None) -> dict[str, Any]:
+    """BBN SCOOP channel (added 2026-09-27) — same rank-only treatment."""
+    return fetch_yt_channel_polls(session, "bbn_scoop",
+                                  YT_POLL_CHANNELS["bbn_scoop"]["handle"], week)
+
+
+def fetch_all_rank_channels(session: requests.Session,
+                            week: int | None = None) -> list[dict[str, Any]]:
+    """Every configured rank-only channel, one snapshot entry each."""
+    return [fetch_ngnews247(session, week), fetch_bbn_scoop(session, week)]
 
 
 # --------------------------------------------------------------------------- #
@@ -475,12 +513,13 @@ def collect_snapshot(week: int, live: bool = True) -> dict[str, Any]:
     sources: list[dict[str, Any]] = []
     if live:
         sources.append(fetch_bbnaijadaily(session, raw_dir))
-        sources.append(fetch_ngnews247(session, week))
+        sources.extend(fetch_all_rank_channels(session, week))
     else:
         sources.append({"source": "bbnaijadaily", "type": "full-share",
                         "state": "skipped", "entries": [], "quarantined": []})
-        sources.append({"source": "ngnews247", "type": "rank-only",
-                        "state": "skipped", "entries": [], "quarantined": []})
+        for rank_src in ("ngnews247", "bbn_scoop"):
+            sources.append({"source": rank_src, "type": "rank-only",
+                            "state": "skipped", "entries": [], "quarantined": []})
     sources.append(fetch_manual(week))
 
     for s in sources:
@@ -505,10 +544,10 @@ def reparse_snapshot(week: int, html_path: Path) -> dict[str, Any]:
           "url": BBNAIJADAILY_URL, "raw": html_path.name,
           "entries": parsed["entries"], "quarantined": parsed["quarantined"],
           "reparsed": True}
-    sources = [bb,
-               {"source": "ngnews247", "type": "rank-only", "state": "skipped",
-                "entries": [], "quarantined": []},
-               fetch_manual(week)]
+    sources = [bb] + [
+               {"source": nm, "type": "rank-only", "state": "skipped",
+                "entries": [], "quarantined": []}
+               for nm in ("ngnews247", "bbn_scoop")] + [fetch_manual(week)]
     for s in sources:
         if s.get("quarantined"):
             LOG.warning("reparse wk%d polls[%s]: quarantined %s",
@@ -529,10 +568,13 @@ def backfill(up_to_week: int) -> None:
     anchor (outcome-leakage rule, 2026-09-20): they exist for concordance
     scoring and the P11 post-season review."""
     session = sb.make_session()
-    ngnews = fetch_ngnews247(session, week=None)          # all weeks in feed
+    rank_feeds = {nm: fetch_yt_channel_polls(session, nm, ch["handle"], week=None)
+                  for nm, ch in YT_POLL_CHANNELS.items()}
+    ngnews = rank_feeds.get("ngnews247", {"weeks": {}})
     articles = discover_result_articles(session)
-    LOG.info("backfill: ngnews weeks=%s, result articles for weeks %s",
-             sorted(ngnews.get("weeks", {})), sorted(articles))
+    LOG.info("backfill: rank-channel weeks=%s, result articles for weeks %s",
+             {nm: sorted(f.get("weeks", {})) for nm, f in rank_feeds.items()},
+             sorted(articles))
     for week in range(1, up_to_week):
         existing = load_snapshot(week)
         if existing and existing.get("snapshot_type") == "final" \
@@ -548,12 +590,13 @@ def backfill(up_to_week: int) -> None:
         if week in articles:
             sources.append({"source": "bbnaijadaily-result-image", "type": "image",
                             **archive_result_image(session, articles[week], raw_dir)})
-        parsed_w = ngnews.get("weeks", {}).get(week)
-        if parsed_w:
-            sources.append({"source": "ngnews247", "type": "rank-only", **parsed_w})
-        else:
-            sources.append({"source": "ngnews247", "type": "rank-only",
-                            "state": "not-in-feed", "entries": [], "quarantined": []})
+        for nm, feed in rank_feeds.items():
+            parsed_w = feed.get("weeks", {}).get(week)
+            if parsed_w:
+                sources.append({"source": nm, "type": "rank-only", **parsed_w})
+            else:
+                sources.append({"source": nm, "type": "rank-only",
+                                "state": "not-in-feed", "entries": [], "quarantined": []})
         sources.append(fetch_manual(week))
         for s in sources:
             if s.get("quarantined"):

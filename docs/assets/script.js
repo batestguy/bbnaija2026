@@ -12,7 +12,12 @@
   const PALETTE = ["#f5b301", "#3dd6c3", "#e5484d", "#c8ccd6", "#c98a5e", "#9a8cf5",
     "#7cc95e", "#f07ac0", "#5eb8f0", "#d6c25a"];
   const active = P.housemates.filter((h) => h.status === "active");
-  const byName = Object.fromEntries(P.housemates.map((h) => [h.name, h]));
+  // roster passthrough (photo/exit meta) arrives separately from the standings
+  // rows — merge it in so hero/podium/legend/roster resolve photos & exit weeks
+  const rosterMeta = P.roster || {};
+  const byName = Object.fromEntries(P.housemates.map((h) =>
+    [h.name, { ...rosterMeta[h.name], ...h }]));
+  const isPollEngine = P.engine && P.engine.name === "poll_matrix";
 
   /* ---------- shared avatar helpers (defined before any renderer uses them) ---------- */
   const initials = (n) => n.split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
@@ -28,7 +33,10 @@
   const badges = [];
   if (P.placeholder) badges.push(["DEMO — PRIOR PREDICTIVE, NOT REAL INFERENCE", "demo"]);
   badges.push([`precision: ${P.precision}`, "warn"]);
-  badges.push([P.rhat_max == null ? "rhat: n/a" : `rhat max: ${P.rhat_max}`,
+  // R-hat is an MCMC convergence diagnostic — meaningless for the bootstrap
+  // poll engine; badge suppressed there so retired-model language stays off
+  // the page (owner: "no more Bayesian, plus R-hat too").
+  if (!isPollEngine) badges.push([P.rhat_max == null ? "rhat: n/a" : `rhat max: ${P.rhat_max}`,
     P.rhat_max != null && P.rhat_max < 1.01 ? "ok" : "warn"]);
   const genMs = P.generated_at ? Date.now() - new Date(P.generated_at) : null;
   const genDays = genMs == null ? null : genMs / 864e5;
@@ -57,9 +65,6 @@
       `<div style="margin-top:4px;color:var(--muted)">Flagged: ${flagged.join(", ")}</div>`);
   }
 
-  /* ---------- engine detection (E4.2: shell kept, data remapped) ---------- */
-  const isPollEngine = P.engine && P.engine.name === "poll_matrix";
-
   /* ---------- auto-finalists strip (spec §6; poll engine only) ---------- */
   const autoStrip = $("autoFinalists");
   if (autoStrip) {
@@ -77,7 +82,9 @@
     }
   }
 
-  /* ---------- hero headline ---------- */
+  /* ---------- hero: the winner alone, 64px photo (owner 09-27, clarified:
+     runner-ups belong to the podium block below with their pictures there,
+     not beside her at the top of the page) ---------- */
   const nowWeek = Math.max(1, ...active.flatMap((h) => (h.history || []).map((p) => p.week)));
   const W0 = P.podium.winner, W0hm = byName[W0.name] || {};
   const basis = isPollEngine ? "aggregated fan-poll shares" : "10,000 season simulations";
@@ -99,11 +106,17 @@
     const hm = byName[s.name] || {};
     const ties = (hm.statistical_tie_with || []);
     const sharePct = hm.share != null ? pct(hm.share, 1) : null;
+    // 2026-09-27: raw slot probs read identical (top-3 set ⇒ 86/86/86) and
+    // looked like a bug. Winner card keeps its win prob; runner-up cards show
+    // P(top-3) — the claim that slot actually makes. Poll share stays as the
+    // hand-checkable number either way.
+    const slotProb = lbl === "winner" ? s.prob : (hm.p_top3 != null ? hm.p_top3 : s.prob);
     return `<div class="slot ${cls}">
       <div class="medal">${n}</div>
+      ${avatarHTML(hm)}
       <div class="who"><div class="lbl">${lbl}</div><div class="nm">${s.name}</div>
         <div class="tie">${sharePct ? "poll share " + sharePct : ""}${ties.length ? " · tie w/ " + ties.join(", ") : ""}</div></div>
-      <div class="prob"><div class="v">${pct(s.prob, 0)}</div><div class="tie">slot prob</div></div>
+      <div class="prob"><div class="v">${pct(slotProb, 0)}</div><div class="tie">${lbl === "winner" ? "to win" : "P(top-3)"}</div></div>
     </div>`;
   }).join("");
 
@@ -215,14 +228,24 @@
   renderPair();
 
   /* ---------- roster ---------- */
-  const hmCfg = P.roster || {};   // engine passes name->cfg passthrough when available
-  $("roster").innerHTML = P.housemates.map((h) => {
-    const meta = hmCfg[h.name] || {};
+  // 2026-09-27: full 24-person roster — evicted/walked/DQ housemates stay on
+  // the board as blurred cards (owner: "include them but shade or blur").
+  // P.housemates carries only share-eligible actives, so eliminated names are
+  // rebuilt from the roster passthrough (exit_type drives the status label).
+  const exited = Object.entries(rosterMeta)
+    .filter(([n]) => !byName[n])
+    .map(([n, m]) => ({ name: n, status: m.exit_type || "evicted",
+      photo: m.photo, exit_week: m.exit_week }));
+  // active cards go through the merged rows so their photos resolve too
+  const fullRoster = [...P.housemates.map((h) => byName[h.name] || h), ...exited]
+    .sort((a, b) => ((a.status === "active" ? 0 : 1) - (b.status === "active" ? 0 : 1))
+      || ((a.exit_week ?? 99) - (b.exit_week ?? 99))
+      || a.name.localeCompare(b.name));
+  $("roster").innerHTML = fullRoster.map((h) => {
     const st = h.status === "active" ? "active" :
-      `${h.status} wk ${h.evicted_week ?? meta.exit_week ?? "?"}`;
-    const ph = h.photo || meta.photo;
-    return `<div class="hcard ${h.status !== "active" ? "out" : ""}">
-      ${avatarHTML({ name: h.name, photo: ph })}
+      `${h.status} wk ${h.exit_week ?? "?"}`;
+    return `<div class="hcard ${h.status !== "active" ? "out" : ""}" title="${h.status !== "active" ? "Exited the house — hover to sharpen" : ""}">
+      ${avatarHTML(h)}
       <div style="min-width:0"><div class="nm">${h.name}</div>
         <div class="st ${h.status}">${st}</div></div>
       ${h.gambit_flag ? '<span class="g" style="font-size:9px;color:var(--red);margin-left:auto;border:1px solid var(--red);border-radius:2px;padding:1px 4px">G</span>' : ""}
@@ -235,6 +258,20 @@
   let series = [];                    // {name, color, pts:[{w, m, lo, hi}]}
   let X = () => 0, Y = () => 0;       // week/value -> canvas coords (refreshed each draw; shared with hover)
   let yMax = 1;                       // tight y-axis top, recomputed per draw (see draw())
+  let finalX = {};                    // name -> dodged end-marker x (position-dodge: each series gets its
+                                      // own lane in the final-week gutter; the axis widens to make room)
+  const imgCache = {};                // name -> Image for the on-chart photo chips
+  function getPhoto(name) {
+    if (imgCache[name] !== undefined) return imgCache[name];
+    const hm = byName[name];
+    if (!hm || !hm.photo) { imgCache[name] = null; return null; }
+    const im = new Image();
+    im.onload = () => draw();          // repaint once the face arrives
+    im.onerror = () => { im.failed = true; draw(); };   // fall back to initials
+    im.src = hm.photo;
+    imgCache[name] = im;
+    return im;
+  }
   const top5 = chips.slice(0, 5).map((h) => h.name);
   const extra = new Set();
   const sel = $("addSel");
@@ -251,7 +288,12 @@
     }).filter(Boolean);
     // poll engine may emit ci_89 as the band twin of hdi_89 — accept both
     series.forEach((s) => { if (!s.pts.some((p) => p.hi != null)) s.pts = s.pts.map((p) => ({ ...p, lo: p.lo ?? 0, hi: p.hi ?? 0 })); });
-    $("legend").innerHTML = series.map((s) => {
+    // chart key — explains dot-vs-whisker encoding in plain words (09-27:
+    // owner found the point/interval pairing confusing without a label)
+    $("legend").innerHTML = `<span class="chart-key" title="The dot is the aggregated share; the capped line through it is the 89% bootstrap interval">
+      <span class="key-line"><i class="key-whisk"></i><i class="key-dot"></i></span>
+      dot = share · whisker = 89% interval — end markers are side-by-side (dodged); the thin leader ties each back to its line — click a name to remove it
+    </span>` + series.map((s) => {
       const hm = byName[s.name] || {};
       const av = hm.photo
         ? `<img class="lav" src="${hm.photo}" alt="" onerror="this.remove()">`
@@ -278,14 +320,30 @@
     const padL = 40, padR = 30, padT = 12, padB = 26;
     const iw = W - padL - padR, ih = H - padT - padB;
     if (!series.length || !iw) return;
-    const weeks = [...new Set(series.flatMap((s) => s.pts.map((p) => p.w)))].sort((a, b) => a - b);
+    // x-domain = plotted weeks + ONE runway slot for the upcoming week.
+    // Owner 09-27 (revised): wk 8 showed as an empty tick (cold-start
+    // histories only carry wk-9 points) and read as missing data — window
+    // weeks with no plotted rows stay OFF the axis; the next week (wk 10,
+    // finale) gets a slot so the runway to the finale is visible.
+    const lastWk = Math.max(...series.flatMap((s) => s.pts.map((p) => p.w)));
+    const weeks = [...new Set([...series.flatMap((s) => s.pts.map((p) => p.w)),
+      (P.week ?? lastWk) + 1])].sort((a, b) => a - b);
     // single-week history (cold start): pad the x-domain one week each side so
     // the point renders centred instead of an empty axis
     const wLo = weeks[0] - (weeks.length < 2 ? 1 : 0);
     const wHi = weeks[weeks.length - 1] + (weeks.length < 2 ? 1 : 0);
-    X = (w) => padL + ((w - wLo) / Math.max(1, wHi - wLo)) * iw;
+    // dodge gutter (position_dodge equivalent, 09-27): the final-week lane gets
+    // (n-1)*SLOT px of side-by-side room by WIDENING the week domain — the axis
+    // itself grows, the linear scale is untouched, nothing is capped/truncated.
+    const SLOT = 34;                                   // px per dodge lane (photo chip 28 + air)
+    const nSer = series.length;
+    const spread = (nSer - 1) * SLOT;
+    const pxPerWeek0 = iw / Math.max(1, wHi - wLo);
+    const gutterWk = nSer > 1 ? (spread / 2) / pxPerWeek0 : 0;
+    const wLoD = wLo - gutterWk, wHiD = wHi + gutterWk;
+    X = (w) => padL + ((w - wLoD) / Math.max(1e-9, wHiD - wLoD)) * iw;
     // Tight y-axis: baseline stays 0, but the top sits just above the tallest visible
-    // CrI bound (3% headroom) instead of reserving dead space up to 100% — with
+    // interval bound (3% headroom) instead of reserving dead space up to 100% — with
     // medians topping out near 40%, a fixed 0-100% axis wasted most of the plot.
     const dataMax = Math.max(...series.flatMap((s) => s.pts.map((p) => Math.max(p.hi, p.m))));
     yMax = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1].find((c) => c >= dataMax * 1.03) || 1;
@@ -307,27 +365,75 @@
       ctx.strokeStyle = "#151a26"; ctx.beginPath();
       ctx.moveTo(x, padT); ctx.lineTo(x, padT + ih); ctx.stroke();
     });
+    // explicit week tick labels ("wk 8", "wk 9", ...) under every axis week —
+    // the chart was previously unlabeled, so the window's weeks were invisible
+    ctx.textAlign = "center"; ctx.fillStyle = "#5a6175";
+    weeks.forEach((w) => { ctx.fillText("wk " + w, X(w), H - 8); });
+    ctx.textAlign = "start";
+
+    // --- dodge offsets: one lane per series, deterministic ordering ----------
+    const mid = (nSer - 1) / 2;
+    series.forEach((s, i) => {
+      finalX[s.name] = X(s.pts[s.pts.length - 1].w) + (i - mid) * SLOT;
+    });
 
     series.forEach((s, si) => {
       const focus = hoverIdx === -1 || hoverIdx === si;   // hovered line pops, others fade
       ctx.globalAlpha = focus ? 1 : 0.22;
-      // 89% CrI band
-      ctx.beginPath();
-      s.pts.forEach((p, i) => i ? ctx.lineTo(X(p.w), Y(p.hi)) : ctx.moveTo(X(p.w), Y(p.hi)));
-      for (let i = s.pts.length - 1; i >= 0; i--) ctx.lineTo(X(s.pts[i].w), Y(s.pts[i].lo));
-      ctx.closePath(); ctx.globalAlpha = focus ? 0.16 : 0.05; ctx.fillStyle = s.color; ctx.fill();
-      ctx.globalAlpha = focus ? 1 : 0.22;
+      // hover-only band: one fill at a time — five simultaneous bands overlapped
+      // into mud, so the interval shows either as this single hovered band or as
+      // the end whiskers, never as five stacked fills (owner feedback 09-27)
+      if (hoverIdx === si) {
+        ctx.beginPath();
+        s.pts.forEach((p, i) => i ? ctx.lineTo(X(p.w), Y(p.hi)) : ctx.moveTo(X(p.w), Y(p.hi)));
+        for (let i = s.pts.length - 1; i >= 0; i--) ctx.lineTo(X(s.pts[i].w), Y(s.pts[i].lo));
+        ctx.closePath(); ctx.globalAlpha = 0.15; ctx.fillStyle = s.color; ctx.fill();
+        ctx.globalAlpha = 1;
+      }
       // median line (bolder for clarity)
       ctx.strokeStyle = s.color; ctx.lineWidth = focus && hoverIdx === si ? 3.5 : 3; ctx.beginPath();
       s.pts.forEach((p, i) => i ? ctx.lineTo(X(p.w), Y(p.m)) : ctx.moveTo(X(p.w), Y(p.m)));
       ctx.stroke(); ctx.lineWidth = 1;
-      // end marker — for a single-week cold start, draw a fat dot + CI whisker
-      const last = s.pts[s.pts.length - 1], lx = X(last.w), ly = Y(last.m);
-      if (s.pts.length < 2) {
-        ctx.strokeStyle = s.color; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(lx, Y(last.hi)); ctx.lineTo(lx, Y(last.lo)); ctx.stroke();
+      // end marker — dodged whisker + dot + photo chip. The whisker sits in
+      // the series' own dodge lane (lane width > chip width ⇒ no overlap);
+      // the photo rides ABOVE the whisker top inside that lane, initials
+      // fallback if the image fails; the leader ties the lane back to the
+      // line's true endpoint so attribution stays honest.
+      const last = s.pts[s.pts.length - 1], ly = Y(last.m);
+      const lx = finalX[s.name] ?? X(last.w);   // dodged x (position-dodge lane)
+      ctx.strokeStyle = s.color; ctx.globalAlpha = focus ? 0.5 : 0.10; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(X(last.w), Y(last.m)); ctx.lineTo(lx, ly); ctx.stroke();   // leader: lane -> true endpoint
+      ctx.globalAlpha = focus ? 1 : 0.22;
+      // I-shaped whisker (with caps) at the dodged x
+      ctx.strokeStyle = s.color; ctx.lineWidth = 2;
+      const yHi = Y(last.hi), yLo = Y(last.lo);
+      ctx.beginPath(); ctx.moveTo(lx, yHi); ctx.lineTo(lx, yLo); ctx.stroke();
+      const capW = 5;   // whisker caps: mark the interval ends
+      ctx.beginPath(); ctx.moveTo(lx - capW, yHi); ctx.lineTo(lx + capW, yHi);
+      ctx.moveTo(lx - capW, yLo); ctx.lineTo(lx + capW, yLo); ctx.stroke();
+      ctx.lineWidth = 1;
+      // ringed dot = the estimate (aggregated share)
+      ctx.fillStyle = "#0b0d12";
+      ctx.beginPath(); ctx.arc(lx, ly, 7, 0, 7); ctx.fill();
+      ctx.fillStyle = s.color;
+      ctx.beginPath(); ctx.arc(lx, ly, 4.5, 0, 7); ctx.fill();
+      // photo chip above the whisker top — inside the series' dodge lane
+      const CHIP = 28, yChip = Math.max(2, yHi - CHIP - 6);
+      const im = getPhoto(s.name);
+      ctx.save();
+      ctx.beginPath(); ctx.arc(lx, yChip + CHIP / 2, CHIP / 2, 0, 7);
+      ctx.fillStyle = "#0b0d12"; ctx.fill();
+      ctx.strokeStyle = (focus || hoverIdx === -1) ? s.color : "#232a3a";
+      ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.clip();
+      if (im && im.complete && im.naturalWidth > 0) {
+        ctx.drawImage(im, lx - CHIP / 2, yChip, CHIP, CHIP);
+      } else {
+        ctx.fillStyle = s.color; ctx.fillRect(lx - CHIP / 2, yChip, CHIP, CHIP);
+        ctx.fillStyle = "#0b0d12"; ctx.font = "bold 9px 'Archivo', sans-serif"; ctx.textAlign = "center";
+        ctx.fillText(initials(s.name), lx, yChip + CHIP / 2 + 3);
       }
-      ctx.fillStyle = s.color; ctx.beginPath(); ctx.arc(lx, ly, 4.5, 0, 7); ctx.fill();
+      ctx.restore();
       ctx.font = "10px 'IBM Plex Mono', monospace";
     });
     ctx.globalAlpha = 1;
@@ -340,17 +446,21 @@
     const rect = cv.getBoundingClientRect();
     const mx = ev.clientX - rect.left, my = ev.clientY - rect.top;
     let best = -1, bestD = 28 * 28;                       // generous 28px hover radius
-    series.forEach((s, si) => s.pts.forEach((p) => {
-      const dx = X(p.w) - mx, dy = Y(p.m) - my, d = dx * dx + dy * dy;
+    series.forEach((s, si) => s.pts.forEach((p, pi) => {
+      // hit-test the DODGED end-marker x for the final point (matches what is
+      // drawn); raw week x for earlier points
+      const px = pi === s.pts.length - 1 ? (finalX[s.name] ?? X(p.w)) : X(p.w);
+      const dx = px - mx, dy = Y(p.m) - my, d = dx * dx + dy * dy;
       if (d < bestD) { bestD = d; best = si; }
     }));
     if (best !== hoverIdx) { hoverIdx = best; draw(); }
     if (best === -1) { tip.style.opacity = 0; return; }
+    // hover = the only moment a band is drawn: one fill, zero overlap
     const s = series[best];
     let bp = s.pts[0], bd = 1e9;
     s.pts.forEach((p) => { const d = Math.abs(X(p.w) - mx); if (d < bd) { bd = d; bp = p; } });
     tip.innerHTML = `<b style="color:${s.color}">${s.name}</b> · wk ${bp.w}<br>` +
-      `median ${pct(bp.m)} · 89% CrI ${pct(bp.lo)}–${pct(bp.hi)}`;
+      `share ${pct(bp.m)} · 89% interval ${pct(bp.lo)}–${pct(bp.hi)}`;
     const tw2 = cv.clientWidth, px = Math.min(Math.max(mx + 14, 8), tw2 - 190);
     tip.style.left = px + "px";
     tip.style.top = Math.max(4, my - 46) + "px";
@@ -363,6 +473,29 @@
   cv.addEventListener("mousemove", onMove);
   cv.addEventListener("mouseleave", onLeave);
   cv.addEventListener("touchstart", (e) => onMove(e.touches[0]), { passive: true });
+
+  /* ---------- data sources (below the chart) ---------- */
+  // Full configured source registry (engine grades keys), 09-27: sources WITH
+  // rows in the window are lit; the rest show dimmed so the registry itself
+  // is visible — which sources exist, their grade, and which actually fed
+  // this run. Straight from predictions.json; nothing hardcoded.
+  const DS = P.data_sufficiency || {};
+  const grades = (P.engine && P.engine.grades) || {};
+  const gradeClass = (g) => (g >= 0.9 ? "gr-a" : g >= 0.6 ? "gr-b" : "gr-c");
+  const srcHost = $("sources");
+  if (srcHost) {
+    const inWin = new Set(DS.sources_reporting || []);
+    const registry = Object.keys(grades).sort();
+    srcHost.innerHTML = (registry.length ? registry : inWin).map((s) => {
+      const g = grades[s];
+      const live = inWin.has(s);
+      return `<span class="src-chip ${live ? "" : "off"}" title="${live ? "Fed this run" : "Configured but no rows in this window"}">` +
+        `<b>${s}</b>${g != null ? `<i class="${gradeClass(g)}">grade ${g.toFixed(1)}</i>` : ""}` +
+        `${live ? "" : "<em>no rows in window</em>"}</span>`;
+    }).join("") +
+      `<span class="src-meta">window wk ${(DS.weeks_in_window || []).join(", ") || "?"} · ` +
+      `${DS.full_share_rows ?? "?"} share rows · ${DS.constraint_rows ?? "?"} constraint rows · ${DS.rows_in_window ?? "?"} total</span>`;
+  }
 
   /* ---------- prediction vs outcome tracker ---------- */
   fetch("track_record.json", { cache: "no-store" })
@@ -387,7 +520,7 @@
     <b>Methodology.</b> Weekly fan-poll observations (bbnaijadaily vote widget,
     hand-logged rows) are aggregated with source-grade, sample-size and recency
     weights; official bottom-N/top-N reports act as constraints; 1,000 bootstrap
-    replicates give the 89% bands, rank probabilities and podium slot odds.
+    replicates give the 89% intervals, rank probabilities and podium odds.
     Share = win probability — every number is hand-checkable from the poll log.
     Gambit auto-finalists appear in their own strip with no numbers.
     <b>Limitation.</b> Fan polls share the same repeat-votable mechanics and
@@ -397,14 +530,10 @@
     <b>Status.</b> Live poll-engine run · precision ${P.precision} · window weeks
     ${(P.data_sufficiency || {}).weeks_in_window || "?"} · rows ${(P.data_sufficiency || {}).rows_in_window || "?"}.
     Probabilities ≠ votes.` :
-    `<b>Methodology.</b> Zero-inflated negative-binomial engagement counts with Cox
-    eviction frailty, fit locally (PyMC, 4 chains) per candidate; three BMA-weighted
-    variants; 10,000 Dirichlet-multinomial posterior-predictive draws → medians,
-    89% credible bands, slot probabilities. Gambit pair: P(#1) ≡ 0, prize-disqualified.
-    Trend podium is a secondary β-projection, never merged into the headline.
-    <b>Limitation.</b> Cross-blog engagement cannot be deduplicated at $0 — the CPI is
-    a correlated engagement index; win probabilities are model shares, not vote counts.
-    <b>Status.</b> ${P.placeholder ? "DEMO: numbers shown are prior-predictive placeholders (no data information) — the MCMC gate has not yet certified a run." :
-    `Live run · precision ${P.precision} · R-hat ${P.rhat_max}.`}
+    `<b>Methodology.</b> Legacy archived run — retired model, shown only if stale
+    legacy products are ever loaded. Current methodology is the poll-matrix
+    bootstrap described above.
+    <b>Status.</b> ${P.placeholder ? "DEMO: placeholder numbers, not a certified run." :
+    `Archived run · precision ${P.precision}.`}
     Probabilities ≠ votes.`;
 })();

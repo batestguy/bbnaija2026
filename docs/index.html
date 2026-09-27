@@ -59,7 +59,21 @@ h1 .yr{color:var(--gold)}
 .gambit.on{display:block}
 .gambit b{color:var(--red);text-transform:uppercase;letter-spacing:.08em;margin-right:8px}
 /* ---------- podium ---------- */
-.podium{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}
+.podium{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0;align-items:end}
+/* podium silhouette (owner 09-27): 2nd | 1st | 3rd with staggered heights —
+   the winner sits centred and tallest, runner-ups lowered; the empty lower
+   body of each card reads as the riser, capped with a metallic bar */
+.slot.w2{order:1}
+.slot.w1{order:2}
+.slot.w3{order:3}
+.slot.w1{min-height:250px}
+.slot.w2{min-height:195px}
+.slot.w3{min-height:150px}
+.slot.w1 .medal{font-size:34px}
+.slot::after{content:"";position:absolute;left:0;right:0;bottom:0;height:8px}
+.slot.w1::after{background:var(--gold)}
+.slot.w2::after{background:var(--silver)}
+.slot.w3::after{background:var(--bronze)}
 .slot{position:relative;border:1px solid var(--line);border-radius:6px;background:linear-gradient(180deg,var(--panel),var(--panel-2));
   padding:16px 14px 14px;display:flex;gap:12px;align-items:center;overflow:hidden;opacity:0;transform:translateY(10px);
   animation:rise .5s forwards}
@@ -95,10 +109,29 @@ select{background:var(--panel-2);color:var(--ink);border:1px solid var(--line);b
 .lchip:hover{border-color:var(--red);color:var(--red)}
 .lchip .sw{width:10px;height:10px;border-radius:2px}
 .lchip .lav{width:18px;height:18px;border-radius:50%;object-fit:cover;border:1px solid var(--line)}
+/* ---------- data sources strip (below the chart) ---------- */
+.srcrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.src-chip{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;color:var(--ink);
+  border:1px solid var(--line);border-radius:3px;padding:4px 9px;background:var(--panel-2)}
+.src-chip i{font-style:normal;font-size:9.5px;padding:1px 6px;border-radius:2px;letter-spacing:.06em;text-transform:uppercase}
+.src-chip i.gr-a{color:var(--teal);border:1px solid var(--teal)}
+.src-chip i.gr-b{color:var(--gold);border:1px solid var(--gold-dim)}
+.src-chip i.gr-c{color:var(--muted);border:1px solid var(--line)}
+.src-chip.off{opacity:.42}
+.src-chip em{font-style:normal;font-family:var(--mono);font-size:9px;color:var(--faint);letter-spacing:.04em}
+.src-meta{font-family:var(--mono);font-size:10px;color:var(--faint);margin-left:auto}
+/* chart key: labels the dot = share, whisker = 89% interval encoding */
+.chart-key{display:inline-flex;align-items:center;gap:8px;font-size:10.5px;font-family:var(--mono);color:var(--faint);
+  border:1px dashed var(--line);border-radius:3px;padding:3px 9px;margin-bottom:2px}
+.chart-key .key-line{position:relative;display:inline-block;width:26px;height:14px}
+.chart-key .key-whisk{position:absolute;left:50%;top:1px;bottom:1px;width:2px;margin-left:-1px;background:var(--muted);border-radius:1px}
+.chart-key .key-whisk::before,.chart-key .key-whisk::after{content:"";position:absolute;left:-3px;width:8px;height:2px;background:var(--muted);border-radius:1px}
+.chart-key .key-whisk::before{top:0}.chart-key .key-whisk::after{bottom:0}
+.chart-key .key-dot{position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:var(--gold);border:2px solid var(--bg)}
 /* ---------- chips / lists ---------- */
-.chips{display:flex;flex-direction:column;gap:6px}
-.chip-row{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:4px;
-  padding:7px 9px;background:var(--panel-2)}
+.chips{display:flex;flex-direction:column;gap:10px}   /* roomier rows (09-27) */
+.chip-row{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:4px;
+  padding:9px 11px;background:var(--panel-2)}
 .chip-row.gambit{border-color:rgba(229,72,77,.4)}
 .chip-row .nm{font-weight:600;font-size:12.5px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chip-row .g{font-size:9px;color:var(--red);border:1px solid var(--red);border-radius:2px;padding:1px 4px;letter-spacing:.08em}
@@ -106,8 +139,8 @@ select{background:var(--panel-2);color:var(--ink);border:1px solid var(--line);b
 .pill b{color:var(--gold);font-weight:600}
 .pill.dim{opacity:.45}
 /* ---------- at risk ---------- */
-.risk{display:flex;flex-direction:column;gap:8px}
-.risk .row{display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-size:12px}
+.risk{display:flex;flex-direction:column;gap:10px}
+.risk .row{display:grid;grid-template-columns:1fr auto;gap:3px 10px;font-size:12px}
 .risk .bar{grid-column:1/-1;height:5px;border-radius:2px;background:#1b2130;position:relative;overflow:hidden}
 .risk .bar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--red),#8a2b2e);border-radius:2px}
 .risk .hz{font-family:var(--mono);color:var(--red);font-size:12px}
@@ -150,9 +183,14 @@ select{background:var(--panel-2);color:var(--ink);border:1px solid var(--line);b
 .pair .cap{font-size:10px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase}
 .pair .diff{font-family:var(--mono);font-size:14px}
 /* ---------- roster ---------- */
-.roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:10px}
-.hcard{border:1px solid var(--line);border-radius:5px;background:var(--panel-2);padding:9px 10px;display:flex;gap:9px;align-items:center}
-.hcard.out{opacity:.5}
+.roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:10px}
+.hcard{border:1px solid var(--line);border-radius:5px;background:var(--panel-2);padding:10px 11px;display:flex;gap:9px;align-items:center}
+.hcard .st{font-weight:600}
+/* exited housemates: kept on the board, softly dimmed — the status label
+   ("evicted wk 7", red; "walked wk 3"; "disqualified wk 7") carries the
+   message; hover restores full contrast (owner: don't blur them entirely) */
+.hcard.out{opacity:.55}
+.hcard.out:hover{opacity:1}
 .hcard .nm{font-size:12px;font-weight:600;line-height:1.2}
 .hcard .st{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
 .st.active{color:var(--teal)} .st.evicted{color:var(--red)} .st.walked{color:var(--bronze)}
@@ -162,6 +200,10 @@ footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--line);
 footer b{color:#ffffff;font-weight:800;font-style:italic}
 .avatar{width:34px;height:34px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;
   font-weight:700;font-size:12px;color:#0b0d12;overflow:hidden}
+/* podium: runner-up cards carry featured ~48px photos (owner 09-27 — their
+   pictures live HERE, not in the hero); the winner's card stays standard
+   since her large photo headlines the hero */
+.slot.w2 .avatar,.slot.w3 .avatar{width:48px;height:48px;font-size:16px}
 .avatar img{width:100%;height:100%;object-fit:cover}
 /* ---------- freshness + share ---------- */
 .fresh{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:6px;letter-spacing:.04em}
@@ -195,6 +237,9 @@ footer b{color:#ffffff;font-weight:800;font-style:italic}
   .slot{flex-direction:column;align-items:flex-start;gap:6px}.slot .prob{margin-left:0;text-align:left}
   .chip-row{flex-wrap:wrap}.sharebtn{margin-left:0}}
 @media(max-width:480px){#chart{height:360px}.slot{padding:10px 8px}.slot .nm{font-size:13px}
+  /* stacked layout: back to natural 1-2-3 reading order, equal heights */
+  .slot.w1,.slot.w2,.slot.w3{min-height:0}
+  .slot.w1{order:1}.slot.w2{order:2}.slot.w3{order:3}
   .pair .big{font-size:26px}.roster{grid-template-columns:repeat(auto-fill,minmax(128px,1fr))}
   .hero{padding:12px}.hero .avatar.big{width:52px;height:52px;font-size:18px}
   .podium{grid-template-columns:1fr}}
@@ -228,6 +273,10 @@ footer b{color:#ffffff;font-weight:800;font-style:italic}
   <section class="podium" id="podium" aria-label="Projected podium"></section>
 
   <div class="grid">
+    <!-- left column: chart + its data-sources strip (09-27 restructure:
+         the sources panel was a third grid child, which broke the 2-col
+         layout and pushed the rank/at-risk column out of place) -->
+    <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
     <section class="panel" aria-label="Trajectory chart">
       <h2>Predicted win-share trajectory
         <span style="margin-left:auto"></span>
@@ -238,6 +287,15 @@ footer b{color:#ffffff;font-weight:800;font-style:italic}
       <div class="legend" id="legend"></div>
     </section>
 
+    <section class="panel" id="sourcesPanel" aria-label="Data sources">
+      <h2>Data sources <span class="tag sec">engine inputs for this window</span></h2>
+      <div class="srcrow" id="sources"></div>
+    </section>
+    </div>
+
+    <!-- right column: rank probabilities, at-risk stacked directly beneath
+         (owner 09-27: vertically adjacent to compact the page); the trend
+         panel sits between for the legacy engine only (hidden on poll engine) -->
     <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
       <section class="panel" aria-label="Rank probabilities">
         <h2>Rank probabilities <span class="tag">P(#1) · P(top3) · P(top5)</span></h2>
@@ -270,7 +328,7 @@ footer b{color:#ffffff;font-weight:800;font-style:italic}
   </section>
 
   <section class="panel" aria-label="Roster status">
-    <h2>House status</h2>
+    <h2>House status <span class="tag sec">blurred = out of the house · hover to sharpen</span></h2>
     <div class="roster" id="roster"></div>
   </section>
 
@@ -285,7 +343,7 @@ footer b{color:#ffffff;font-weight:800;font-style:italic}
       <p><b>1.</b> Every Saturday we snapshot the free fan polls: the bbnaijadaily vote widget, hand-logged rows, and official bottom-N/top-N reports from news blogs.</p>
       <p><b>2.</b> Each observation is stored as one row in a long-format matrix, then aggregated with source-grade, sample-size and recency weights.</p>
       <p><b>3.</b> Official ranking constraints are applied (softened where they conflict with the polls), and 1,000 bootstrap replicates quantify the uncertainty.</p>
-      <p><b>4.</b> The aggregated share IS the win probability — the 89% bands, rank chips and podium odds all come from the same bootstrap replicates.</p>
+      <p><b>4.</b> The aggregated share IS the win probability — the 89% intervals, rank chips and podium odds all come from the same bootstrap replicates.</p>
       <p style="color:var(--faint)">Numbers are fan-poll shares — never vote counts. Full technical detail below.</p>
     </div>
   </details>
@@ -298,6 +356,9 @@ footer b{color:#ffffff;font-weight:800;font-style:italic}
 
   <footer id="foot"></footer>
 </div>
-<script src="assets/script.js"></script>
+<!-- Cache-busting convention: bump ?v= on EVERY edit to script.js — localhost
+     and Pages both serve assets without Cache-Control, so Chrome heuristically
+     caches the old file and a normal reload shows a stale dashboard. -->
+<script src="assets/script.js?v=20260927j"></script>
 </body>
 </html>

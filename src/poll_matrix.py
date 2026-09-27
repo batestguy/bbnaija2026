@@ -58,7 +58,9 @@ CORE_COLUMNS = [
 
 # sources in a snapshot that carry share data, mapped to their config identity
 FULL_SHARE_SOURCES = {"bbnaijadaily", "manual", "bbnaijadaily-result-transcribed"}
-RANK_ONLY_SOURCES = {"ngnews247"}
+# 2026-09-27: rank-only YouTube fan-poll channels (titles carry leader names,
+# never percentages). Each becomes ONE top_N constraint row per week.
+RANK_ONLY_SOURCES = {"ngnews247", "bbn_scoop"}
 
 
 # --------------------------------------------------------------------------- #
@@ -191,10 +193,15 @@ def rows_from_full_share_source(source: dict[str, Any], week: int, snapshot_id: 
     }]
 
 
-def rows_from_ngnews(source: dict[str, Any], week: int, snapshot_id: str,
-                     cfg: dict[str, Any]) -> list[dict[str, Any]]:
-    """ngnews247 leaders -> ONE top_N=2 constraint row (spec §12 #21; grade C,
-    pseudo-n 50; never shares). Empty when no leaders parsed."""
+def rows_from_rank_channel(source: dict[str, Any], week: int, snapshot_id: str,
+                           cfg: dict[str, Any]) -> list[dict[str, Any]]:
+    """Rank-only channel leaders -> ONE top_N=2 constraint row per source
+    (spec §12 #21; grade C, pseudo-n 50; never shares). Generic over the
+    configured YouTube channels (ngnews247, bbn_scoop — 2026-09-27): the
+    source's own name drives grade/pseudo-n lookups, so an unconfigured name
+    degrades to the D-grade default loudly instead of masquerading as another
+    channel. Empty when no leaders parsed."""
+    src = source.get("source", "ngnews247")
     if source.get("state") not in ("ok", "live"):
         return []
     leaders = [e["name"] for e in source.get("entries", []) if e.get("name")]
@@ -203,15 +210,15 @@ def rows_from_ngnews(source: dict[str, Any], week: int, snapshot_id: str,
     name_to_id = {h["name"]: housemate_id(h["name"])
                   for h in sb.load_housemates()}
     row: dict[str, Any] = {
-        "obs_id": _obs_id(snapshot_id, "ngnews247", week),
-        "source_name": "ngnews247",
-        "source_grade": _grade("ngnews247", cfg),
+        "obs_id": _obs_id(snapshot_id, src, week),
+        "source_name": src,
+        "source_grade": _grade(src, cfg),
         "obs_type": "top_N",
-        "sample_size": _pseudo_n("ngnews247", cfg),
+        "sample_size": _pseudo_n(src, cfg),
         "timestamp": snapshot_id,
         "week": week,
         "active_set": sorted(active_names(week)),
-        "poll_url": "https://www.youtube.com/@ngnews247",
+        "poll_url": sp.YT_POLL_CHANNELS.get(src, {}).get("url"),
         "collection_method": "api_free",
         "snapshot_id": snapshot_id,
         "n_collapsed": 1,
@@ -221,6 +228,12 @@ def rows_from_ngnews(source: dict[str, Any], week: int, snapshot_id: str,
     for nm in leaders:
         row[name_to_id.get(nm, housemate_id(nm))] = 1
     return [row]
+
+
+def rows_from_ngnews(source: dict[str, Any], week: int, snapshot_id: str,
+                     cfg: dict[str, Any]) -> list[dict[str, Any]]:
+    """Back-compat wrapper for the generic rank-channel row builder."""
+    return rows_from_rank_channel(source, week, snapshot_id, cfg)
 
 
 # --------------------------------------------------------------------------- #
@@ -316,7 +329,7 @@ def build_matrix(week: int, cfg: dict[str, Any] | None = None) -> list[dict[str,
                 live_rows.extend(rows_from_full_share_source(
                     source, week, snapshot_id, cfg, gambit, source.get("url")))
             elif src in RANK_ONLY_SOURCES:
-                live_rows.extend(rows_from_ngnews(source, week, snapshot_id, cfg))
+                live_rows.extend(rows_from_rank_channel(source, week, snapshot_id, cfg))
             else:
                 LOG.debug("snapshot source %r not consumed by the matrix", src)
 

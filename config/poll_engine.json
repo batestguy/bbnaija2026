@@ -17,12 +17,14 @@
     "manual": 0.7,
     "bbnaijadaily-result-transcribed": 1.0,
     "ngnews247": 0.5,
+    "bbn_scoop": 0.5,
     "official_bottom_top_n": 1.0
   },
   "grades_note": "Keys are source_name values as they appear in snapshot sources / docs/polls.json rows. Transcribed result images ARE the widget's final numbers (grade A, transcription risk carried in provenance). FB-group manual rows = B. ngnews247 rank-only titles = C (constraint rows only, never shares).",
 
   "pseudo_n": {
     "ngnews247": 50,
+    "bbn_scoop": 50,
     "official_bottom_top_n": 200,
     "full_share_missing_votes": 100
   },
