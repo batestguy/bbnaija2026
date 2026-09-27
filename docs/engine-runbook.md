@@ -74,6 +74,16 @@ single-writer rule: it is a manual fetch, not a scheduled job.
 > transcriptions (§5). Captures archived:
 > `data/raw/week_09/widget_results_capture.json` (pre-close) and
 > `widget_results_postclose.json`.
+>
+> **⚠ RESET GUARD (verified 2026-09-27):** the vote-to-WIN widget RESETS to a
+> fresh zeroed cycle when a new voting window opens (observed: all finalists
+> at `0.00% [0 Votes]`, banner "Voting has not started"). **Before ANY upsert
+> of a tally row, check votes are nonzero** — a zeroed capture is a NEW
+> cycle, and `latest_wins_per_source_week` dedupe would overwrite the
+> previous cycle's final tally with zeros. Archive it as record-only
+> telemetry instead (`poll: []` rows can never seed). Reference case: the
+> 242,793-vote wk9 final tally survived precisely because no upsert was
+> performed — see `data/raw/week_10/totalpoll_reset_capture.json`.
 
 ## 3. How the engine weighs things (2-minute mental model)
 

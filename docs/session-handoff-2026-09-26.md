@@ -1,5 +1,15 @@
 # Session handoff — 2026-09-26 (E6.2 done: live wk9 data captured, 2 engine/dashboard bugs fixed, first certified publish)
 
+> **SUPERSEDED 2026-09-27** → read **`docs/session-handoff-2026-09-27.md`**
+> (dashboard overhauled to owner spec — silhouette podium, position-dodged
+> chart with photo chips, 6-source registry; ngnews247 acquisition fixed;
+> wk9 final tally protected from a widget-reset overwrite; pushed + deploy
+> verified live). This file is build history now — and its "next session"
+> advice to UPSERT the wk9 tally midweek was itself superseded on 09-27:
+> the vote-to-win widget RESET to a fresh zeroed cycle, so a blind upsert
+> would have erased the 242,793-vote final tally. Always check votes are
+> nonzero before any upsert — see the 09-27 gotchas.
+
 **Read this first.** This file **supersedes `docs/session-handoff-2026-09-23.md`**
 (kept as build history; its header points here). Operational doc for Saturdays:
 **`docs/engine-runbook.md`** (§2 timing model corrected this session — re-read
