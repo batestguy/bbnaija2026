@@ -100,6 +100,17 @@ select{background:var(--panel-2);color:var(--ink);border:1px solid var(--line);b
   font-family:var(--body);font-size:12px;padding:4px 8px;max-width:170px}
 /* ---------- chart ---------- */
 #chart{width:100%;height:500px;display:block}
+/* week navigation — controls the chart's x-axis window only. Nothing is
+   deleted: picking an earlier week hides later weeks, and the "upcoming week"
+   runway slot is dropped once the season's last assessed week has passed
+   (no week 11 exists, so the axis stops at week 10). */
+.wknav{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 9px}
+.wknav .wklbl{font-size:10px;color:var(--faint);letter-spacing:.1em;font-family:var(--mono)}
+.wkbtn{background:var(--panel-2);color:var(--muted);border:1px solid var(--line);border-radius:3px;
+  font-family:var(--mono);font-size:11px;padding:3px 9px;cursor:pointer}
+
+.wkbtn:hover{border-color:var(--gold-dim);color:var(--ink)}
+.wkbtn.on{border-color:var(--gold);color:var(--gold)}
 .legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 #chartTip{position:absolute;pointer-events:none;background:#0e1119;border:1px solid var(--line);
   border-radius:4px;padding:6px 9px;font-family:var(--mono);font-size:11px;color:var(--ink);
@@ -341,6 +352,7 @@ footer b{color:#ffffff;font-weight:800;font-style:italic}
         <label style="font-size:10px;color:var(--faint);letter-spacing:.1em">ADD</label>
         <select id="addSel"></select>
       </h2>
+      <div class="wknav" id="wknav" role="group" aria-label="Week shown on the x-axis"></div>
       <div style="position:relative"><canvas id="chart"></canvas></div>
       <div class="legend" id="legend"></div>
     </section>
@@ -573,6 +585,6 @@ footer b{color:#ffffff;font-weight:800;font-style:italic}
 <!-- Cache-busting convention: bump ?v= on EVERY edit to script.js — localhost
      and Pages both serve assets without Cache-Control, so Chrome heuristically
      caches the old file and a normal reload shows a stale dashboard. -->
-<script src="assets/script.js?v=20260927j"></script>
+<script src="assets/script.js?v=20261003a"></script>
 </body>
 </html>

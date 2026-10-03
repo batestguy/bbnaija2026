@@ -262,6 +262,16 @@
   let yMax = 1;                       // tight y-axis top, recomputed per draw (see draw())
   let finalX = {};                    // name -> dodged end-marker x (position-dodge: each series gets its
                                       // own lane in the final-week gutter; the axis widens to make room)
+  // x-axis week window (owner 2026-10-03): the chart used to force a slot for
+  // "the next week" as a finale runway — that invented a week 11, which does
+  // not exist. The window now tops out at the engine's own run week (P.week)
+  // and can be stepped back through the weeks the engine actually assessed.
+  let navWeek = null;                 // null = latest assessed week; otherwise cap the axis at that week
+  let axisCap = Infinity;             // current window top, set on every draw; hover honours it
+  const axisWeeks = [...new Set(P.housemates.flatMap((h) => (h.history || []).map((p) => p.week)))]
+    .sort((a, b) => a - b);
+  const lastAssessed = axisWeeks.length ? axisWeeks[axisWeeks.length - 1] : (P.week ?? 1);
+  const seasonTop = Math.max(lastAssessed, P.week ?? lastAssessed);   // never past the run week
   const imgCache = {};                // name -> Image for the on-chart photo chips
   function getPhoto(name) {
     if (imgCache[name] !== undefined) return imgCache[name];
@@ -285,8 +295,13 @@
     series = want.map((n, i) => {
       const h = byName[n];
       if (!h || !h.history) return null;
-      return { name: n, color: PALETTE[i % PALETTE.length],
-        pts: h.history.map((p) => ({ w: p.week, m: p.median, lo: p.hdi_89[0], hi: p.hdi_89[1] })) };
+      // navWeek trims the line to the selected week; the end marker therefore
+      // reads "where the engine had them as of week N", which is the point of
+      // the control. Never deletes the underlying history.
+      const pts = h.history
+        .filter((p) => navWeek == null || p.week <= navWeek)
+        .map((p) => ({ w: p.week, m: p.median, lo: p.hdi_89[0], hi: p.hdi_89[1] }));
+      return pts.length ? { name: n, color: PALETTE[i % PALETTE.length], pts } : null;
     }).filter(Boolean);
     // poll engine may emit ci_89 as the band twin of hdi_89 — accept both
     series.forEach((s) => { if (!s.pts.some((p) => p.hi != null)) s.pts = s.pts.map((p) => ({ ...p, lo: p.lo ?? 0, hi: p.hi ?? 0 })); });
@@ -313,6 +328,30 @@
   rebuild();
   sel.onchange = () => { if (sel.value) { extra.add(sel.value); rebuild(); draw(); sel.selectedIndex = 0; } };
 
+  /* ---------- week navigation (owner 2026-10-03) ---------- */
+  // "Can we control what we see on the x-axis?" — a week stepper over the
+  // weeks the engine actually assessed, stopping at the last one (no week 11).
+  // It is a view-only window: nothing is deleted, and the hero/podium/chips
+  // below always keep reporting the latest certified run.
+  const wkNav = $("wknav");
+  function renderNav() {
+    if (!wkNav) return;
+    const selW = navWeek ?? lastAssessed;
+    const label = selW >= lastAssessed ? "latest assessed week" : "viewing as of week " + selW;
+    wkNav.innerHTML = `<span class="wklbl">X-AXIS</span>` +
+      axisWeeks.map((w) => `<button type="button" class="wkbtn${w === selW ? " on" : ""}"` +
+        ` data-w="${w}" aria-pressed="${w === selW}">wk ${w}</button>`).join("") +
+      `<span class="wklbl" style="margin-left:2px">${label} · season stops at wk ${lastAssessed}</span>`;
+    wkNav.querySelectorAll(".wkbtn").forEach((b) => {
+      b.onclick = () => {
+        const w = Number(b.dataset.w);
+        navWeek = w === lastAssessed ? null : w;   // null = full assessed window
+        rebuild(); draw(); renderNav();
+      };
+    });
+  }
+  renderNav();
+
   function draw() {
     const dpr = window.devicePixelRatio || 1;
     const W = cv.clientWidth, H = cv.clientHeight;
@@ -322,14 +361,18 @@
     const padL = 40, padR = 30, padT = 12, padB = 26;
     const iw = W - padL - padR, ih = H - padT - padB;
     if (!series.length || !iw) return;
-    // x-domain = plotted weeks + ONE runway slot for the upcoming week.
-    // Owner 09-27 (revised): wk 8 showed as an empty tick (cold-start
-    // histories only carry wk-9 points) and read as missing data — window
-    // weeks with no plotted rows stay OFF the axis; the next week (wk 10,
-    // finale) gets a slot so the runway to the finale is visible.
-    const lastWk = Math.max(...series.flatMap((s) => s.pts.map((p) => p.w)));
-    const weeks = [...new Set([...series.flatMap((s) => s.pts.map((p) => p.w)),
-      (P.week ?? lastWk) + 1])].sort((a, b) => a - b);
+    // x-domain = the assessed weeks, capped by the week-navigation control.
+    // Owner 09-27: window weeks with no plotted rows stay OFF the axis (an
+    // empty tick read as missing data). Owner 2026-10-03: the top of the axis
+    // is the engine's run week — never run week + 1, because a season that has
+    // assessed through week 10 has no week 11 to point at. Mid-season the cap
+    // still lands one slot past the last plotted point (the current week's
+    // runway); at the finale the axis simply stops on week 10.
+    const allWk = series.flatMap((s) => s.pts.map((p) => p.w));
+    const lastWk = Math.max(...allWk);
+    const cap = navWeek != null ? Math.min(navWeek, seasonTop) : seasonTop;
+    axisCap = cap;
+    const weeks = [...new Set([...allWk.filter((w) => w <= cap), cap])].sort((a, b) => a - b);
     // single-week history (cold start): pad the x-domain one week each side so
     // the point renders centred instead of an empty axis
     const wLo = weeks[0] - (weeks.length < 2 ? 1 : 0);
@@ -449,6 +492,9 @@
     const mx = ev.clientX - rect.left, my = ev.clientY - rect.top;
     let best = -1, bestD = 28 * 28;                       // generous 28px hover radius
     series.forEach((s, si) => s.pts.forEach((p, pi) => {
+      // points trimmed out by the week control must not be hoverable, or the
+      // tooltip could name a week that is no longer on the axis
+      if (p.w > axisCap) return;
       // hit-test the DODGED end-marker x for the final point (matches what is
       // drawn); raw week x for earlier points
       const px = pi === s.pts.length - 1 ? (finalX[s.name] ?? X(p.w)) : X(p.w);
