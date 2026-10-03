@@ -243,6 +243,64 @@ footer b{color:#ffffff;font-weight:800;font-style:italic}
   .pair .big{font-size:26px}.roster{grid-template-columns:repeat(auto-fill,minmax(128px,1fr))}
   .hero{padding:12px}.hero .avatar.big{width:52px;height:52px;font-size:18px}
   .podium{grid-template-columns:1fr}}
+/* ---------- methodology + math (dependency-free: HTML/CSS, no MathJax) ---------- */
+.method h3{font-family:var(--disp);font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--gold);margin:20px 0 4px}
+.method h3:first-of-type{margin-top:4px}
+.method p{font-size:12.5px;line-height:1.7;color:var(--muted);margin:6px 0}
+.method p b{color:var(--ink)}
+.method .eq{display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:wrap;
+  font-family:'Cambria Math','STIX Two Math',Cambria,Georgia,'Times New Roman',serif;
+  font-size:17px;line-height:1.5;color:var(--ink);background:var(--panel-2);
+  border:1px solid var(--line);border-left:3px solid var(--gold-dim);border-radius:4px;
+  padding:12px 16px;margin:10px 0;overflow-x:auto}
+.method .eq .tag{font-family:var(--mono);font-size:9px;color:var(--faint);letter-spacing:.12em;
+  text-transform:uppercase;margin-right:auto;padding-right:12px;white-space:nowrap}
+.method .frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;
+  font-size:.92em;line-height:1.2;margin:0 5px}
+.method .frac .num{padding:0 7px 2px;border-bottom:1.4px solid currentColor}
+.method .frac .den{padding:2px 7px 0}
+.method .op{color:var(--faint);padding:0 2px}
+.method .eq var{color:var(--gold);font-style:italic}
+.method .eq b{color:var(--teal);font-weight:600}
+.method .layman{font-size:12px;line-height:1.65;color:var(--muted);margin:6px 0}
+.method .layman b{color:var(--teal);text-transform:uppercase;font-size:9.5px;letter-spacing:.12em;
+  display:inline-block;margin-right:6px}
+.method .why{font-size:11.5px;line-height:1.6;color:var(--faint);border-left:2px solid var(--line);
+  padding:3px 0 3px 12px;margin:8px 0 4px}
+.method .why b{color:var(--muted);text-transform:uppercase;font-size:9.5px;letter-spacing:.12em;
+  display:inline-block;margin-right:6px}
+.method .mtable{width:100%;border-collapse:collapse;font-size:11.5px;margin:10px 0}
+.method .mtable th,.method .mtable td{border:1px solid var(--line);padding:5px 9px;text-align:left;
+  vertical-align:top}
+.method .mtable th{background:var(--panel-2);color:var(--muted);font-size:10px;text-transform:uppercase;
+  letter-spacing:.08em}
+.method .mtable code{font-family:var(--mono);color:var(--gold);font-size:11px}
+.method .pdfbtn{display:inline-flex;align-items:center;gap:7px;margin-left:auto;font-family:var(--mono);
+  font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);
+  border:1px solid var(--gold-dim);border-radius:3px;padding:6px 11px;text-decoration:none}
+.method .pdfbtn:hover{background:rgba(245,179,1,.12)}
+/* print the methodology alone, light, when Chrome renders docs/assets/methodology.pdf */
+@page{margin:14mm}
+@media print{
+  body{background:#fff!important;background-image:none!important;color:#111;padding:0}
+  .wrap{max-width:none}
+  .wrap > *:not(#methodology){display:none!important}
+  #methodology{background:#fff;border:none;color:#111;padding:0}
+  #methodology h2{color:#111}
+  .method h3{color:#8a6a10}
+  .method p,.method .layman,.method .why{color:#333}
+  .method p b,.method .layman b{color:#000}
+  .method .eq{background:#f6f6f4;border-color:#ddd;border-left-color:#b8912a;color:#111;
+    break-inside:avoid}
+  .method .eq var{color:#8a6a10}
+  .method .eq b{color:#0b6b60}
+  .method .why{border-left-color:#ccc}
+  .method .mtable th{background:#f6f6f4;color:#555}
+  .method .mtable th,.method .mtable td{border-color:#ddd}
+  .method .mtable code{color:#8a6a10}
+  .method .pdfbtn{display:none}
+}
 </style>
 </head>
 <body>
@@ -347,6 +405,162 @@ footer b{color:#ffffff;font-weight:800;font-style:italic}
       <p style="color:var(--faint)">Numbers are fan-poll shares — never vote counts. Full technical detail below.</p>
     </div>
   </details>
+
+  <section class="panel method" id="methodology" aria-label="Methodology">
+    <h2>Methodology <span class="tag sec">how the tally is built, start to finish</span>
+      <a class="pdfbtn" href="assets/methodology.pdf" target="_blank" rel="noopener" download>Download PDF</a>
+    </h2>
+    <p>This is a <b>weighted fan-poll aggregator with bootstrap uncertainty</b> — not an
+    official vote count and not a black box. Every published number is derived from the
+    formulas below, and every formula is derivable by hand from the poll log.</p>
+
+    <h3>1 · The observation matrix</h3>
+    <p>Each poll snapshot becomes <b>one row</b> in a long-format table. A row records the
+    source, its grade, its sample size, the week, and one value per housemate — and what
+    that value means depends on what the source reported:</p>
+    <table class="mtable">
+      <tr><th>obs_type</th><th>what the source reported</th><th>stored value</th></tr>
+      <tr><td><code>full_share</code></td><td>a poll with each housemate's share</td><td>a number in [0,&nbsp;1]</td></tr>
+      <tr><td><code>top_N</code> / <code>bottom_N</code></td><td>an official ranking naming leaders / bottom housemates</td><td>0 / 1 flag</td></tr>
+      <tr><td><code>rank</code></td><td>an ordered list with no shares</td><td>an integer rank</td></tr>
+    </table>
+    <div class="eq"><span class="tag">matrix</span>
+      <var>M</var> = one row per (<var>source</var>, <var>week</var>)</div>
+    <div class="layman"><b>In plain words</b>a spreadsheet where each line says “this source
+    said this about these housemates this week”.</div>
+    <div class="why"><b>Why</b>keeping raw rows instead of one blended number means every
+    figure can be traced to the poll that produced it, and a bad source can be down-weighted
+    without deleting it. Rows are deduplicated latest-wins per (source, week), so a re-run can
+    never double-count the same poll.</div>
+
+    <h3>2 · Recency window and weights</h3>
+    <p>Only the last <b>3 weeks</b> enter. Each row gets a weight from three things: how
+    trustworthy its source is (<var>q</var>), how many votes it saw (<var>n</var>), and how old
+    it is (<var>λ</var><sup>Δt</sup>).</p>
+    <div class="eq"><span class="tag">row weight</span>
+      <var>w</var><sub>k</sub> = <var>q</var><sub>k</sub> · min(<var>n</var><sub>k</sub>, <var>N</var><sub>cap</sub>) · <var>λ</var><sup>Δt<sub>k</sub></sup></div>
+    <table class="mtable">
+      <tr><th>symbol</th><th>meaning</th><th>value now</th></tr>
+      <tr><td><var>q</var><sub>k</sub></td><td>source grade — trustworthiness</td><td>widget&nbsp;=1.0, transcribed&nbsp;=1.0, FB group&nbsp;=0.7, ranking channel&nbsp;=0.5</td></tr>
+      <tr><td><var>n</var><sub>k</sub></td><td>votes the poll saw</td><td>real votes, or a pseudo-n when hidden</td></tr>
+      <tr><td><var>N</var><sub>cap</sub></td><td>sample-size ceiling</td><td>5&nbsp;000</td></tr>
+      <tr><td><var>λ</var></td><td>per-week decay</td><td>0.6</td></tr>
+      <tr><td>Δt<sub>k</sub></td><td>weeks between the row and now</td><td>0, 1, 2 …</td></tr>
+      <tr><td>ε</td><td>constraint margin</td><td>0.01</td></tr>
+      <tr><td><var>B</var></td><td>bootstrap replicates</td><td>1&nbsp;000</td></tr>
+    </table>
+    <div class="layman"><b>In plain words</b>a poll with far more votes counts more; a trusted
+    source counts more; last week counts 60% of this week, and the week before counts 36%.</div>
+    <div class="why"><b>Why</b>the cap stops one viral widget (hundreds of thousands of votes)
+    from drowning every other source; the decay keeps the snapshot responsive without throwing
+    history away.</div>
+
+    <h3>3 · Shares are renormalised inside each poll</h3>
+    <p>Rarely do two polls list the same housemates. Each row is rescaled so its covered shares
+    sum to 1, making sources comparable:</p>
+    <div class="eq"><span class="tag">row share</span>
+      <var>s̃</var><sub>i,k</sub> =
+      <span class="frac"><span class="num"><var>s</var><sub>i,k</sub></span>
+      <span class="den"><span class="op">Σ</span><sub>j</sub> <var>s</var><sub>j,k</sub></span></span></div>
+    <div class="layman"><b>In plain words</b>if a poll only listed six of nine
+    housemates, we rescale those six to add to 100% before combining.</div>
+    <div class="why"><b>Why</b>without this, a source covering fewer people would look like it
+    gave everyone a smaller share.</div>
+
+    <h3>4 · Aggregation — the weighted blended share</h3>
+    <div class="eq"><span class="tag">aggregate share</span>
+      <var>S</var><sub>i</sub> =
+      <span class="frac"><span class="num"><span class="op">Σ</span><sub>k</sub> <var>w</var><sub>k</sub> · <var>s̃</var><sub>i,k</sub></span>
+      <span class="den"><span class="op">Σ</span><sub>k</sub> <var>w</var><sub>k</sub></span></span>
+      <span class="op">,</span> full-share rows only</div>
+    <div class="layman"><b>In plain words</b>a weighted average of every poll, where bigger and
+    more recent polls pull the result further.</div>
+    <div class="why"><b>Why</b>this is the published headline. It is a plain weighted mean — no
+    softmax, no hidden function — so it can be checked with a calculator and the poll log.</div>
+
+    <h3>5 · Coverage — never invent a number</h3>
+    <p>If no full-share source covered a housemate this week, they inherit last week's blended
+    share (flagged <code>carried</code>); a housemate never covered at all is floored at the
+    week's minimum measured share (flagged <code>unmeasured</code>).</p>
+    <div class="eq"><span class="tag">carry-forward</span>
+      <var>S</var><sub>i</sub> ← <var>S</var><sub>i</sub><sup>(x−1)</sup>
+      <span class="op">when</span> <var>S</var><sub>i</sub> = 0</div>
+    <div class="layman"><b>In plain words</b>if nobody polled a housemate, we carry their last
+    known value forward rather than pretending it is zero.</div>
+    <div class="why"><b>Why</b>a silent zero would look like “no support” when it is really
+    “no data”. Carried values are labelled everywhere they appear.</div>
+
+    <h3>6 · Constraints — official rankings, softened on conflict</h3>
+    <p>When official bottom-N / top-N rankings exist, they bound the shares. If a constraint
+    agrees with the polls it applies fully; if it contradicts them, the affected shares are
+    pulled only <b>halfway</b> to the bound, and the softening is logged.</p>
+    <div class="eq"><span class="tag">bounds</span>
+      bottom-N: <var>S</var><sub>i</sub> ← min(<var>S</var><sub>i</sub>, <var>m</var><sub>out</sub>·(1−ε))
+      <span class="op">·</span>
+      top-N: <var>S</var><sub>i</sub> ← max(<var>S</var><sub>i</sub>, <var>m</var><sub>out</sub>·(1+ε))</div>
+    <div class="eq"><span class="tag">on conflict</span>
+      <var>S</var><sub>i</sub> ← <var>S</var><sub>i</sub> + ½·(bound − <var>S</var><sub>i</sub>)</div>
+    <div class="layman"><b>In plain words</b>an official list is strong evidence, but one thin
+    ranking report should not completely overrule thousands of votes.</div>
+    <div class="why"><b>Why</b>halfway pulls resolve disagreement safely instead of letting a
+    single lower-grade row flip the standings; every adjustment is written to the run log.</div>
+
+    <h3>7 · Renormalise, then bootstrap the uncertainty</h3>
+    <p>After carry and constraints the shares are renormalised to sum to 1. Then the whole
+    weighting is repeated <var>B</var>=1&nbsp;000 times, each time resampling the poll rows in
+    proportion to their weights (and drawing the polls' voters), giving the uncertainty band:</p>
+    <div class="eq"><span class="tag">renormalise</span>
+      <var>S</var><sub>i</sub> ←
+      <span class="frac"><span class="num"><var>S</var><sub>i</sub></span>
+      <span class="den"><span class="op">Σ</span><sub>j</sub> <var>S</var><sub>j</sub></span></span></div>
+    <div class="eq"><span class="tag">89% interval</span>
+      [ <var>S</var><sub>i</sub><sup>(5.5)</sup> , <var>S</var><sub>i</sub><sup>(94.5)</sup> ]
+      <span class="op">from</span> <var>B</var> resamples</div>
+    <div class="layman"><b>In plain words</b>we re-run the whole calculation a thousand times
+    with slightly different poll samples; the range that contains the middle 89% is our
+    uncertainty band.</div>
+    <div class="why"><b>Why</b>poll data is thin and noisy; an interval is more honest than a
+    single over-confident number. Constraints are rules, not votes, so every replicate applies
+    them — which keeps the point estimate inside its own band.</div>
+
+    <h3>8 · From shares to the published products</h3>
+    <p>Everything else is read straight off those same 1&nbsp;000 replicates — no extra
+    machinery:</p>
+    <div class="eq"><span class="tag">win probability</span> <var>P</var>(win)<sub>i</sub> = <var>S</var><sub>i</sub></div>
+    <div class="eq"><span class="tag">rank chip</span>
+      <var>P</var>(#1)<sub>i</sub> =
+      <span class="frac"><span class="num">1</span><span class="den"><var>B</var></span></span>
+      <span class="op">Σ</span><sub>b</sub> <b>1</b>{ rank<sub>b</sub>(i) = 1 }</div>
+    <div class="eq"><span class="tag">head-to-head</span>
+      <var>P</var>(A&gt;B) =
+      <span class="frac"><span class="num">1</span><span class="den"><var>B</var></span></span>
+      <span class="op">Σ</span><sub>b</sub> <b>1</b>{ <var>S</var><sub>A</sub><sup>(b)</sup> &gt; <var>S</var><sub>B</sub><sup>(b)</sup> }</div>
+    <div class="eq"><span class="tag">momentum</span>
+      Δ<var>S</var><sub>i</sub> = <var>S</var><sub>i</sub>(x) − <var>S</var><sub>i</sub>(x−1)</div>
+    <p class="layman"><b>In plain words</b>“share = chance of winning”; a rank chip is just the
+    fraction of the thousand runs in which that housemate finished in that position.</p>
+    <div class="layman"><b>Reading a matchup</b>P(A&gt;B) above 0.90 is a clear lead,
+    0.60–0.90 is a lean, and below 0.60 is “too close to call” (shown as a tie).</div>
+    <div class="why"><b>Why</b>using the same replicates for every product means the podium,
+    chips and head-to-head can never disagree with one another.</div>
+
+    <h3>9 · Gambit auto-finalists</h3>
+    <p>Housemates holding a guaranteed finale seat under the Gambit twist never enter the poll
+    matrix (they are not in the save polls), so they carry no share and no win number. They are
+    shown in their own strip for transparency.</p>
+    <div class="why"><b>Why</b>mixing ineligible housemates into win shares would inflate
+    everyone's denominator and misstate the race.</div>
+
+    <h3>10 · What this is — and is not</h3>
+    <p><b>It is</b> a transparent, reproducible aggregation of publicly available fan polls,
+    with explicit uncertainty and a full audit trail.</p>
+    <p><b>It is not</b> an official result, a vote count, or independent sampling. Fan polls
+    share repeat-votable mechanics and recurring voters across sites, so treat the output as a
+    <b>correlated fan-intensity index</b>. Numbers are shares — never votes. Every published
+    surface carries the “fan forecast, not official result” disclaimer.</p>
+
+    <a class="pdfbtn" href="assets/methodology.pdf" target="_blank" rel="noopener" download style="margin-top:14px">Download this methodology (PDF)</a>
+  </section>
 
   <section class="about" id="about">
     <b>Builders.</b> Conceived, engineered and operated by <b>JJMB</b> — engine, pipeline and
