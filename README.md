@@ -2,7 +2,7 @@
 
 [![Live dashboard](https://img.shields.io/badge/live-dashboard-f5b301)](https://batestguy.github.io/bbnaija2026/)
 [![deploy](https://github.com/batestguy/bbnaija2026/actions/workflows/deploy.yml/badge.svg)](https://github.com/batestguy/bbnaija2026/actions/workflows/deploy.yml)
-[![tests](https://img.shields.io/badge/tests-138%20passing-3dd6c3)](#testing)
+[![tests](https://img.shields.io/badge/tests-134%20passing-3dd6c3)](#testing)
 
 **Live:** https://batestguy.github.io/bbnaija2026/ ·
 **Watch:** [90-second demo video](https://batestguy.github.io/bbnaija2026/assets/bbnaija2026-demo.mp4)
@@ -106,50 +106,87 @@ update. A failed gate leaves the last good file live everywhere.
 
 ### Step 1 — Filter (window, active set, minimum coverage)
 
-Keep observations from the last `window_weeks = 3` weeks. Restrict each row to
-the housemates it covers and to currently-active housemates. Drop any row
-covering fewer than 2 eligible housemates.
+Keep the observations whose week falls in the trailing window around the run
+week $x$:
+
+```math
+\mathcal{W} = \left\{\, k \;:\; x - W + 1 \le w_k \le x \,\right\}, \qquad W = 3
+```
+
+Restrict each row to the housemates it covers *and* to currently-active
+housemates, then drop any row covering fewer than 2 eligible housemates.
 
 ### Step 2 — Weight each observation
 
-```
-w_k = q_k × min(n_k, cap) × λ^Δt_k
+```math
+w_k = q_k \cdot \min(n_k, \mathrm{cap}) \cdot \lambda^{\,\Delta t_k}
 ```
 
 | Symbol | Meaning | Value |
 |---|---|---|
-| `q_k` | source grade: A=1.0 (bbnaijadaily widget, transcribed widget finals, official bottom/top-N), B=0.7 (FB-group manual rows), C=0.5 (ngnews247 rank titles) | from config |
-| `n_k` | actual votes for the whole poll (pseudo-n for constraint rows: ngnews 50, official-N 200) | capped |
-| `cap` | max effective sample size — deliberately tames the widget's ~600k weekly votes so other sources keep influence | **5,000** |
-| `λ` | recency decay — one week of age multiplies weight by 0.6 | 0.6 |
-| `Δt_k` | age in weeks | — |
+| $q_k$ | source grade: A=1.0 (bbnaijadaily widget, transcribed widget finals, official bottom/top-N), B=0.7 (FB-group manual rows), C=0.5 (ngnews247 / bbn_scoop rank titles) | from config |
+| $n_k$ | actual votes for the whole poll (pseudo-n for constraint rows: ngnews 50, official-N 200) | capped |
+| $\mathrm{cap}$ | max effective sample size — deliberately tames the widget's ~600k weekly votes so other sources keep influence | **5,000** |
+| $\lambda$ | recency decay — one week of age multiplies weight by 0.6 | 0.6 |
+| $\Delta t_k$ | age in weeks | — |
 
-### Step 3 — Aggregate full-share observations
+### Step 3 — Renormalise each row, then aggregate
 
-Each row's shares are renormalised over the housemates it covers, then the
-per-housemate share is the weight-weighted mean across rows:
+A poll only covers the housemates it listed (a nominated poll covers just the
+nominees), so each row's values are first renormalised over the set it covers.
+This is a per-row step, not a global one — it is what stops a short ballot from
+being read as a landslide:
 
+```math
+\tilde{s}_{i,k} = \frac{s_{i,k}}{\sum_{j \in \mathcal{A}_k} s_{j,k}}
 ```
-S_i = Σ_k w_k · s_i,k  /  Σ_k w_k          (full_share rows only)
+
+The per-housemate share is then the weight-weighted mean of those row shares,
+over full-share rows only:
+
+```math
+S_i = \frac{\sum_{k} w_k \, \tilde{s}_{i,k}}{\sum_{k} w_k}
 ```
+
+where $\mathcal{A}_k$ is the eligible set row $k$ covers. (Carried and
+unmeasured actives enter as zeros here and are filled in the next step.)
 
 **Carry-forward:** actives the polls didn't cover this week (nominated polls
 only cover nominees) inherit last week's aggregated share and are flagged
-`carried`. Actives never measured in the window get the *minimum measured
-share* as a conservative floor, flagged `unmeasured`. Nothing is invented;
-both flags are visible in the run review and on the dashboard.
+`carried`:
+
+```math
+S_i \leftarrow S_i^{(x-1)} \quad \text{when } S_i = 0
+```
+
+Actives never measured in the window get the *minimum measured share* as a
+conservative floor, flagged `unmeasured`. Nothing is invented; both flags are
+visible in the run review and on the dashboard.
 
 ### Step 4 — Official constraints, softened on conflict
 
-Official bottom-N flags cap a housemate at `m×(1−ε)` where *m* is the minimum
-share among unflagged actives (ε = 0.01); top-N flags floor at `m×(1+ε)`.
+With $m_{\text{out}}$ the extreme share among the *unflagged* actives, official
+bottom-N flags cap a housemate and top-N flags floor it, with
+$\varepsilon = 0.01$:
+
+```math
+S_i \leftarrow \min\!\big(S_i,\; m_{\text{out}}(1-\varepsilon)\big)
+\quad\text{(bottom-N)}, \qquad
+S_i \leftarrow \max\!\big(S_i,\; m_{\text{out}}(1+\varepsilon)\big)
+\quad\text{(top-N)}
+```
 
 **Soften-on-conflict:** when a constraint's ordering agrees with the poll
 aggregate, it applies in full. When it conflicts — e.g. an official bottom
 placement for someone the polls rank mid-table — the affected share is pulled
-**halfway** toward the bound instead of fully capped. Every application
-(agree, soften, or no-op) is logged with before/after shares in
-`predictions.json → polls.constraint_log`.
+only **halfway** toward the bound:
+
+```math
+S_i \leftarrow S_i + \tfrac{1}{2}\,\big(\text{bound} - S_i\big)
+```
+
+Every application (agree, soften, or no-op) is logged with before/after shares
+in `predictions.json → polls.constraint_log`.
 
 ngnews247 titles ("WEEK 9 VOTE POLL RESULT: KEIVO & RICKY") become top-2
 constraint rows — grade C, pseudo-n 50 — never shares. The official-N adapter
@@ -158,10 +195,15 @@ zero rows is a valid, logged state.
 
 ### Step 5 — Renormalise, then bootstrap
 
-Shares renormalise over all eligible actives. Then **B = 1,000 replicates**
-(seeded, deterministic), each resampling:
+Shares renormalise over all eligible actives before anything is published:
 
-1. **observations** with replacement, probability ∝ w_k (between-poll
+```math
+S_i \leftarrow \frac{S_i}{\sum_j S_j}
+```
+
+Then **B = 1,000 replicates** (seeded, deterministic), each resampling:
+
+1. **observations** with replacement, probability $\propto w_k$ (between-poll
    disagreement), and
 2. **each poll's voters** — a multinomial draw over that row's shares with
    n = its capped sample size (within-poll sampling noise).
@@ -169,17 +211,64 @@ Shares renormalise over all eligible actives. Then **B = 1,000 replicates**
 Both layers matter: without voter resampling, a single-poll window would
 produce zero-width intervals and falsely decisive P(A>B) — thin data must
 widen the bands, not eliminate them. The **point estimate never uses voter
-noise**; published shares stay exactly the Step-3 aggregation.
+noise**; published shares stay exactly the Step-3 aggregation. Constraint rows
+are deterministic rules rather than vote observations, so every replicate
+applies all of them while only full-share rows carry the resampling mass.
 
-Reported per housemate: point share `S_i`, the **89% interval** (5.5th/94.5th
-percentiles), P(#1)/P(top-3)/P(top-5) as replicate fractions, P(A>B) for every
-pair, podium slots with slot probabilities, and momentum = `S_i(this week) −
-S_i(last week)`.
+### Step 6 — Products from the replicate set
+
+Every reported quantity is a functional of the $B$ replicate share vectors
+$S^{(1)}, \dots, S^{(B)}$:
+
+```math
+\text{89\% interval}_i = \big[\, S^{(5.5)}_i,\; S^{(94.5)}_i \,\big]
+```
+
+```math
+P(\#1)_i = \frac{1}{B}\sum_{b=1}^{B} \mathbf{1}\left\{\text{rank}_b(i) = 1\right\},
+\qquad
+P(A>B) = \frac{1}{B}\sum_{b=1}^{B} \mathbf{1}\left\{S^{(b)}_A > S^{(b)}_B\right\}
+```
+
+```math
+\text{momentum}_i = S_i(x) - S_i(x-1)
+```
+
+$P(\text{top-}3)$ and $P(\text{top-}5)$ are the same indicator with
+$\text{rank} \le 3$ and $\le 5$; podium slots take the most frequent
+occupant of each slot across replicates. Adjacent ranked pairs with
+$P(A>B) < 0.60$ are flagged as statistical ties (marked, never hidden).
+
+### Step 7 — Score the week (the track record)
+
+Each Sunday the exits land in `data/raw/manual_notes.csv` and `src/score_week.py`
+appends one row to `docs/track_record.json`. Three numbers, all computed from the
+snapshot that was published *before* the eviction:
+
+```math
+p_{\text{evict}}(h) = \frac{1/S_h}{\sum_{h' \in \mathcal{R}} 1/S_{h'}}
+\qquad \mathcal{R} = \text{the at-risk pool}
+```
+
+```math
+\text{Brier} = \frac{1}{|\mathcal{R}|}\sum_{h \in \mathcal{R}} \big(p_{\text{evict}}(h) - y_h\big)^2,
+\qquad y_h = 1 \text{ per exit}
+```
+
+```math
+\text{concordance} = \frac{\#\left\{\,(a,b) \in \mathcal{C}^2 : a \prec b \text{ in both}\,\right\}}{\binom{|\mathcal{C}|}{2}},
+\qquad \mathcal{C} = \text{poll} \cap \text{at-risk}
+```
+
+A called winner counts as a hit if it was still in the house. Ties in the
+concordance count as agreement — an ordering that does not disagree is not
+wrong. Weeks with no snapshot predating their eviction get a `scored: false`
+tombstone explaining why, once, and are never back-filled.
 
 ### The mapping rule: share = P(win)
 
 There is no extra model between the aggregated share and the win probability —
-**S_i *is* P(win)**, renormalised over non-Gambit actives. No softmax, no
+**$S_i$ *is* P(win)**, renormalised over non-Gambit actives. No softmax, no
 Dirichlet layer, no momentum tilt. The owner can verify any week's table by
 hand from `docs/polls.json` in a few minutes. Statistical ties follow the
 decision rules: P(A>B) > 0.90 clear lead, 0.60–0.90 leaning, < 0.60 too close
@@ -249,14 +338,14 @@ docs/                    the dashboard (index.html + script.js, zero dependencie
 docs/engine-runbook.md   the Saturday ritual: checklist, failure modes, recovery
 poll-matrix-engine-spec.md  the owner-approved overhaul spec (21 decisions)
 .github/workflows/deploy.yml  push-triggered deploy: schema gate → Pages + HF sync
-tests/                   138 fixture-based tests (no network, no real-data dependence)
+tests/                   134 fixture-based tests (no network, no real-data dependence)
 ```
 
 ## Running it
 
 ```bash
 # environment: Python 3.11 with numpy + requests + bs4 + feedparser (docs/envs/pinned-versions.md)
-python run_weekly.py --week 9   # full Saturday run (seconds-to-minutes, inside the live voting window)
+python run_weekly.py --week 10   # full Saturday run (seconds-to-minutes, inside the live voting window)
 ```
 
 Saturday cadence: run → read the console review (standings, constraints,
@@ -273,7 +362,7 @@ anchor strength, and adapter set.
 
 ## Testing
 
-138 tests, all fixture-based and offline: the matrix builder (schema shape,
+134 tests, all fixture-based and offline: the matrix builder (schema shape,
 latest-wins dedupe, Gambit exclusion and renormalisation, seed grading,
 quarantine propagation, CSV round-trip), the aggregation engine
 (hand-computed weights, weighted means, constraint agree/soften geometry,
@@ -285,8 +374,7 @@ image-only backfill), the retained legacy suites (preprocess, MCMC, scoring —
 the retired engine's tests stay green), and an end-to-end smoke.
 
 ```bash
-pytest -m "not e2e"   # fast machinery suite
-pytest                # everything, incl. the e2e smoke
+pytest        # the whole suite, ~7 s, no network
 ```
 
 ## Deploy architecture
@@ -308,10 +396,10 @@ certified poll-engine run replaces it.
 ## The retired engine (history, 2026-09-09 → 09-20)
 
 The original system scored weekly blog coverage as an engagement index —
-`CPI = 0.4·c̃ + 0.3·s̃ + 0.2·m̃ + 0.1·h̃` over comments/shares/mentions/headlines
-(min-max normalised, VADER sentiment) — and fed a joint Bayesian model: a
-zero-inflated negative-binomial count sub-model
-(`log μ(it) = α + α_i + (β+β_i)t + γS + δA + θW + η(W·β_i)`) sharing `α_i` as
+$\mathrm{CPI} = 0.4\,\tilde{c} + 0.3\,\tilde{s} + 0.2\,\tilde{m} + 0.1\,\tilde{h}$
+over comments/shares/mentions/headlines (min-max normalised, VADER sentiment) —
+and fed a joint Bayesian model: a zero-inflated negative-binomial count
+sub-model $\log \mu_{it} = \alpha + \alpha_i + (\beta + \beta_i)t + \gamma S + \delta A + \theta W + \eta(W \cdot \beta_i)$ sharing `α_i` as
 frailty with a Cox eviction partial likelihood, correlated non-centred
 housemate effects (LKJ(2)), three BMA candidates distinguished by the
 `σ_β` scale (Pseudo-BMA+ over ArviZ LOO ELPD), 4×2000 NUTS draws, R-hat < 1.01
