@@ -268,12 +268,24 @@ def bootstrap(rows: list[dict[str, Any]], weights: np.ndarray,
     idx = {name: i for i, name in enumerate(names)}
     cap = float(cfg["cap"])
 
+    # Resampling mass lives on FULL-SHARE observations only. Constraint rows
+    # (top_N/bottom_N) are deterministic rules from official rankings, not vote
+    # observations: if they were resampled, a tiny-weight constraint would
+    # vanish from most replicates while the point estimate still applies it,
+    # pushing published point shares outside their own bootstrap interval.
     w = weights.astype(float)
-    if w.sum() <= 0:
-        p = np.full(len(rows), 1.0 / max(len(rows), 1))
+    fs = np.array([r["obs_type"] == "full_share" for r in rows], dtype=bool)
+    w_fs = np.where(fs, w, 0.0)
+    if w_fs.sum() <= 0:
+        p = np.where(fs, 1.0 / max(int(fs.sum()), 1), 0.0)
     else:
-        p = w / w.sum()
-    counts = rng.multinomial(max(len(rows), 1), p, size=B)  # [B, n_rows]
+        p = w_fs / w_fs.sum()
+    counts = rng.multinomial(max(int(fs.sum()), 1), p, size=B)  # [B, n_rows]
+    # ...and every replicate applies every constraint, matching the point path.
+    c_counts = counts.copy()
+    for k, row in enumerate(rows):
+        if row["obs_type"] in ("top_N", "bottom_N"):
+            c_counts[:, k] = 1
 
     # precompute per-row covered shares + n over eligible set
     row_info = []
@@ -312,7 +324,7 @@ def bootstrap(rows: list[dict[str, Any]], weights: np.ndarray,
         # shift replicate shares away from the published point shares.
         S = {name: acc[name] / wsum for name in names}
         S, _, _ = apply_carry_forward(S, prev_shares, cfg, warn=False)
-        logs = apply_constraints(S, rows, weights, counts[b], cfg)
+        logs = apply_constraints(S, rows, weights, c_counts[b], cfg)
         S = renormalise(S)
         for name, v in S.items():
             reps[b, idx[name]] = v

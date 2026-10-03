@@ -1,33 +1,33 @@
 {
- "generated_at": "2026-09-27T07:39:50.281798+00:00",
- "week": 9,
+ "generated_at": "2026-10-03T07:48:08.871897+00:00",
+ "week": 10,
  "podium": {
   "winner": {
    "name": "Sheba",
-   "prob": 0.862
+   "prob": 0.945
   },
   "runner_up": {
-   "name": "Ricky",
-   "prob": 0.862
+   "name": "Temi Nkem",
+   "prob": 0.926
   },
   "second_runner_up": {
-   "name": "Temi Nkem",
-   "prob": 0.862
+   "name": "Ricky",
+   "prob": 0.917
   }
  },
  "housemates": [
   {
    "name": "Aikou",
    "status": "active",
-   "share": 0.031247,
+   "share": 0.026817,
    "p_rank_1": 0.0,
    "p_top3": 0.0,
-   "p_top5": 0.018,
+   "p_top5": 0.0,
    "ci_89": [
-    0.028875,
-    0.063856
+    0.019133,
+    0.038438
    ],
-   "momentum": null,
+   "momentum": -0.0044,
    "carried": false,
    "unmeasured": false,
    "statistical_tie_with": [],
@@ -39,21 +39,29 @@
       0.028875,
       0.063856
      ]
+    },
+    {
+     "week": 10,
+     "median": 0.026817,
+     "hdi_89": [
+      0.019133,
+      0.038438
+     ]
     }
    ]
   },
   {
    "name": "Barry",
    "status": "active",
-   "share": 0.034872,
+   "share": 0.029743,
    "p_rank_1": 0.0,
    "p_top3": 0.0,
-   "p_top5": 0.361,
+   "p_top5": 0.019,
    "ci_89": [
-    0.032375,
-    0.063856
+    0.021672,
+    0.043114
    ],
-   "momentum": null,
+   "momentum": -0.0051,
    "carried": false,
    "unmeasured": false,
    "statistical_tie_with": [
@@ -67,21 +75,29 @@
       0.032375,
       0.063856
      ]
+    },
+    {
+     "week": 10,
+     "median": 0.029743,
+     "hdi_89": [
+      0.021672,
+      0.043114
+     ]
     }
    ]
   },
   {
    "name": "Bluethopia",
    "status": "active",
-   "share": 0.068511,
+   "share": 0.066585,
    "p_rank_1": 0.0,
    "p_top3": 0.0,
-   "p_top5": 0.983,
+   "p_top5": 0.98,
    "ci_89": [
-    0.0577,
-    0.073276
+    0.044139,
+    0.083019
    ],
-   "momentum": null,
+   "momentum": -0.0019,
    "carried": false,
    "unmeasured": false,
    "statistical_tie_with": [],
@@ -93,21 +109,29 @@
       0.0577,
       0.073276
      ]
+    },
+    {
+     "week": 10,
+     "median": 0.066585,
+     "hdi_89": [
+      0.044139,
+      0.083019
+     ]
     }
    ]
   },
   {
    "name": "Flora",
    "status": "active",
-   "share": 0.040865,
+   "share": 0.041503,
    "p_rank_1": 0.0,
    "p_top3": 0.0,
-   "p_top5": 0.007,
+   "p_top5": 0.0,
    "ci_89": [
-    0.0182,
-    0.0674
+    0.014219,
+    0.061536
    ],
-   "momentum": null,
+   "momentum": 0.0006,
    "carried": false,
    "unmeasured": false,
    "statistical_tie_with": [],
@@ -119,31 +143,13 @@
       0.0182,
       0.0674
      ]
-    }
-   ]
-  },
-  {
-   "name": "Keivo",
-   "status": "active",
-   "share": 0.091152,
-   "p_rank_1": 0.138,
-   "p_top3": 0.138,
-   "p_top5": 0.621,
-   "ci_89": [
-    0.007,
-    0.201719
-   ],
-   "momentum": null,
-   "carried": false,
-   "unmeasured": false,
-   "statistical_tie_with": [],
-   "history": [
+    },
     {
-     "week": 9,
-     "median": 0.091152,
+     "week": 10,
+     "median": 0.041503,
      "hdi_89": [
-      0.007,
-      0.201719
+      0.014219,
+      0.061536
      ]
     }
    ]
@@ -151,15 +157,15 @@
   {
    "name": "Oyin",
    "status": "active",
-   "share": 0.037848,
+   "share": 0.038924,
    "p_rank_1": 0.0,
    "p_top3": 0.0,
-   "p_top5": 0.01,
+   "p_top5": 0.001,
    "ci_89": [
-    0.013,
-    0.067516
+    0.010329,
+    0.06041
    ],
-   "momentum": null,
+   "momentum": 0.0011,
    "carried": false,
    "unmeasured": false,
    "statistical_tie_with": [
@@ -173,21 +179,29 @@
       0.013,
       0.067516
      ]
+    },
+    {
+     "week": 10,
+     "median": 0.038924,
+     "hdi_89": [
+      0.010329,
+      0.06041
+     ]
     }
    ]
   },
   {
    "name": "Ricky",
    "status": "active",
-   "share": 0.205529,
+   "share": 0.190733,
    "p_rank_1": 0.0,
-   "p_top3": 1.0,
+   "p_top3": 0.991,
    "p_top5": 1.0,
    "ci_89": [
-    0.139664,
-    0.236706
+    0.172628,
+    0.199233
    ],
-   "momentum": null,
+   "momentum": -0.0148,
    "carried": false,
    "unmeasured": false,
    "statistical_tie_with": [],
@@ -199,21 +213,29 @@
       0.139664,
       0.236706
      ]
+    },
+    {
+     "week": 10,
+     "median": 0.190733,
+     "hdi_89": [
+      0.172628,
+      0.199233
+     ]
     }
    ]
   },
   {
    "name": "Sheba",
    "status": "active",
-   "share": 0.291021,
-   "p_rank_1": 0.862,
-   "p_top3": 0.862,
+   "share": 0.253145,
+   "p_rank_1": 0.945,
+   "p_top3": 0.945,
    "p_top5": 1.0,
    "ci_89": [
-    0.083738,
-    0.4132
+    0.215077,
+    0.308639
    ],
-   "momentum": null,
+   "momentum": -0.0379,
    "carried": false,
    "unmeasured": false,
    "statistical_tie_with": [],
@@ -225,21 +247,29 @@
       0.083738,
       0.4132
      ]
+    },
+    {
+     "week": 10,
+     "median": 0.253145,
+     "hdi_89": [
+      0.215077,
+      0.308639
+     ]
     }
    ]
   },
   {
    "name": "Temi Nkem",
    "status": "active",
-   "share": 0.149415,
-   "p_rank_1": 0.0,
+   "share": 0.200437,
+   "p_rank_1": 0.055,
    "p_top3": 1.0,
    "p_top5": 1.0,
    "ci_89": [
-    0.1138,
-    0.178021
+    0.197953,
+    0.208524
    ],
-   "momentum": null,
+   "momentum": 0.051,
    "carried": false,
    "unmeasured": false,
    "statistical_tie_with": [],
@@ -251,21 +281,29 @@
       0.1138,
       0.178021
      ]
+    },
+    {
+     "week": 10,
+     "median": 0.200437,
+     "hdi_89": [
+      0.197953,
+      0.208524
+     ]
     }
    ]
   },
   {
    "name": "Tram",
    "status": "active",
-   "share": 0.04954,
+   "share": 0.152113,
    "p_rank_1": 0.0,
-   "p_top3": 0.0,
-   "p_top5": 0.0,
+   "p_top3": 0.064,
+   "p_top5": 1.0,
    "ci_89": [
-    0.0332,
-    0.064384
+    0.141316,
+    0.169168
    ],
-   "momentum": null,
+   "momentum": 0.1026,
    "carried": false,
    "unmeasured": false,
    "statistical_tie_with": [],
@@ -277,6 +315,14 @@
       0.0332,
       0.064384
      ]
+    },
+    {
+     "week": 10,
+     "median": 0.152113,
+     "hdi_89": [
+      0.141316,
+      0.169168
+     ]
     }
    ]
   }
@@ -284,27 +330,27 @@
  "at_risk": [
   {
    "name": "Aikou",
-   "share": 0.0312,
+   "share": 0.0268,
    "bottom_n_flag": false
   },
   {
    "name": "Barry",
-   "share": 0.0349,
+   "share": 0.0297,
    "bottom_n_flag": false
   },
   {
    "name": "Oyin",
-   "share": 0.0378,
+   "share": 0.0389,
    "bottom_n_flag": false
   },
   {
    "name": "Flora",
-   "share": 0.0409,
+   "share": 0.0415,
    "bottom_n_flag": false
   },
   {
-   "name": "Tram",
-   "share": 0.0495,
+   "name": "Bluethopia",
+   "share": 0.0666,
    "bottom_n_flag": false
   }
  ],
@@ -371,8 +417,8 @@
   },
   "Keivo": {
    "photo": "assets/photos/keivo.jpg",
-   "exit_week": null,
-   "exit_type": null
+   "exit_week": 10,
+   "exit_type": "disqualified"
   },
   "Kamsy": {
    "photo": "assets/photos/kamsy.jpg",
@@ -455,135 +501,138 @@
   "anchor_applied": false,
   "engine_note": "poll-matrix engine: polls ARE the likelihood, not a prior anchor",
   "sources_in_window": [
-   "bbnaijadaily-result-transcribed"
+   "bbnaijadaily-result-transcribed",
+   "manual",
+   "ngnews247"
   ],
-  "constraint_log": [],
+  "constraint_log": [
+   {
+    "source": "ngnews247",
+    "kind": "top_N",
+    "flagged": [
+     "Temi Nkem",
+     "Tram"
+    ],
+    "agreed": false,
+    "before": {
+     "Temi Nkem": 0.172608,
+     "Tram": 0.057716
+    },
+    "after": {
+     "Temi Nkem": 0.238276,
+     "Tram": 0.18083
+    }
+   }
+  ],
   "carried": [],
   "unmeasured_floored": []
  },
  "pairwise": {
   "Aikou": {
-   "Barry": 0.058,
+   "Barry": 0.046,
    "Bluethopia": 0.0,
-   "Flora": 0.379,
-   "Keivo": 0.379,
-   "Oyin": 0.382,
+   "Flora": 0.493,
+   "Oyin": 0.639,
    "Ricky": 0.0,
    "Sheba": 0.0,
    "Temi Nkem": 0.0,
-   "Tram": 0.379
+   "Tram": 0.0
   },
   "Barry": {
-   "Aikou": 0.942,
-   "Bluethopia": 0.034,
-   "Flora": 0.382,
-   "Keivo": 0.379,
-   "Oyin": 0.44,
+   "Aikou": 0.954,
+   "Bluethopia": 0.019,
+   "Flora": 0.637,
+   "Oyin": 0.641,
    "Ricky": 0.0,
    "Sheba": 0.0,
    "Temi Nkem": 0.0,
-   "Tram": 0.379
+   "Tram": 0.0
   },
   "Bluethopia": {
    "Aikou": 1.0,
-   "Barry": 0.966,
-   "Flora": 0.992,
-   "Keivo": 0.379,
-   "Oyin": 0.989,
+   "Barry": 0.981,
+   "Flora": 1.0,
+   "Oyin": 0.999,
    "Ricky": 0.0,
    "Sheba": 0.0,
    "Temi Nkem": 0.0,
-   "Tram": 1.0
+   "Tram": 0.0
   },
   "Flora": {
-   "Aikou": 0.621,
-   "Barry": 0.618,
-   "Bluethopia": 0.008,
-   "Keivo": 0.379,
-   "Oyin": 0.851,
+   "Aikou": 0.507,
+   "Barry": 0.363,
+   "Bluethopia": 0.0,
+   "Oyin": 0.881,
    "Ricky": 0.0,
    "Sheba": 0.0,
    "Temi Nkem": 0.0,
-   "Tram": 0.107
-  },
-  "Keivo": {
-   "Aikou": 0.621,
-   "Barry": 0.621,
-   "Bluethopia": 0.621,
-   "Flora": 0.621,
-   "Oyin": 0.621,
-   "Ricky": 0.138,
-   "Sheba": 0.138,
-   "Temi Nkem": 0.138,
-   "Tram": 0.621
+   "Tram": 0.0
   },
   "Oyin": {
-   "Aikou": 0.618,
-   "Barry": 0.56,
-   "Bluethopia": 0.011,
-   "Flora": 0.149,
-   "Keivo": 0.379,
+   "Aikou": 0.361,
+   "Barry": 0.359,
+   "Bluethopia": 0.001,
+   "Flora": 0.119,
    "Ricky": 0.0,
    "Sheba": 0.0,
    "Temi Nkem": 0.0,
-   "Tram": 0.114
+   "Tram": 0.0
   },
   "Ricky": {
    "Aikou": 1.0,
    "Barry": 1.0,
    "Bluethopia": 1.0,
    "Flora": 1.0,
-   "Keivo": 0.862,
    "Oyin": 1.0,
-   "Sheba": 0.138,
-   "Temi Nkem": 0.862,
-   "Tram": 1.0
+   "Sheba": 0.055,
+   "Temi Nkem": 0.019,
+   "Tram": 0.991
   },
   "Sheba": {
    "Aikou": 1.0,
    "Barry": 1.0,
    "Bluethopia": 1.0,
    "Flora": 1.0,
-   "Keivo": 0.862,
    "Oyin": 1.0,
-   "Ricky": 0.862,
-   "Temi Nkem": 0.862,
-   "Tram": 1.0
+   "Ricky": 0.945,
+   "Temi Nkem": 0.945,
+   "Tram": 0.945
   },
   "Temi Nkem": {
    "Aikou": 1.0,
    "Barry": 1.0,
    "Bluethopia": 1.0,
    "Flora": 1.0,
-   "Keivo": 0.862,
    "Oyin": 1.0,
-   "Ricky": 0.138,
-   "Sheba": 0.138,
+   "Ricky": 0.981,
+   "Sheba": 0.055,
    "Tram": 1.0
   },
   "Tram": {
-   "Aikou": 0.621,
-   "Barry": 0.621,
-   "Bluethopia": 0.0,
-   "Flora": 0.893,
-   "Keivo": 0.379,
-   "Oyin": 0.886,
-   "Ricky": 0.0,
-   "Sheba": 0.0,
+   "Aikou": 1.0,
+   "Barry": 1.0,
+   "Bluethopia": 1.0,
+   "Flora": 1.0,
+   "Oyin": 1.0,
+   "Ricky": 0.009,
+   "Sheba": 0.055,
    "Temi Nkem": 0.0
   }
  },
  "auto_finalists": [],
  "data_sufficiency": {
-  "rows_in_window": 2,
-  "full_share_rows": 2,
-  "constraint_rows": 0,
+  "rows_in_window": 4,
+  "full_share_rows": 3,
+  "constraint_rows": 1,
   "sources_reporting": [
-   "bbnaijadaily-result-transcribed"
+   "bbnaijadaily-result-transcribed",
+   "manual",
+   "ngnews247"
   ],
   "weeks_in_window": [
    8,
-   9
+   9,
+   10
   ]
  }
 }

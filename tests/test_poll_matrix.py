@@ -299,10 +299,31 @@ def test_build_matrix_seeds_plus_live(tmp_path, monkeypatch):
 def test_build_matrix_no_snapshot_degrades_to_seeds(monkeypatch):
     cfg = _cfg()
     monkeypatch.setattr(pm.sp, "load_snapshot", lambda w: None)
-    rows = pm.build_matrix(9, cfg)   # real docs/polls.json: wk-8 seed + wk-9 vote-to-win seed
+    rows = pm.build_matrix(9, cfg)   # real docs/polls.json: wk-8 + wk-9 + wk-10 seeds
     assert rows, "seed rows expected from the real docs/polls.json"
-    assert all(r["week"] in (8, 9) for r in rows)
-    assert {r["week"] for r in rows} == {8, 9}
+    assert all(r["week"] in (8, 9, 10) for r in rows)
+    assert {r["week"] for r in rows} == {8, 9, 10}
+
+
+def test_seed_and_live_manual_row_not_double_counted(tmp_path, monkeypatch):
+    """Regression (2026-10-03): a docs/polls.json manual row is ingested both
+    as a seed AND, for the live week, as the snapshot's `manual` source. The
+    spec §5.1 latest-wins dedupe per (source, week) must collapse them so the
+    manual poll is not counted twice."""
+    cfg = _cfg()
+    log = {"weeks": [{"week": 9, "recorded_at": "2026-09-25", "auto_scraped": False,
+                      "source": "FB group test",
+                      "poll": [{"name": "Keivo", "pct": 60.0},
+                               {"name": "Sheba", "pct": 40.0}]}]}
+    monkeypatch.setattr(pm, "POLLS_LOG", _tmp_log(log))
+    snap = _snap([_manual([{"name": "Keivo", "pct": 60.0},
+                           {"name": "Sheba", "pct": 40.0}])], week=9,
+                 captured="2026-09-26T19:00:00+00:00")
+    monkeypatch.setattr(pm.sp, "load_snapshot", lambda w: snap if w == 9 else None)
+    rows = pm.build_matrix(9, cfg)
+    manual_rows = [r for r in rows if r["source_name"] == "manual" and r["week"] == 9]
+    assert len(manual_rows) == 1
+    assert manual_rows[0]["n_collapsed"] == 2
 
 
 def test_gambit_gate_applies_in_build(tmp_path, monkeypatch):

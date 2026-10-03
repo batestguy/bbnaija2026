@@ -350,6 +350,24 @@ def build_matrix(week: int, cfg: dict[str, Any] | None = None) -> list[dict[str,
     else:
         LOG.warning("no polls snapshot for week %d — matrix runs on seeds only", week)
 
+    # spec §5.1 latest-wins dedupe, applied across SEED and LIVE rows alike: the
+    # hand-log (docs/polls.json) is ingested both as seed rows and, for the
+    # current week, again as the snapshot's `manual` source — without this the
+    # same manual observation double-counts. One row per (source, week); the
+    # most recent timestamp wins, n_collapsed records the fold.
+    best: dict[tuple[str, int], dict[str, Any]] = {}
+    for r in rows:
+        key = (r["source_name"], int(r["week"]))
+        cur = best.get(key)
+        if cur is None or (r.get("timestamp") or "") >= (cur.get("timestamp") or ""):
+            if cur is not None:
+                r = {**r, "n_collapsed": int(cur.get("n_collapsed", 1)) + 1}
+            best[key] = r
+    if len(best) != len(rows):
+        LOG.info("dedupe: collapsed %d duplicate (source, week) row(s) across seeds+live",
+                 len(rows) - len(best))
+    rows = list(best.values())
+
     LOG.info("matrix built: %d observation rows for weeks 1..%d "
              "(%d full_share, %d constraint)",
              len(rows), week,

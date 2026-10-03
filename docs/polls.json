@@ -447,6 +447,53 @@
    "notes": "Agent capture (owner-delegated); raw archives: data/raw/week_09/widget_results_capture.json (pre-close 19:33 UTC) and widget_results_postclose.json (20:17 UTC). CORRECTION to the runbook timing model: votes kept climbing past Sat 21:00 WAT (+64 between captures) — the vote-to-WIN poll is a cumulative tally toward the Oct 4 finale, not a weekly Sat-21:00-closed window (that wording in the widget is generic TotalPoll boilerplate). This row is an upsert-latest-wins snapshot of the running tally; re-capture anytime for a fresher read. pct sums 100.0; total 242,793 at capture. Discovery: old result articles embed the CURRENT site-wide poll, not that week's finals."
   },
   {
+   "week": 10,
+   "week_start": "2026-09-27",
+   "recorded_at": "2026-10-02",
+   "auto_scraped": false,
+   "source": "Facebook group unofficial fan poll (week-10 FINAL, closed Oct 2 21:00 WAT)",
+   "scope": "final 10 listed; 9 verified shares (Keivo DQ day 65, not vote-eligible, excluded); 10th entry truncated in source and left unread (never guessed)",
+   "poll": [
+    {
+     "name": "Ricky",
+     "pct": 36.07
+    },
+    {
+     "name": "Temi Nkem",
+     "pct": 16.25
+    },
+    {
+     "name": "Bluethopia",
+     "pct": 15.2
+    },
+    {
+     "name": "Sheba",
+     "pct": 9.63
+    },
+    {
+     "name": "Aikou",
+     "pct": 5.73
+    },
+    {
+     "name": "Barry",
+     "pct": 4.88
+    },
+    {
+     "name": "Tram",
+     "pct": 4.36
+    },
+    {
+     "name": "Flora",
+     "pct": 3.91
+    },
+    {
+     "name": "Oyin",
+     "pct": 2.73
+    }
+   ],
+   "notes": "Unofficial FB-group poll recovered 2026-10-03 across mirrors (ultimateloveng + BBNaija S11 groups); percentages transcribed verbatim, no vote counts exposed -> pseudo-n fallback, grade B (manual FB row). Self-selected fan-vote mechanics; not official. Keivo omitted (disqualified, not vote-eligible)."
+  },
+  {
    "week": 6,
    "week_start": "2026-08-30",
    "recorded_at": "2026-09-26T21:55:00+00:00",
@@ -485,6 +532,46 @@
    "scope": "concordance telemetry only",
    "poll": [],
    "notes": "ngnews247 fixed (stale handle ngnews24769 -> @ngnews247; SOCS-cookie consent bypass). wk9 leaders Temi Nkem, Ricky (video 2026-09-22); wk8 leaders Keivo, Ricky == widget top-2 (parser validated). bbn_scoop wired, empty until a canonical-format video appears. NOT fed into closed wk9 products (conflicting C-grade vs A-grade final). Raw: data/raw/week_10/rank_channels_probe.json."
+  },
+  {
+   "week": 10,
+   "week_start": null,
+   "recorded_at": "2026-10-03T07:48:05.830220+00:00",
+   "auto_scraped": true,
+   "sources": [
+    {
+     "source": "bbnaijadaily",
+     "state": "partial",
+     "type": "full-share"
+    },
+    {
+     "source": "ngnews247",
+     "state": "ok",
+     "type": "rank-only"
+    },
+    {
+     "source": "bbn_scoop",
+     "state": "empty",
+     "type": "rank-only"
+    },
+    {
+     "source": "manual",
+     "state": "ok",
+     "type": "full-share"
+    }
+   ],
+   "anchor_applied": true,
+   "anchor_shares": {
+    "Aikou": 0.058019,
+    "Barry": 0.049413,
+    "Bluethopia": 0.153908,
+    "Flora": 0.039591,
+    "Oyin": 0.027643,
+    "Ricky": 0.365229,
+    "Sheba": 0.097509,
+    "Temi Nkem": 0.16454,
+    "Tram": 0.044147
+   }
   }
  ]
 }

@@ -12,13 +12,89 @@
       "scored": false,
       "reason": "no published predictions snapshot predates this week's eviction (snapshot coverage starts at week 8); not retroactively scorable",
       "scored_at": "2026-09-20T08:47:39+00:00"
+    },
+    {
+      "week": 8,
+      "scored": false,
+      "reason": "no published predictions snapshot predates this week's eviction (snapshot coverage starts at week 9); not retroactively scorable",
+      "scored_at": "2026-10-03T07:36:35+00:00"
+    },
+    {
+      "week": 10,
+      "scored": true,
+      "scored_at": "2026-10-03T07:47:05+00:00",
+      "predictions_generated_at": "2026-10-03T07:37:43.611173+00:00",
+      "precision": null,
+      "predicted_winner": {
+        "name": "Sheba",
+        "prob": 0.934
+      },
+      "winner_survived": true,
+      "exits": [
+        {
+          "name": "Keivo",
+          "type": "disqualified",
+          "day": 65,
+          "date": "2026-09-30",
+          "source": "https://www.dstv.com/africamagic/en-ng/news/day-65-keivo-disqualified-from-the-show-ya-sef-house-bbnaija"
+        }
+      ],
+      "eviction_model": {
+        "method": "p_evict(h) = (1/share(h)) / sum(1/share over the at-risk pool); Brier = mean over the pool of (p - y)^2, y = 1 per exit (double evictions each count).",
+        "nominees": [
+          {
+            "name": "Aikou",
+            "p_evict": 0.2728,
+            "exited": false
+          },
+          {
+            "name": "Barry",
+            "p_evict": 0.2474,
+            "exited": false
+          },
+          {
+            "name": "Oyin",
+            "p_evict": 0.1913,
+            "exited": false
+          },
+          {
+            "name": "Flora",
+            "p_evict": 0.1788,
+            "exited": false
+          },
+          {
+            "name": "Bluethopia",
+            "p_evict": 0.1098,
+            "exited": false
+          }
+        ],
+        "brier": 0.0432,
+        "top_hazard_pick": "Aikou",
+        "top_hazard_hit": false
+      },
+      "model_p_rank_1_top3": [
+        "Sheba",
+        "Temi Nkem",
+        "Ricky"
+      ],
+      "poll_concordance": {
+        "agree": 5,
+        "pairs": 10,
+        "score": 0.5,
+        "poll_top3": [
+          "Ricky",
+          "Temi Nkem",
+          "Bluethopia"
+        ],
+        "note": "computed against the scored snapshot; may differ from polls.json model_at_snapshot if predictions were regenerated"
+      }
     }
   ],
   "summary": {
-    "weeks_scored": 0,
-    "winner_survived_hits": 0,
-    "mean_brier": null,
-    "mean_poll_concordance": null,
-    "updated_at": "2026-09-20T08:47:39+00:00"
+    "weeks_scored": 1,
+    "winner_survived_hits": 1,
+    "mean_brier": 0.0432,
+    "mean_poll_concordance": 0.5,
+    "updated_at": "2026-10-03T07:47:05+00:00"
   }
 }

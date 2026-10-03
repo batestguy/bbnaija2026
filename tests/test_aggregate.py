@@ -270,6 +270,34 @@ def test_engine_chains_from_own_prior_output():
     assert hm["Keivo"]["history"][-1]["week"] == 9
 
 
+def test_constraint_point_estimate_inside_bootstrap_ci():
+    """Regression (2026-10-03): a tiny-weight C-grade top_N constraint used to
+    be resampled, so it vanished from most replicates while the point path
+    always applied it — publishing point shares OUTSIDE their own 89% interval
+    (e.g. Tram 0.151 vs CI [0.036, 0.079]). Constraints are deterministic
+    rules: every replicate must apply them."""
+    names = ("Sheba", "Ricky", "Temi Nkem", "Tram", "Aikou", "Barry",
+             "Bluethopia", "Flora", "Oyin")
+    rows = [
+        _fs_row(9, "bbnaijadaily", 1.0, 5000,
+                {"Sheba": 0.40, "Ricky": 0.24, "Temi Nkem": 0.12, "Tram": 0.04,
+                 "Aikou": 0.05, "Barry": 0.05, "Bluethopia": 0.05,
+                 "Flora": 0.03, "Oyin": 0.02}),
+        _fs_row(9, "ngnews247", 0.5, 50,
+                {"Tram": 1, "Temi Nkem": 1}, "top_N"),
+    ]
+    hm = [{"name": n, "status": "active", "exit_week": None} for n in names]
+    products = ag.build_products(rows, 9, CFG, hm, prev_products=None)
+    for h in products["housemates"]:
+        lo, hi = h["ci_89"]
+        assert lo - 1e-9 <= h["share"] <= hi + 1e-9, \
+            f"{h['name']}: point {h['share']} outside CI [{lo}, {hi}]"
+    # ...and the constraint genuinely applied in the replicates: Tram lifted
+    # from its 0.04 aggregate toward the constraint bound.
+    tram = next(h for h in products["housemates"] if h["name"] == "Tram")
+    assert tram["share"] > 0.05
+
+
 def test_bootstrap_replicates_deterministic():
     rows = [_fs_row(9, "bbnaijadaily", 1.0, 5000, {"Keivo": 0.6, "Sheba": 0.4})]
     w = ag.compute_weights(rows, 9, CFG)
