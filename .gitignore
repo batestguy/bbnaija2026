@@ -16,6 +16,10 @@ data/poll_matrix.csv
 
 # OS junk
 Thumbs.db
+# stray root screenshots (spec §13 P11 cleanup; keep docs/assets screenshots tracked)
+/*.png
+/*.jpg
+/*.jpeg
 .DS_Store
 .playwright-cli/
 raw_photos/

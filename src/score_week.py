@@ -21,12 +21,15 @@ Write discipline (never violates the single-writer rule):
     re-scored or edited;
   - everything else is read-only (predictions, manual notes, polls).
 
-Eviction model (documented in every row): within the nominated set the Cox
-relative hazards are normalised to eviction probabilities
-p_evict(h) = hazard(h) / sum(hazard over nominees); the Brier score is the
-mean of (p − y)^2 over nominees with y = 1 for every exit that week (double
-evictions each count). The headline hit/miss is simply whether the projected
-final winner survived the week.
+Eviction model (documented in every row), SHAPE-AWARE since 2026-10-03:
+  * legacy MCMC (`at_risk` entries carry `relative_hazard` + `nominated`):
+    p_evict(h) = hazard(h) / sum(hazard over nominees).
+  * poll-matrix (`at_risk` entries carry `share`; no Cox model exists):
+    p_evict(h) = (1/share(h)) / sum(1/share over the at-risk pool) — lower
+    share = more at risk, matching the engine's `share == P(win)` semantics.
+The Brier score is the mean of (p − y)^2 over the scored set with y = 1 for
+every exit that week (double evictions each count). The headline hit/miss is
+simply whether the projected final winner survived the week.
 """
 
 from __future__ import annotations
@@ -121,8 +124,30 @@ def exits_for_week(rows: list[dict[str, str]], week: int,
     return unique, unresolved
 
 
+RISK_SHARE_FLOOR = 1e-6   # share floor so a zeroed/unmeasured name stays finite
+
+
+def _is_poll_risk(at_risk: list[dict[str, Any]]) -> bool:
+    """Poll-matrix at_risk rows carry `share`; legacy MCMC rows carry
+    `relative_hazard`. Shape is the discriminator, so callers need not thread
+    the engine name through."""
+    return bool(at_risk) and all("relative_hazard" not in a for a in at_risk)
+
+
 def eviction_probs(at_risk: list[dict[str, Any]]) -> dict[str, float]:
-    """Nominated-set Cox hazards → eviction probabilities (sums to 1)."""
+    """At-risk set → eviction probabilities (sums to 1), shape-aware.
+
+    Poll engine: p_evict ∝ 1/share over the at-risk pool (lower share = more
+    at risk). Legacy MCMC: Cox relative hazards over the nominated set."""
+    if not at_risk:
+        raise ValueError("empty at-risk set — cannot normalise")
+    if _is_poll_risk(at_risk):
+        inv = {a["name"]: 1.0 / max(float(a.get("share", 0.0)), RISK_SHARE_FLOOR)
+               for a in at_risk}
+        total = sum(inv.values())
+        if total <= 0:
+            raise ValueError("poll at-risk set has zero total — cannot normalise")
+        return {name: v / total for name, v in inv.items()}
     nominated = [a for a in at_risk if a.get("nominated")]
     total = sum(float(a["relative_hazard"]) for a in nominated)
     if total <= 0:
@@ -137,24 +162,33 @@ def brier(pairs: list[tuple[float, int]]) -> float:
     return sum((p - y) ** 2 for p, y in pairs) / len(pairs)
 
 
+def _safety_scores(at_risk: list[dict[str, Any]]) -> dict[str, float]:
+    """name → model safety (higher = safer) over the at-risk pool.
+    Poll engine: the share itself. Legacy MCMC: negative relative hazard
+    (so a lower hazard still means safer)."""
+    if _is_poll_risk(at_risk):
+        return {a["name"]: float(a.get("share", 0.0)) for a in at_risk}
+    return {a["name"]: -float(a["relative_hazard"])
+            for a in at_risk if a.get("nominated")}
+
+
 def poll_concordance(poll: dict[str, Any], at_risk: list[dict[str, Any]]) -> dict[str, Any]:
-    """Poll save-% order vs model hazard order, over the common housemates.
+    """Poll save-% order vs model safety order, over the common housemates.
 
     A pair agrees when the poll's safer housemate (higher save-%) is also the
-    model's safer one (lower hazard); exact ties count as agreement (they are
-    orderings that do not disagree).
+    model's safer one (higher share / lower hazard); exact ties count as
+    agreement (they are orderings that do not disagree).
     """
     pct = {p["name"]: float(p["pct"]) for p in poll.get("poll", [])}
-    haz = {a["name"]: float(a["relative_hazard"])
-           for a in at_risk if a.get("nominated")}
-    common = sorted(set(pct) & set(haz))
+    safe = _safety_scores(at_risk)
+    common = sorted(set(pct) & set(safe))
     agree = 0
     pairs = 0
     for i in range(len(common)):
         for j in range(i + 1, len(common)):
             a, b = common[i], common[j]
             pairs += 1
-            if (pct[a] >= pct[b]) == (haz[a] <= haz[b]):
+            if (pct[a] >= pct[b]) == (safe[a] >= safe[b]):
                 agree += 1
     return {"agree": agree, "pairs": pairs,
             "score": round(agree / pairs, 3) if pairs else None}
@@ -169,6 +203,13 @@ def score_week_row(week: int, predictions: dict[str, Any],
     winner = predictions.get("podium", {}).get("winner", {})
     winner_name = winner.get("name")
     exit_names = {e["name"] for e in exits}
+    poll_engine = (predictions.get("engine") or {}).get("name") == "poll_matrix"
+    method = ("p_evict(h) = (1/share(h)) / sum(1/share over the at-risk pool); "
+              "Brier = mean over the pool of (p - y)^2, y = 1 per exit "
+              "(double evictions each count).") if poll_engine else (
+              "p_evict(h) = relative_hazard(h) / sum(hazard over nominees); "
+              "Brier = mean over nominees of (p - y)^2, y = 1 per exit "
+              "(double evictions each count).")
 
     probs = eviction_probs(predictions.get("at_risk", []))
     pairs = [(probs[n], 1 if n in exit_names else 0) for n in probs]
@@ -188,9 +229,7 @@ def score_week_row(week: int, predictions: dict[str, Any],
         "winner_survived": winner_name not in exit_names if winner_name else None,
         "exits": exits,
         "eviction_model": {
-            "method": "p_evict(h) = relative_hazard(h) / sum(hazard over nominees); "
-                      "Brier = mean over nominees of (p - y)^2, y = 1 per exit "
-                      "(double evictions each count).",
+            "method": method,
             "nominees": [{"name": n, "p_evict": round(probs[n], 4),
                           "exited": n in exit_names}
                          for n in sorted(probs, key=probs.get, reverse=True)],

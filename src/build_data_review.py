@@ -355,7 +355,7 @@ $('pollNote').innerHTML = '<b>Seeds &amp; manual rows</b> enter as full_share ob
   'Backfilled FINAL snapshots never anchor shares (outcome-leakage rule).';
 
 // ---- snapshots
-const srcCols = ['bbnaijadaily','bbnaijadaily-result-image','ngnews247','manual'];
+const srcCols = ['bbnaijadaily','bbnaijadaily-result-image','ngnews247','bbn_scoop','manual'];
 const stateColor = s => ({ok:'var(--teal)',empty:'var(--faint)',skipped:'var(--faint)',unreachable:'var(--red)','needs-transcription':'var(--gold)','not-in-feed':'var(--faint)'})[s]||'var(--muted)';
 $('snapTbl').innerHTML = '<tr><th>wk</th><th>week of</th><th>type</th><th>captured</th>'+
   srcCols.map(c=>'<th>'+esc(c.replace(/-/g,' '))+'</th>').join('')+'<th>archived files</th></tr>'+
@@ -400,9 +400,14 @@ $('rosterTbl').innerHTML = '<tr><th>Name</th><th>Sex</th><th>Status</th><th clas
       '<td>'+esc(h.status)+'</td><td class="num">'+(h.exit_week!=null?h.exit_week:'—')+'</td>'+
       '<td>'+(inM?'<span style="color:var(--teal)">yes</span>':'<span style="color:var(--faint)">no (exited)</span>')+'</td>'+
       '<td class="mono" style="font-size:10.5px">'+gambitNote+'</td></tr>';
-  }).join('');
-$('rosterNote').innerHTML = '<b>Eligibility:</b> exited housemates never enter the matrix; active Gambit members never enter (excluded from shares, keep runner-up eligibility). '+
-  esc(D.roster_note)+' <b style="color:var(--gold)">Abi &amp; Araga still marked active in config although evicted wk7 — fix before the next run.</b>';
+  }).join('');const rosterMismatch = D.housemates.filter(h => (h.status==='active') !== (h.exit_week==null));
+$('rosterNote').innerHTML = '<b>Eligibility:</b> exited housemates never enter the matrix; active Gambit members never enter (excluded from shares; surfaced in the auto-finalists strip, spec §6). ' +
+  esc(D.roster_note) + ' ' +
+  (rosterMismatch.length
+    ? '<b style="color:var(--gold)">Roster/exit-ledger mismatch: ' +
+      rosterMismatch.map(h=>esc(h.name)+' ('+esc(h.status)+', exit wk '+(h.exit_week==null?'—':h.exit_week)+')').join('; ') +
+      ' — fix config/housemates.json before the next run.</b>'
+    : '<span style="color:var(--teal)">Roster and exit ledger are consistent.</span>');
 
 // ---- track record
 const T = D.track;

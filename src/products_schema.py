@@ -49,11 +49,19 @@ def validate_products(products: dict, *, require_placeholder_consistency: bool =
             raise SchemaError(msg)
 
     # --- required top-level fields -------------------------------------------
-    for key in ("generated_at", "precision", "podium", "housemates"):
+    poll_engine = _is_poll_matrix(products)
+    for key in ("generated_at", "podium", "housemates"):
         req(key in products, f"missing required field: {key}")
 
-    req(products["precision"] in PRECISION_OK,
-        f"precision must be one of {sorted(PRECISION_OK)}, got {products['precision']!r}")
+    # `precision` is the MCMC-era run-quality label. Spec §9 drops it for the
+    # poll engine (bootstrap is cheap; no lite mode exists). It stays required
+    # and validated for legacy payloads so the last archived MCMC file remains
+    # deployable; when present on a poll-engine payload it is still checked.
+    if "precision" in products:
+        req(products["precision"] in PRECISION_OK,
+            f"precision must be one of {sorted(PRECISION_OK)}, got {products['precision']!r}")
+    elif not poll_engine:
+        raise SchemaError("missing required field: precision")
 
     try:
         generated = datetime.fromisoformat(products["generated_at"].replace("Z", "+00:00"))
@@ -68,7 +76,6 @@ def validate_products(products: dict, *, require_placeholder_consistency: bool =
     podium = products["podium"]
     req(isinstance(podium, dict) and set(podium) >= set(SLOT_KEYS),
         f"podium must contain {SLOT_KEYS}, got {sorted(podium)}")
-    poll_engine = _is_poll_matrix(products)
     names = [podium[k].get("name") for k in SLOT_KEYS]
     if poll_engine:
         # honest degradation: fewer than 3 actives => trailing slots may be null
@@ -174,7 +181,7 @@ def validate_products(products: dict, *, require_placeholder_consistency: bool =
     # --- optional-field consistency (only checked when present) ----------------
     if require_placeholder_consistency:
         if products.get("placeholder") is True:
-            req(products["precision"] == "prior-predictive",
+            req(products.get("precision") == "prior-predictive",
                 "placeholder=true requires precision == prior-predictive")
     if "rhat_max" in products and products["rhat_max"] is not None:
         req(float(products["rhat_max"]) < 1.01,

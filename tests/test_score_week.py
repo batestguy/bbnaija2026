@@ -72,6 +72,44 @@ def make_track() -> dict:
     return {"method": "test", "weeks": [], "summary": None}
 
 
+def make_poll_predictions() -> dict:
+    """Poll-matrix snapshot covering week 9. `at_risk` carries `share` +
+    `bottom_n_flag` (no Cox fields) — the shape that broke scoring before the
+    2026-10-03 fix. Shares: Alpha .4 > Beta .3 > Gamma .2 > Delta .1, so the
+    at-risk pool is Delta (most at risk) > Gamma > Beta."""
+    hist = [{"week": w, "median": 0.1} for w in range(1, 10)]
+    return {
+        "generated_at": "2026-09-27T06:00:00+00:00",
+        "precision": "full",
+        "week": 9,
+        "engine": {"name": "poll_matrix", "params": {"cap": 5000}},
+        "podium": {"winner": {"name": "Alpha", "prob": 0.4},
+                   "runner_up": {"name": "Beta", "prob": 0.3},
+                   "second_runner_up": {"name": "Gamma", "prob": 0.2}},
+        "housemates": [
+            {"name": "Alpha", "status": "active", "share": 0.4,
+             "p_rank_1": 0.4, "history": hist},
+            {"name": "Beta", "status": "active", "share": 0.3,
+             "p_rank_1": 0.3, "history": hist},
+            {"name": "Gamma", "status": "active", "share": 0.2,
+             "p_rank_1": 0.2, "history": hist},
+            {"name": "Delta", "status": "active", "share": 0.1,
+             "p_rank_1": 0.1, "history": hist},
+        ],
+        "at_risk": [
+            {"name": "Delta", "share": 0.1, "bottom_n_flag": True},
+            {"name": "Gamma", "share": 0.2, "bottom_n_flag": False},
+            {"name": "Beta", "share": 0.3, "bottom_n_flag": False},
+        ],
+    }
+
+
+def make_week9_notes() -> list[dict[str, str]]:
+    return [{"date": "2026-09-27", "week": "9", "housemate": "Delta",
+             "note_type": "evicted", "value": "exited_day_63",
+             "source_url": "https://x.test/d9", "notes": ""}]
+
+
 # --------------------------------------------------------------------------- #
 # Pure helpers
 # --------------------------------------------------------------------------- #
@@ -102,11 +140,69 @@ def test_eviction_probs_zero_total_raises():
         sw.eviction_probs([{"name": "A", "relative_hazard": 0.0, "nominated": True}])
 
 
+def test_eviction_probs_poll_engine_inverse_share():
+    """Poll-matrix shape: p_evict ∝ 1/share over the at-risk pool."""
+    probs = sw.eviction_probs(make_poll_predictions()["at_risk"])
+    total = 10.0 + 5.0 + (1.0 / 0.3)   # 1/.1, 1/.2, 1/.3
+    assert probs["Delta"] == pytest.approx(10.0 / total)
+    assert probs["Gamma"] == pytest.approx(5.0 / total)
+    assert probs["Beta"] == pytest.approx((1.0 / 0.3) / total)
+    assert sum(probs.values()) == pytest.approx(1.0)
+    assert max(probs, key=probs.get) == "Delta"   # lowest share = top risk
+
+
+def test_eviction_probs_poll_engine_empty_raises():
+    with pytest.raises(ValueError):
+        sw.eviction_probs([])
+
+
 def test_brier_basic_and_empty():
     assert sw.brier([(0.5, 1), (0.5, 0)]) == 0.25
     assert sw.brier([(1.0, 1), (0.0, 0), (0.5, 1)]) == pytest.approx(1 / 12)
     with pytest.raises(ValueError):
         sw.brier([])
+
+
+def test_poll_concordance_poll_engine_uses_share():
+    # Poll order (higher % = safer) matches share order -> full concordance.
+    poll = {"poll": [{"name": "Alpha", "pct": 40}, {"name": "Beta", "pct": 30},
+                      {"name": "Gamma", "pct": 20}, {"name": "Delta", "pct": 10}]}
+    at_risk = [{"name": "Delta", "share": 0.1}, {"name": "Gamma", "share": 0.2},
+               {"name": "Beta", "share": 0.3}, {"name": "Alpha", "share": 0.4}]
+    assert sw.poll_concordance(poll, at_risk) == {"agree": 6, "pairs": 6, "score": 1.0}
+    # True inversion of the share order (Delta > Gamma > Beta > Alpha): all disagree.
+    inv = {"poll": [{"name": "Delta", "pct": 40}, {"name": "Gamma", "pct": 30},
+                     {"name": "Beta", "pct": 20}, {"name": "Alpha", "pct": 10}]}
+    assert sw.poll_concordance(inv, at_risk)["score"] == 0.0
+
+
+def test_score_week_row_poll_engine():
+    exits, _ = sw.exits_for_week(make_week9_notes(), 9, ALIAS_INDEX)
+    row = sw.score_week_row(9, make_poll_predictions(), exits, None,
+                            "2026-09-27T20:00:00+00:00")
+    assert row["week"] == 9 and row["scored"] is True
+    assert row["winner_survived"] is True          # Delta exited, not the winner
+    em = row["eviction_model"]
+    assert em["top_hazard_pick"] == "Delta"       # lowest share = top risk
+    assert em["top_hazard_hit"] is True
+    assert "1/share" in em["method"]              # engine-aware method text
+    assert [n["name"] for n in em["nominees"]][0] == "Delta"
+    total = 10.0 + 5.0 + (1.0 / 0.3)
+    p_delta, p_gamma, p_beta = 10.0 / total, 5.0 / total, (1.0 / 0.3) / total
+    # y = [1, 0, 0] for [Delta, Gamma, Beta]; Brier = mean of (p - y)^2
+    # row rounds brier to 4 dp
+    assert em["brier"] == pytest.approx(
+        ((p_delta - 1) ** 2 + p_gamma ** 2 + p_beta ** 2) / 3, abs=1e-4)
+
+
+def test_score_pending_scores_poll_matrix_snapshot():
+    rows, track, lines, changed = sw.score_pending(
+        make_poll_predictions(), make_track(), make_week9_notes(), None, ALIAS_INDEX)
+    assert [r["week"] for r in rows] == [9]
+    assert changed is True
+    sw.update_summary(track)
+    assert track["summary"]["weeks_scored"] == 1
+    assert track["summary"]["winner_survived_hits"] == 1
 
 
 def test_poll_concordance_orders_and_ties():

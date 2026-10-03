@@ -18,9 +18,14 @@
     ]
   },
   "filter": {
-    "formula": "WinProb_i = 0.0 if gambit_flag_i_t == 1 else exp(mu_i) / sum_{j not gambit} exp(mu_j)",
-    "applies_in": "posterior predictive",
-    "note": "Frozen math (PLAN.md). gambit_flag_i_t = 1 iff week t is in that housemate's gambit_periods weeks. Gambit housemates keep their finale slot: p_rank_1 == 0 but p_top3/p_top5 and runner-up podium eligibility remain live."
+    "rule": "housemates whose gambit_periods cover week N never enter the poll matrix",
+    "applies_in": "src/poll_matrix.py build_matrix (poll-matrix-engine-spec.md §6 matrix-exclusion) — the poll engine's only Gambit rule",
+    "dashboard": "auto-finalists strip: photo + name + status, no share and no win number",
+    "note": "Supersedes the MCMC-era zero-out filter: the poll engine removes Gambit members from aggregation entirely, so the podium and P(#1)/top-3/top-5 chips rank matrix housemates only. gambit_flag_i_t = 1 iff week t is in that housemate's gambit_periods. Driven entirely by this file; inert from week 6 (Flora/Aikou released).",
+    "legacy_mcmc_formula": {
+      "formula": "WinProb_i = 0.0 if gambit_flag_i_t == 1 else exp(mu_i) / sum_{j not gambit} exp(mu_j)",
+      "applies_in": "retired MCMC posterior predictive — historical reference only, not on the run path"
+    }
   },
   "notes": "Week-1 public vote (Flora 29.18%, Aikou 9.10%) elected The Gambit: immunity from week-1 eviction + automatic finale slot + ineligible for the grand prize. Release event returned both to prize eligibility from week 6. Backfilled weeks 1-5 standings must apply the filter to Flora/Aikou; weeks 6+ apply to nobody. Sources: docs/season-recon.md."
 }

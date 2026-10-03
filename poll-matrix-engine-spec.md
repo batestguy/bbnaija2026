@@ -155,6 +155,8 @@ Gambit housemates (per `config/twist.json`, twist provisional) **never enter pol
 | **NEW** auto-finalists strip | Gambit housemates, photo+name, no numbers (§6) |
 | Freshness chip, methodology note, disclaimer, tracker panel | Stay; methodology text rewritten to poll-engine description incl. the correlated-voters limitation (same commenters recur across blogs/polls; no $0 dedup key — never claim independent sampling) |
 
+**Exited-housemate handling (clarified 2026-10-03):** `housemates` in `predictions.json` is the *share-eligible active* set — exited housemates carry no share/chip numbers and are published through the `roster` passthrough (`photo`, `exit_week`, `exit_type`), which the dashboard renders as grayed status cards (P7.6). No zeroed or fabricated history is written for exited housemates.
+
 ## 10. Legacy disposition (delta: retire in place)
 
 MCMC/BMA code, `notebooks/bbnaija_mcmc.py`, its 90+ tests, `.mcmc_*` checkpoint dirs, and the alpha-shift anchor wiring stay **untouched in the repo**; only the run path changes. No archival moves, no deletions, no git churn 4 days before a certified run. P11 decides their final fate. Active test suite = new engine's fixture-based tests (no network) + retained non-MCMC tests (scrapers, schema, quarantine).

@@ -1,11 +1,12 @@
 """BBNaija 2026 Predictor — P3.5 multi-source fan-poll acquisition.
 
-Owner decision 2026-09-20 (supersedes the 2026-09-18 track-only policy):
-unofficial fan polls are SCRAPED weekly and feed a WEAK poll-anchored prior on
-the housemate level. The count formula stays byte-for-byte frozen; the anchor
-is a location shift m_i = kappa * clip(log(s_i * n), -clip, clip) on the
-alpha-column offsets (s_i = poll share, n = number of anchored housemates),
-so a uniform poll or a missing snapshot reproduces today's model exactly.
+Owner decision 2026-09-22 (poll-matrix engine, poll-matrix-engine-spec.md):
+this module is the LOAD-BEARING input — the Saturday widget snapshot is the
+week's primary observation and the poll matrix, not a prior anchor, is the
+model. The weak poll-anchored prior below is RETIRED (it fed the MCMC engine;
+see the 2026-09-20 decision it supersedes); `build_anchor` and the snapshot
+`anchor` block are kept only so archived snapshots and the data-review page
+stay readable, and are no longer consumed by the run path.
 
 Sources, one isolated parser each (one layout change breaks one source, never
 the run) — same rule as scrape_blogs.py:
@@ -463,9 +464,11 @@ def _normalized_shares(entries: list[dict[str, Any]]) -> dict[str, float]:
 
 
 def build_anchor(sources: list[dict[str, Any]]) -> dict[str, Any]:
-    """Median-of-sources anchor. Rank-only and unreachable sources are logged
-    but NEVER contribute shares (a 2-name leaderboard can't become a share
-    without fabricating the rest). Returns the snapshot's anchor block."""
+    """DEPRECATED (retired with the MCMC engine, 2026-09-22) — kept for
+    archived-snapshot and data-review readability; nothing on the run path
+    consumes it. Median-of-sources anchor: rank-only and unreachable sources
+    are logged but NEVER contribute shares (a 2-name leaderboard can't become
+a share without fabricating the rest). Returns the snapshot's anchor block."""
     full = [s for s in sources if s.get("type") == "full-share"
             and s.get("state") in ("live", "ok")]
     per_source = [_normalized_shares(s["entries"]) for s in full]

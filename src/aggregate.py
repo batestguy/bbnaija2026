@@ -527,6 +527,11 @@ def build_products(rows: list[dict[str, Any]], current_week: int,
     hm_by_name = {h["name"]: h for h in housemates_cfg}
     # dashboard passthrough: photo + exit_week per name (products carry no
     # photo field themselves; the roster card needs both to render right)
+    # NOTE (2026-10-03): `housemates` carries SHARE-ELIGIBLE actives only.
+    # Exited housemates cannot win, so they carry no share/chip numbers and are
+    # deliberately not given fabricated zeroed history rows here; the dashboard
+    # surfaces them as grayed status cards (P7.6) from the `roster` passthrough
+    # below (photo + exit_week/exit_type).
     roster_meta = {h["name"]: {"photo": h.get("photo"),
                                "exit_week": h.get("exit_week"),
                                "exit_type": h.get("exit_type")}
@@ -559,7 +564,8 @@ def build_products(rows: list[dict[str, Any]], current_week: int,
     sources_in_window = sorted({r["source_name"] for r in window})
     products = {
         "generated_at": None,  # runner stamps UTC now
-        "precision": "full",
+        # NOTE (spec §9): no `precision`/`rhat_max` — the poll engine has no
+        # lite mode and no sampler diagnostics; data_sufficiency replaces both.
         "week": current_week,
         "podium": podium,
         "housemates": housemates_out,

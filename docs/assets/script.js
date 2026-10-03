@@ -32,7 +32,9 @@
   /* ---------- badges + banner ---------- */
   const badges = [];
   if (P.placeholder) badges.push(["DEMO — PRIOR PREDICTIVE, NOT REAL INFERENCE", "demo"]);
-  badges.push([`precision: ${P.precision}`, "warn"]);
+  // precision is an MCMC-era run-quality label; the poll engine has no lite
+  // mode (spec §9), so the badge is suppressed there like the R-hat badge.
+  if (!isPollEngine) badges.push([`precision: ${P.precision}`, "warn"]);
   // R-hat is an MCMC convergence diagnostic — meaningless for the bootstrap
   // poll engine; badge suppressed there so retired-model language stays off
   // the page (owner: "no more Bayesian, plus R-hat too").
@@ -527,7 +529,7 @@
     recurring voters across sites — treat this as a correlated fan-intensity
     index, not independent one-person-one-vote sampling. Standings numbers are
     shares, never vote counts.
-    <b>Status.</b> Live poll-engine run · precision ${P.precision} · window weeks
+    <b>Status.</b> Live poll-engine run · window weeks
     ${(P.data_sufficiency || {}).weeks_in_window || "?"} · rows ${(P.data_sufficiency || {}).rows_in_window || "?"}.
     Probabilities ≠ votes.` :
     `<b>Methodology.</b> Legacy archived run — retired model, shown only if stale

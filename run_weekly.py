@@ -27,7 +27,6 @@ import shutil
 import subprocess
 import sys
 import time
-from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -145,7 +144,9 @@ def review_summary(products: dict, timings: dict[str, float]) -> None:
         print("    *** THIN WINDOW — CIs are wide and rankings fragile; "
               "read before pushing ***")
     print("\n  Engine         :", products.get("engine", {}).get("name", "?"))
-    print("  Precision      :", products.get("precision"))
+    # precision is the MCMC-era label; the poll engine emits none (spec §9)
+    if products.get("precision") is not None:
+        print("  Precision      :", products["precision"])
     print("\n  Stage timings  :",
           ", ".join(f"{k} {v:.0f}s" for k, v in timings.items()) or "n/a")
     print("=" * 64)

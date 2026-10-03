@@ -50,7 +50,7 @@ def test_valid_product_passes():
 def good_poll_matrix_products() -> dict:
     return {
         "generated_at": _now_iso(),
-        "precision": "full",
+        # no `precision` — spec §9 drops the MCMC-era label for the poll engine
         "week": 9,
         "podium": {
             "winner": {"name": "A", "prob": 0.6},
@@ -80,6 +80,18 @@ def good_poll_matrix_products() -> dict:
 
 def test_poll_matrix_valid_passes():
     assert validate_products(good_poll_matrix_products()) == []
+
+
+def test_poll_matrix_precision_optional_but_validated():
+    """Spec §9: `precision` is dropped for the poll engine; if a payload does
+    carry it, its value is still checked."""
+    p = good_poll_matrix_products()
+    assert "precision" not in p
+    assert validate_products(p) == []
+    p2 = good_poll_matrix_products()
+    p2["precision"] = "bogus"
+    with pytest.raises(SchemaError, match="precision"):
+        validate_products(p2)
 
 
 def test_poll_matrix_share_sum_enforced():
@@ -145,6 +157,14 @@ def test_missing_required_field_rejected():
 def test_bad_precision_rejected():
     p = good_products()
     p["precision"] = "best-guess"
+    with pytest.raises(SchemaError, match="precision"):
+        validate_products(p)
+
+
+def test_legacy_missing_precision_rejected():
+    """Legacy (non-poll) payloads still require the precision label."""
+    p = good_products()
+    del p["precision"]
     with pytest.raises(SchemaError, match="precision"):
         validate_products(p)
 
