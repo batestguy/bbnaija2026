@@ -1,5 +1,8 @@
 # Session handoff — 2026-09-27 (dashboard overhauled to owner spec; 6-source registry; ngnews247 acquisition fixed; wk9 final tally protected from reset-overwrite; pushed + live-verified)
 
+> **SUPERSEDED by `docs/session-handoff-2026-10-03.md`** — read that one first.
+> Kept as history.
+
 **Read this first.** This file **supersedes `docs/session-handoff-2026-09-26.md`**
 (kept as history; its header points here). Operational doc for Saturdays:
 **`docs/engine-runbook.md`**. Spec: `poll-matrix-engine-spec.md`. Phases:
