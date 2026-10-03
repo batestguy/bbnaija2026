@@ -20,6 +20,9 @@ Thumbs.db
 /*.png
 /*.jpg
 /*.jpeg
+/*.mp3
+/*.m4a
+/*.wav
 .DS_Store
 .playwright-cli/
 raw_photos/

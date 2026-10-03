@@ -1,0 +1,98 @@
+1
+00:00:00,400 --> 00:00:07,600
+BBNaija Season 11 — free fan polls in, win probabilities out.
+No paid services. No X/Twitter API. Runs on a laptop.
+
+2
+00:00:08,200 --> 00:00:14,400
+Every week the engine reads free fan polls. The bbnaijadaily vote widget
+is the primary full-share source — graded A.
+
+3
+00:00:14,400 --> 00:00:20,800
+Hand-logged Facebook polls are graded B. ngnews247 video titles and
+official bottom-N reports contribute ordering only, never shares.
+
+4
+00:00:21,200 --> 00:00:26,000
+Missing weeks are never invented. A gap is a no-op,
+flagged in the run record.
+
+5
+00:00:26,000 --> 00:00:29,800
+Names resolve against config/housemates.json —
+aliases are quarantined, never dropped.
+
+6
+00:00:30,300 --> 00:00:34,200
+Each observation is weighted by source grade,
+capped sample size, and recency decay.
+
+7
+00:00:34,200 --> 00:00:37,800
+λ = 0.6 per week: last week's poll counts more
+than the week before it.
+
+8
+00:00:38,300 --> 00:00:42,200
+Every row is renormalised to sum to one, then combined
+into a single weighted share.
+
+9
+00:00:42,200 --> 00:00:45,800
+That share is the published win probability.
+There is no hidden model stacked on top.
+
+10
+00:00:46,300 --> 00:00:50,200
+Ordering constraints soften on conflict, and every
+adjustment is logged with before/after shares.
+
+11
+00:00:50,200 --> 00:00:53,800
+1,000 bootstrap replicates give the 89% interval. Rank chips
+and the podium read from the same draws.
+
+12
+00:00:54,300 --> 00:00:58,200
+Now the live board. The engine's call to win is Sheba —
+25% share, P(#1) of 94%.
+
+13
+00:00:58,200 --> 00:01:01,800
+Podium: Sheba, Temi Nkem, Ricky. Runner-up cards show P(top-3),
+not the same number three times.
+
+14
+00:01:02,300 --> 00:01:06,200
+The trajectory chart plots aggregated share per week,
+with 89% bootstrap bands.
+
+15
+00:01:06,200 --> 00:01:09,800
+Hover any point for the exact share and its interval.
+
+16
+00:01:10,300 --> 00:01:14,200
+This is the new week control — the x-axis stops at week 10.
+There is no week 11.
+
+17
+00:01:14,200 --> 00:01:17,800
+Step back to week 9 and every line, marker and tooltip
+re-scopes to that week.
+
+18
+00:01:18,300 --> 00:01:21,200
+Rank probabilities for every active housemate — P(#1), P(top-3),
+P(top-5) — plus week-over-week momentum.
+
+19
+00:01:21,200 --> 00:01:24,800
+Head-to-head compares any two: the win-probability
+difference and the likely winner.
+
+20
+00:01:25,300 --> 00:01:29,600
+Code, data and methodology are all public.
+Fan forecast — not an official result.
