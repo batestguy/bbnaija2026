@@ -4,95 +4,165 @@ BBNaija Season 11 — free fan polls in, win probabilities out.
 No paid services. No X/Twitter API. Runs on a laptop.
 
 2
-00:00:08,200 --> 00:00:14,400
-Every week the engine reads free fan polls. The bbnaijadaily vote widget
-is the primary full-share source — graded A.
+00:00:08,300 --> 00:00:12,600
+Every week the engine reads free fan polls. The bbnaijadaily vote
+widget is the primary full-share source — graded A.
 
 3
-00:00:14,400 --> 00:00:20,800
-Hand-logged Facebook polls are graded B. ngnews247 video titles and
-official bottom-N reports contribute ordering only, never shares.
+00:00:12,900 --> 00:00:17,200
+Hand-logged Facebook polls are graded B. Official bottom-N reports
+are grade A.
 
 4
-00:00:21,200 --> 00:00:26,000
-Missing weeks are never invented. A gap is a no-op,
-flagged in the run record.
+00:00:17,500 --> 00:00:19,800
+The C-grade titles never become shares — they only constrain
+who finished top two.
 
 5
-00:00:26,000 --> 00:00:29,800
-Names resolve against config/housemates.json —
-aliases are quarantined, never dropped.
+00:00:20,300 --> 00:00:24,600
+Every observation becomes one row in a long matrix — and only the
+last three weeks of rows are kept.
 
 6
-00:00:30,300 --> 00:00:34,200
-Each observation is weighted by source grade,
-capped sample size, and recency decay.
+00:00:24,900 --> 00:00:29,700
+Rows covering fewer than two eligible actives are dropped.
+Gambit housemates never enter the matrix at all.
 
 7
-00:00:34,200 --> 00:00:37,800
-λ = 0.6 per week: last week's poll counts more
-than the week before it.
+00:00:30,300 --> 00:00:33,900
+Missing weeks are never invented — a gap is a no-op,
+flagged in the run record.
 
 8
-00:00:38,300 --> 00:00:42,200
-Every row is renormalised to sum to one, then combined
-into a single weighted share.
+00:00:34,200 --> 00:00:37,700
+Names resolve against a canonical roster: aliases are quarantined,
+never dropped.
 
 9
-00:00:42,200 --> 00:00:45,800
-That share is the published win probability.
-There is no hidden model stacked on top.
+00:00:38,300 --> 00:00:42,500
+Each row is weighted by its source grade, its capped sample size,
+and a recency decay.
 
 10
-00:00:46,300 --> 00:00:50,200
-Ordering constraints soften on conflict, and every
-adjustment is logged with before/after shares.
+00:00:42,800 --> 00:00:46,800
+Lambda is 0.6 per week — last week's poll counts more.
+The 5,000 cap tames the widget's 600,000 votes.
 
 11
-00:00:50,200 --> 00:00:53,800
-1,000 bootstrap replicates give the 89% interval. Rank chips
-and the podium read from the same draws.
+00:00:47,300 --> 00:00:51,600
+Now the step that matters most: each row is renormalised over
+the housemates it actually covers.
 
 12
-00:00:54,300 --> 00:00:58,200
-Now the live board. The engine's call to win is Sheba —
-25% share, P(#1) of 94%.
+00:00:51,900 --> 00:00:55,700
+So a three-name ballot is read as a three-name poll,
+not as a landslide over the whole house.
 
 13
-00:00:58,200 --> 00:01:01,800
-Podium: Sheba, Temi Nkem, Ricky. Runner-up cards show P(top-3),
-not the same number three times.
+00:00:56,300 --> 00:00:59,900
+Those row shares combine into one weighted share per housemate —
+full-share rows only.
 
 14
-00:01:02,300 --> 00:01:06,200
+00:01:00,200 --> 00:01:04,700
+No Bayesian sampler, no blog-CPI:
+the polls are the likelihood.
+
+15
+00:01:05,300 --> 00:01:08,900
+Anyone the polls did not cover inherits last week's share,
+and is flagged as carried.
+
+16
+00:01:09,200 --> 00:01:12,700
+Never measured at all? The lowest measured share, as a floor,
+and an unmeasured flag.
+
+17
+00:01:13,300 --> 00:01:17,700
+Official bottom-N and top-N reports then cap and floor shares,
+with epsilon one percent.
+
+18
+00:01:18,000 --> 00:01:22,700
+Agree with the polls and they apply in full; fight them and the
+share moves only halfway.
+
+19
+00:01:23,300 --> 00:01:27,500
+Uncertainty comes from 1,000 seeded replicates,
+resampling on two layers.
+
+20
+00:01:27,800 --> 00:01:33,700
+Rows are resampled by weight — between-poll disagreement —
+then each poll's voters are redrawn.
+
+21
+00:01:34,300 --> 00:01:38,500
+The replicates give the 89% interval, the rank chips and the
+podium — the same thousand draws.
+
+22
+00:01:38,800 --> 00:01:43,700
+So does the head-to-head: the share of replicates where\nA finishes above B.
+
+23
+00:01:44,300 --> 00:01:48,500
+Here is the whole model in one line: the aggregated share
+is the win probability.
+
+24
+00:01:48,800 --> 00:01:52,700
+No softmax, no Dirichlet layer, no momentum tilt\nstacked on top of the tally.
+
+25
+00:01:53,300 --> 00:01:57,700
+And every week is scored afterwards against what happened —
+a Brier score on the eviction call.
+
+26
+00:01:58,000 --> 00:02:01,700
+Plus concordance between the poll order and the model's,\nand a tombstone when nothing was published.
+
+27
+00:02:02,300 --> 00:02:06,000
+Now the live board. The engine's call to win is Sheba —
+25.3% aggregated share, and 95% to finish first.
+
+28
+00:02:06,300 --> 00:02:09,700
+Podium: Sheba, Temi Nkem, Ricky. Runner-up cards show P(top-3),
+not the same number twice.
+
+29
+00:02:10,300 --> 00:02:14,000
 The trajectory chart plots aggregated share per week,
 with 89% bootstrap bands.
 
-15
-00:01:06,200 --> 00:01:09,800
+30
+00:02:14,300 --> 00:02:18,000
 Hover any point for the exact share and its interval.
 
-16
-00:01:10,300 --> 00:01:14,200
-This is the new week control — the x-axis stops at week 10.
-There is no week 11.
+31
+00:02:18,300 --> 00:02:22,000
+This is the week control — the x-axis stops at week 10,\nbecause there is no week 11.
 
-17
-00:01:14,200 --> 00:01:17,800
+32
+00:02:22,300 --> 00:02:25,700
 Step back to week 9 and every line, marker and tooltip
 re-scopes to that week.
 
-18
-00:01:18,300 --> 00:01:21,200
-Rank probabilities for every active housemate — P(#1), P(top-3),
-P(top-5) — plus week-over-week momentum.
+33
+00:02:26,300 --> 00:02:29,800
+Rank probabilities for every active housemate — P(number one),
+P(top-3), P(top-5) — plus week-over-week momentum.
 
-19
-00:01:21,200 --> 00:01:24,800
-Head-to-head compares any two: the win-probability
-difference and the likely winner.
+34
+00:02:30,100 --> 00:02:32,800
+Head-to-head compares any two: the win-probability difference
+and the likely winner.
 
-20
-00:01:25,300 --> 00:01:29,600
-Code, data and methodology are all public.
-Fan forecast — not an official result.
+35
+00:02:33,300 --> 00:02:38,700
+Code, data and methodology are all public — one week scored,\nBrier 0.043, concordance one half. Fan forecast, not official.

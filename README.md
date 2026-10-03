@@ -5,7 +5,7 @@
 [![tests](https://img.shields.io/badge/tests-134%20passing-3dd6c3)](#testing)
 
 **Live:** https://batestguy.github.io/bbnaija2026/ ·
-**Watch:** [90-second demo video](https://batestguy.github.io/bbnaija2026/assets/bbnaija2026-demo.mp4)
+**Watch:** [2½-minute demo video](https://batestguy.github.io/bbnaija2026/assets/bbnaija2026-demo.mp4)
 ([download](https://batestguy.github.io/bbnaija2026/assets/bbnaija2026-demo.mp4) ·
 [subtitles](https://batestguy.github.io/bbnaija2026/assets/bbnaija2026-demo.srt)) ·
 Mirrors: [HF Space](https://batestguy-bbnaija2026-dashboard.static.hf.space/) ·
@@ -14,11 +14,17 @@ Mirrors: [HF Space](https://batestguy-bbnaija2026-dashboard.static.hf.space/) ·
 <video src="https://batestguy.github.io/bbnaija2026/assets/bbnaija2026-demo.mp4"
   controls muted playsinline width="100%"></video>
 
-> **90-second walkthrough** — data collection, the weighting and aggregation
-> maths, then the live dashboard: podium, the week stepper, hover intervals and
-> head-to-head. Captions are burned in and also shipped as `.srt`; the music bed
-> is RAYE — "Escapism.", included for demonstration only and not covered by this
-> repo's licence.
+> **Full method walkthrough** — the whole engine on screen, equation by
+> equation: the observation matrix and its 3-week window, the weight
+> `w_k = q_k · min(n_k, cap) · λ^Δt_k`, the per-row renormalisation that stops a
+> three-name ballot reading as a landslide, the weighted aggregate, the
+> carry-forward rule, both official-constraint bounds and the halfway pull on
+> conflict, the two-layer bootstrap, every published product as a functional of
+> the 1,000 replicates, `share = P(win)`, and the weekly scoring — then the live
+> dashboard: podium, the week stepper, hover intervals and head-to-head.
+> Captions are burned in and also shipped as `.srt`; the music bed is RAYE —
+> "Escapism.", included for demonstration only and not covered by this repo's
+> licence.
 
 A transparent aggregation engine that reads **free fan polls** every week — the
 bbnaijadaily vote widget, hand-logged rows, official bottom-N/top-N reports —
