@@ -43,7 +43,7 @@ everything is free.
 > **Saturday 2026-09-26**. Until then the dashboard still serves the final
 > MCMC output. History of the retired engine is at the bottom of this file.
 
-![Dashboard hero and trajectory chart](docs/assets/shot-top.png)
+![Week 10 poll-engine dashboard: Sheba headline call, projected podium, share trajectory and rank probabilities](docs/assets/shot-top.png)
 
 ## What you'll see on the dashboard
 
@@ -58,10 +58,12 @@ everything is free.
 | **House status** | Full 24-housemate roster: active, evicted (wk N), walked |
 | **Prediction vs outcome** | Grows weekly: was last week's called winner right? Brier-scored |
 
-*(Screenshots below are from the Sep-20 MCMC run and predate the poll-engine
-cutover; the panel shell is unchanged.)*
+*Screenshots captured from the live poll-engine dashboard on October 3, 2026,
+using the week 10 snapshot published at 07:48 UTC.*
 
-<p align="center"><img src="docs/assets/shot-mobile.png" width="390" alt="Mobile view"></p>
+![Week 10 share trajectory with uncertainty intervals, rank probabilities and at-risk panel](docs/assets/shot-race.png)
+
+<p align="center"><img src="docs/assets/shot-mobile.png" width="390" alt="Week 10 mobile dashboard showing Sheba's headline call and the projected podium: Sheba, Temi Nkem and Ricky"></p>
 
 ---
 
